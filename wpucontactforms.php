@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.1
+Version: 0.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.1';
+    private $plugin_version = '0.2';
 
     public function __construct($options = array()) {
         load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
@@ -54,14 +54,6 @@ class wpucontactforms {
             'id' => 'default'
         );
         $this->options = array_merge($default_options, $options);
-
-        // Target Email
-        $this->target_email = get_option('admin_email');
-        $wpu_opt_email = get_option('wpu_opt_email');
-        if (is_email($wpu_opt_email)) {
-            $this->target_email = $wpu_opt_email;
-        }
-        $this->target_email = apply_filters('wpucontactforms_email', $this->target_email, $this->options);
 
         $this->has_upload = false;
         $this->contact__success = apply_filters('wpucontactforms_success', '<p class="contact-success">' . __('Thank you for your message!', 'wpucontactforms') . '</p>', $this->options);
@@ -251,49 +243,17 @@ class wpucontactforms {
             }
         }
 
-        if (empty($this->msg_errors)) {
-
-            // Setting success message
-            $this->content_contact .= $this->contact__success;
-            $attachments_to_destroy = array();
-            $this->more = array(
-                'attachments' => array()
-            );
-
-            // Send mail
-            $mail_content = '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>';
-
-            foreach ($this->contact_fields as $id => $field) {
-
-                if ($field['type'] == 'file') {
-
-                    // Store attachment id
-                    $attachments_to_destroy[] = $this->contact_fields[$id]['value'];
-
-                    // Add to mail attachments
-                    $this->more['attachments'][] = get_attached_file($this->contact_fields[$id]['value']);
-                    $this->contact_fields[$id]['value'] = '';
-                    continue;
-                }
-
-                // Emptying values
-                $mail_content .= '<hr /><p><strong>' . $field['label'] . '</strong>:<br />' . $field['value'] . '</p>';
-                $this->contact_fields[$id]['value'] = '';
-            }
-
-            if (function_exists('wputh_sendmail')) {
-                wputh_sendmail($this->target_email, __('Message from your contact form', 'wpucontactforms'), $mail_content, $this->more);
-            } else {
-                wp_mail($this->target_email, __('Message from your contact form', 'wpucontactforms'), $mail_content, '', $this->more['attachments']);
-            }
-
-            // Delete temporary attachments
-            foreach ($attachments_to_destroy as $att_id) {
-                wp_delete_attachment($att_id);
-            }
-        } else {
+        if (!empty($this->msg_errors)) {
             $this->content_contact .= '<p class="contact-error"><strong>' . __('Error:', 'wpucontactforms') . '</strong><br />' . implode('<br />', $this->msg_errors) . '</p>';
+            return;
         }
+
+        // Setting success message
+        $this->content_contact .= $this->contact__success;
+
+        // Trigger success action
+        do_action('wpucontactforms_submit_contactform', $this);
+
     }
 
     public function extract_value_from_post($post, $contact_fields) {
@@ -427,4 +387,61 @@ function wpucontactforms_message___maxlinks($message) {
         );
     }
     return $message;
+}
+
+/* ----------------------------------------------------------
+  Success actions
+---------------------------------------------------------- */
+
+/* Send mail
+-------------------------- */
+
+add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__sendmail', 10, 1);
+function wpucontactforms_submit_contactform__sendmail($form) {
+
+    // Send mail
+    $mail_content = '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>';
+    $attachments_to_destroy = array();
+    $more = array(
+        'attachments' => array()
+    );
+
+    // Target Email
+    $target_email = get_option('admin_email');
+    $wpu_opt_email = get_option('wpu_opt_email');
+    if (is_email($wpu_opt_email)) {
+        $target_email = $wpu_opt_email;
+    }
+    $target_email = apply_filters('wpucontactforms_email', $target_email, $form->options);
+
+    foreach ($form->contact_fields as $id => $field) {
+
+        if ($field['type'] == 'file') {
+
+            // Store attachment id
+            $attachments_to_destroy[] = $form->contact_fields[$id]['value'];
+
+            // Add to mail attachments
+            $more['attachments'][] = get_attached_file($form->contact_fields[$id]['value']);
+            $form->contact_fields[$id]['value'] = '';
+            continue;
+        }
+
+        $final_fields[$id] = $field['value'];
+
+        // Emptying values
+        $mail_content .= '<hr /><p><strong>' . $field['label'] . '</strong>:<br />' . $field['value'] . '</p>';
+        $form->contact_fields[$id]['value'] = '';
+    }
+
+    if (function_exists('wputh_sendmail')) {
+        wputh_sendmail($target_email, __('Message from your contact form', 'wpucontactforms'), $mail_content, $more);
+    } else {
+        wp_mail($target_email, __('Message from your contact form', 'wpucontactforms'), $mail_content, '', $more['attachments']);
+    }
+
+    // Delete temporary attachments
+    foreach ($attachments_to_destroy as $att_id) {
+        wp_delete_attachment($att_id);
+    }
 }

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.2
+Version: 0.2.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.2';
+    private $plugin_version = '0.2.1';
 
     public function __construct($options = array()) {
         load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
@@ -25,7 +25,7 @@ class wpucontactforms {
             'page_content'
         ), 10, 2);
 
-        if ($this->contact__settings['ajax_enabled']) {
+        if ($this->options['contact__settings']['ajax_enabled']) {
             add_action('wp_ajax_wpucontactforms', array(&$this,
                 'ajax_action'
             ));
@@ -49,17 +49,15 @@ class wpucontactforms {
     }
 
     public function set_options($options) {
-        // Form ID
-        $default_options = array(
-            'id' => 'default'
-        );
-        $this->options = array_merge($default_options, $options);
 
         $this->has_upload = false;
-        $this->contact__success = apply_filters('wpucontactforms_success', '<p class="contact-success">' . __('Thank you for your message!', 'wpucontactforms') . '</p>', $this->options);
+        $this->content_contact = '';
         $this->default_field = array(
             'value' => '',
             'type' => 'text',
+            'validation' => '',
+            'validation_regexp' => '',
+            'validation_pattern' => '',
             'html_before' => '',
             'html_after' => '',
             'box_class' => '',
@@ -70,14 +68,25 @@ class wpucontactforms {
             )
         );
 
-        $this->contact__settings = apply_filters('wpucontactforms_settings', array(
+        // Default options
+        $default_options = array(
+            'id' => 'default',
+            'contact__success' => apply_filters('wpucontactforms_success', '<p class="contact-success">' . __('Thank you for your message!', 'wpucontactforms') . '</p>'),
+            'contact__settings' => array()
+        );
+        $this->options = array_merge($default_options, $options);
+
+        // Settings
+        $settings = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
             'box_class' => 'box',
             'label_text_required' => '<em>*</em>',
-            'li_submit_class' => '',
             'submit_class' => 'cssc-button cssc-button--default',
             'submit_label' => __('Submit', 'wpucontactforms'),
-            'ul_class' => 'cssc-form cssc-form--default float-form',
+            'group_submit_class' => '',
+            'box_tagname' => 'div',
+            'group_tagname' => 'div',
+            'group_class' => 'cssc-form cssc-form--default float-form',
             'file_types' => array(
                 'image/png',
                 'image/jpg',
@@ -86,7 +95,8 @@ class wpucontactforms {
             ),
             'max_file_size' => 2 * 1024 * 1024,
             'attach_to_post' => get_the_ID()
-        ), $this->options);
+        ));
+        $this->options['contact__settings'] = array_merge($settings, $options['contact__settings']);
 
         $this->contact_fields = apply_filters('wpucontactforms_fields', array(
             'contact_name' => array(
@@ -113,6 +123,11 @@ class wpucontactforms {
 
             $this->contact_fields[$id]['id'] = $id;
 
+            // Validation = type by default
+            if (empty($this->contact_fields[$id]['validation'])) {
+                $this->contact_fields[$id]['validation'] = $this->contact_fields[$id]['type'];
+            }
+
             if ($this->contact_fields[$id]['type'] == 'file') {
                 $this->has_upload = true;
             }
@@ -127,7 +142,6 @@ class wpucontactforms {
             }
         }
 
-        $this->content_contact = '';
     }
 
     public function page_content($hide_wrapper = false, $form_id = false) {
@@ -137,26 +151,26 @@ class wpucontactforms {
         }
 
         // Display contact form
-        $this->content_contact .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data' : '') . '"><ul class="' . $this->contact__settings['ul_class'] . '">';
+        $this->content_contact .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data' : '') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
         foreach ($this->contact_fields as $field) {
             $this->content_contact .= $this->field_content($field);
         }
 
         /* Quick honeypot */
-        $this->content_contact .= '<li class="screen-reader-text">';
+        $this->content_contact .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
         $this->content_contact .= '<label>If you are human, leave this empty</label>';
         $this->content_contact .= '<input tabindex="-1" name="hu-man-te-st" type="text"/>';
-        $this->content_contact .= '</li>';
+        $this->content_contact .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
-        $this->content_contact .= '<li class="' . $this->contact__settings['li_submit_class'] . '">
+        $this->content_contact .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">
         <input type="hidden" name="form_id" value="' . esc_attr($form_id) . '" />
         <input type="hidden" name="control_stripslashes" value="&quot;" />
         <input type="hidden" name="wpucontactforms_send" value="1" />
         <input type="hidden" name="action" value="wpucontactforms" />
-        <button class="' . $this->contact__settings['submit_class'] . '" type="submit">' . $this->contact__settings['submit_label'] . '</button>
-        </li>';
+        <button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit">' . $this->options['contact__settings']['submit_label'] . '</button>
+        </' . $this->options['contact__settings']['box_tagname'] . '>';
 
-        $this->content_contact .= '</ul>';
+        $this->content_contact .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         $this->content_contact .= '</form>';
         if ($hide_wrapper !== true) {
             echo '<div class="wpucontactforms-form-wrapper">';
@@ -175,9 +189,12 @@ class wpucontactforms {
         if ($field['required']) {
             $field_id_name .= ' required="required"';
         }
+        if (isset($field['validation_pattern']) && !empty($field['validation_pattern'])) {
+            $field_id_name .= ' pattern="' . $field['validation_pattern'] . '"';
+        }
         $field_val = 'value="' . $field['value'] . '"';
         if (isset($field['label'])) {
-            $content .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $field['label'] . ' ' . ($field['required'] ? $this->contact__settings['label_text_required'] : '') . '</label>';
+            $content .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $field['label'] . ' ' . ($field['required'] ? $this->options['contact__settings']['label_text_required'] : '') . '</label>';
         }
         switch ($field['type']) {
         case 'select':
@@ -189,7 +206,7 @@ class wpucontactforms {
             $content .= '</select>';
             break;
         case 'file':
-            $content .= '<input type="file" accept="' . implode(',', $this->contact__settings['file_types']) . '" ' . $field_id_name . ' ' . $field_val . ' />';
+            $content .= '<input type="file" accept="' . implode(',', $this->options['contact__settings']['file_types']) . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'text':
         case 'url':
@@ -201,7 +218,7 @@ class wpucontactforms {
             break;
         }
 
-        return $field['html_before'] . '<li class="' . $this->contact__settings['box_class'] . ' ' . $field['box_class'] . '">' . $content . '</li>' . $field['html_after'];
+        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' ' . $field['box_class'] . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
     }
 
     public function post_contact() {
@@ -249,7 +266,7 @@ class wpucontactforms {
         }
 
         // Setting success message
-        $this->content_contact .= $this->contact__success;
+        $this->content_contact .= $this->options['contact__success'];
 
         // Trigger success action
         do_action('wpucontactforms_submit_contactform', $this);
@@ -306,7 +323,7 @@ class wpucontactforms {
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
 
-        $attachment_id = media_handle_upload($field['id'], $this->contact__settings['attach_to_post']);
+        $attachment_id = media_handle_upload($field['id'], $this->options['contact__settings']['attach_to_post']);
 
         if (is_wp_error($attachment_id)) {
             return false;
@@ -318,12 +335,12 @@ class wpucontactforms {
     public function validate_field_file($file, $field) {
 
         // Max size
-        if ($file['size'] >= $this->contact__settings['max_file_size']) {
+        if ($file['size'] >= $this->options['contact__settings']['max_file_size']) {
             return false;
         }
 
         // Type
-        if (!in_array($file['type'], $this->contact__settings['file_types'])) {
+        if (!in_array($file['type'], $this->options['contact__settings']['file_types'])) {
             return false;
         }
 
@@ -331,7 +348,7 @@ class wpucontactforms {
     }
 
     public function validate_field($tmp_value, $field) {
-        switch ($field['type']) {
+        switch ($field['validation']) {
         case 'select':
             return array_key_exists($tmp_value, $field['datas']);
             break;
@@ -340,6 +357,9 @@ class wpucontactforms {
             break;
         case 'url':
             return filter_var($tmp_value, FILTER_VALIDATE_URL) !== false;
+            break;
+        case 'regexp':
+            return isset($field['validation_regexp']) && (preg_match($field['validation_regexp'], $tmp_value) == 1);
             break;
         }
         return true;

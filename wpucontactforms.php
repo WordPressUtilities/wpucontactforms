@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.2.1
+Version: 0.2.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.2.1';
+    private $plugin_version = '0.2.2';
 
     public function __construct($options = array()) {
         load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
@@ -50,6 +50,7 @@ class wpucontactforms {
 
     public function set_options($options) {
 
+        $this->is_successful = false;
         $this->has_upload = false;
         $this->content_contact = '';
         $this->default_field = array(
@@ -77,9 +78,10 @@ class wpucontactforms {
         $this->options = array_merge($default_options, $options);
 
         // Settings
-        $settings = apply_filters('wpucontactforms_settings', array(
+        $this->options['contact__settings'] = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
             'box_class' => 'box',
+            'display_form_after_submit' => true,
             'label_text_required' => '<em>*</em>',
             'submit_class' => 'cssc-button cssc-button--default',
             'submit_label' => __('Submit', 'wpucontactforms'),
@@ -96,7 +98,6 @@ class wpucontactforms {
             'max_file_size' => 2 * 1024 * 1024,
             'attach_to_post' => get_the_ID()
         ));
-        $this->options['contact__settings'] = array_merge($settings, $options['contact__settings']);
 
         $this->contact_fields = apply_filters('wpucontactforms_fields', array(
             'contact_name' => array(
@@ -150,32 +151,46 @@ class wpucontactforms {
             return '';
         }
 
+        $content_form = '';
+
         // Display contact form
-        $this->content_contact .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data' : '') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
+        $content_form .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data' : '') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
         foreach ($this->contact_fields as $field) {
-            $this->content_contact .= $this->field_content($field);
+            $content_form .= $this->field_content($field);
         }
 
         /* Quick honeypot */
-        $this->content_contact .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
-        $this->content_contact .= '<label>If you are human, leave this empty</label>';
-        $this->content_contact .= '<input tabindex="-1" name="hu-man-te-st" type="text"/>';
-        $this->content_contact .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
+        $content_form .= '<label>If you are human, leave this empty</label>';
+        $content_form .= '<input tabindex="-1" name="hu-man-te-st" type="text"/>';
+        $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
-        $this->content_contact .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">
-        <input type="hidden" name="form_id" value="' . esc_attr($form_id) . '" />
-        <input type="hidden" name="control_stripslashes" value="&quot;" />
-        <input type="hidden" name="wpucontactforms_send" value="1" />
-        <input type="hidden" name="action" value="wpucontactforms" />
-        <button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit">' . $this->options['contact__settings']['submit_label'] . '</button>
+        /* Box success && hidden fields */
+        $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
+        $default_hidden_fields = array(
+            'form_id' => $form_id,
+            'control_stripslashes' => '&quot;',
+            'wpucontactforms_send' => '1',
+            'action' => 'wpucontactforms'
+        );
+        $hidden_fields = apply_filters('wpucontactforms_hidden_fields', $default_hidden_fields, $this->options);
+        foreach ($hidden_fields as $name => $value) {
+            $content_form .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" />';
+        }
+        $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit">' . $this->options['contact__settings']['submit_label'] . '</button>
         </' . $this->options['contact__settings']['box_tagname'] . '>';
 
-        $this->content_contact .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
-        $this->content_contact .= '</form>';
+        $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        $content_form .= '</form>';
+        if ($this->is_successful && !$this->options['contact__settings']['display_form_after_submit']) {
+            $content_form = '';
+        }
+
         if ($hide_wrapper !== true) {
             echo '<div class="wpucontactforms-form-wrapper">';
         }
         echo $this->content_contact;
+        echo $content_form;
         if ($hide_wrapper !== true) {
             echo '</div>';
         }
@@ -235,6 +250,8 @@ class wpucontactforms {
         // Initial settings
         $this->msg_errors = array();
 
+        do_action('wpucontactforms_beforesubmit_contactform', $this);
+
         // Checking for PHP Conf
         if (isset($_POST['control_stripslashes']) && $_POST['control_stripslashes'] == '\"') {
             foreach ($_POST as $id => $field) {
@@ -265,11 +282,15 @@ class wpucontactforms {
             return;
         }
 
+        $this->content_contact = '';
+
         // Setting success message
         $this->content_contact .= $this->options['contact__success'];
 
         // Trigger success action
         do_action('wpucontactforms_submit_contactform', $this);
+
+        $this->is_successful = true;
 
     }
 

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.2.2
+Version: 0.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.2.2';
+    private $plugin_version = '0.3';
 
     public function __construct($options = array()) {
         load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
@@ -62,6 +62,7 @@ class wpucontactforms {
             'html_before' => '',
             'html_after' => '',
             'box_class' => '',
+            'placeholder' => '',
             'required' => 0,
             'datas' => array(
                 __('No', 'wpucontactforms'),
@@ -78,7 +79,7 @@ class wpucontactforms {
         $this->options = array_merge($default_options, $options);
 
         // Settings
-        $this->options['contact__settings'] = apply_filters('wpucontactforms_settings', array(
+        $contact__settings = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
             'box_class' => 'box',
             'display_form_after_submit' => true,
@@ -98,6 +99,8 @@ class wpucontactforms {
             'max_file_size' => 2 * 1024 * 1024,
             'attach_to_post' => get_the_ID()
         ));
+
+        $this->options['contact__settings'] = array_merge($contact__settings, $this->options['contact__settings']);
 
         $this->contact_fields = apply_filters('wpucontactforms_fields', array(
             'contact_name' => array(
@@ -201,15 +204,31 @@ class wpucontactforms {
         $id = $field['id'];
         $id_html = $this->options['id'] . '_' . $id;
         $field_id_name = ' id="' . $id_html . '" name="' . $id . '" aria-labelledby="label-' . $id . '" aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
+        // Required
         if ($field['required']) {
             $field_id_name .= ' required="required"';
         }
+        // Placeholder
+        if (!empty($field['placeholder'])) {
+            $field_id_name .= ' placeholder="' . esc_attr($field['placeholder']) . '"';
+        }
+        // Validation
         if (isset($field['validation_pattern']) && !empty($field['validation_pattern'])) {
             $field_id_name .= ' pattern="' . $field['validation_pattern'] . '"';
         }
+        // Value
         $field_val = 'value="' . $field['value'] . '"';
+
+        // Additional HTML
+        $after_checkbox = isset($field['html_after_checkbox']) ? $field['html_after_checkbox'] : '';
+        $before_checkbox = isset($field['html_before_checkbox']) ? $field['html_before_checkbox'] : '';
+
+        $label_content = '';
         if (isset($field['label'])) {
-            $content .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $field['label'] . ' ' . ($field['required'] ? $this->options['contact__settings']['label_text_required'] : '') . '</label>';
+            $label_content = $field['label'] . ' ' . ($field['required'] ? $this->options['contact__settings']['label_text_required'] : '');
+        }
+        if (!empty($label_content)) {
+            $content .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $label_content . '</label>';
         }
         switch ($field['type']) {
         case 'select':
@@ -222,6 +241,9 @@ class wpucontactforms {
             break;
         case 'file':
             $content .= '<input type="file" accept="' . implode(',', $this->options['contact__settings']['file_types']) . '" ' . $field_id_name . ' ' . $field_val . ' />';
+            break;
+        case 'checkbox':
+            $content = '<label id="label-' . $id . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' value="1" />' . $after_checkbox . ' ' . $label_content . '</label>';
             break;
         case 'text':
         case 'url':
@@ -308,6 +330,10 @@ class wpucontactforms {
                 }
             }
 
+            if ($field['type'] == 'checkbox' && empty($tmp_value)) {
+                $tmp_value = '0';
+            }
+
             if ($tmp_value != '') {
                 if ($field['type'] == 'file') {
                     $field_ok = $this->validate_field_file($_FILES[$id], $field);
@@ -321,6 +347,10 @@ class wpucontactforms {
 
                     if ($field['type'] == 'select') {
                         $tmp_value = $field['datas'][$tmp_value];
+                    }
+
+                    if ($field['type'] == 'checkbox') {
+                        $tmp_value = ($tmp_value == '1') ? __('Yes') : __('No');
                     }
 
                     if ($field['type'] == 'file') {
@@ -369,9 +399,13 @@ class wpucontactforms {
     }
 
     public function validate_field($tmp_value, $field) {
+        $zero_one = array('0', '1');
         switch ($field['validation']) {
         case 'select':
             return array_key_exists($tmp_value, $field['datas']);
+            break;
+        case 'checkbox':
+            return in_array($tmp_value, $zero_one);
             break;
         case 'email':
             return filter_var($tmp_value, FILTER_VALIDATE_EMAIL) !== false;

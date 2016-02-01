@@ -5,7 +5,7 @@ Contact forms for your WordPress website.
 ## Insert into your page
 
 ```php
-<?php do_action('wputh_contact_content', false, 'default'); ?>
+<?php do_action('wpucontactforms_content', false, 'default'); ?>
 ```
 
 ## Create a new form
@@ -13,7 +13,12 @@ Contact forms for your WordPress website.
 ```php
 add_action('init', 'launch_wpucontactforms_myawesomeform');
 function launch_wpucontactforms_myawesomeform() {
-    new wpucontactforms(array('id' => 'myawesomeform'));
+    new wpucontactforms(array(
+        'id' => 'myawesomeform',
+        'contact__settings' => array(
+            'group_class' => 'cssc-form cssc-form--default',
+        )
+    ));
 }
 ```
 
@@ -59,8 +64,6 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **li_submit_class** : ''
 * **max_file_size** :  2 * 1024 * 1024
 * **submit_class** : 'cssc-button cssc-button--default'
-* **submit_class** : 'cssc-button cssc-button--default'
-* **submit_label** : 'Submit'
 * **submit_label** : 'Submit'
 * **ul_class** : 'cssc-form cssc-form--default float-form'
 
@@ -68,11 +71,14 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 
 * **value** : (string) Default value.
 * **label** : (string) Field name.
-* **type** : (string) Field type : text, url, email, textarea, select.
+* **placeholder** : (string) Placeholder text in input content.
+* **type** : (string) Field type : text, url, email, textarea, select, checkbox.
 * **datas** : (array) 1dim array setting datas for select.
 * **required** : (bool) Field is required.
 * **html_before** : (string) HTML before LI box.
 * **html_after** : (string) HTML after LI box.
+* **html_before_checkbox** : (string) HTML before a checkbox input.
+* **html_after_checkbox** : (string) HTML after a checkbox input.
 * **box_class** : (string) LI Box CSS Class
 * **validation_pattern** : (string) HTML Pattern for validation.
 * **validation_regexp** : (string) Regexp Pattern for validation.

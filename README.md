@@ -82,3 +82,7 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **box_class** : (string) LI Box CSS Class
 * **validation_pattern** : (string) HTML Pattern for validation.
 * **validation_regexp** : (string) Regexp Pattern for validation.
+
+### Send mail
+* **wpucontactforms__sendmail_intro** : (string) HTML before fields values in mail.
+* **wpucontactforms__sendmail_subject** : (string) Subject of the sent email.

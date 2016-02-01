@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.3
+Version: 0.3.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.3';
+    private $plugin_version = '0.3.1';
 
     public function __construct($options = array()) {
         load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
@@ -474,8 +474,11 @@ function wpucontactforms_message___maxlinks($message) {
 add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__sendmail', 10, 1);
 function wpucontactforms_submit_contactform__sendmail($form) {
 
+    $sendmail_intro = apply_filters('wpucontactforms__sendmail_intro', '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>', $form);
+    $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', __('Message from your contact form', 'wpucontactforms'), $form);
+
     // Send mail
-    $mail_content = '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>';
+    $mail_content = $sendmail_intro;
     $attachments_to_destroy = array();
     $more = array(
         'attachments' => array()
@@ -510,9 +513,9 @@ function wpucontactforms_submit_contactform__sendmail($form) {
     }
 
     if (function_exists('wputh_sendmail')) {
-        wputh_sendmail($target_email, __('Message from your contact form', 'wpucontactforms'), $mail_content, $more);
+        wputh_sendmail($target_email, $sendmail_subject, $mail_content, $more);
     } else {
-        wp_mail($target_email, __('Message from your contact form', 'wpucontactforms'), $mail_content, '', $more['attachments']);
+        wp_mail($target_email, $sendmail_subject, $mail_content, '', $more['attachments']);
     }
 
     // Delete temporary attachments

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.3.1
+Version: 0.3.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,10 +13,18 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.3.1';
+    private $plugin_version = '0.3.2';
 
     public function __construct($options = array()) {
-        load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
+        global $wpucontactforms_forms;
+        if (!isset($options['id'])) {
+            return;
+        }
+        if (in_array($options['id'], $wpucontactforms_forms)) {
+            return;
+        }
+        $wpucontactforms_forms[] = $options['id'];
+
         $this->set_options($options);
         add_action('template_redirect', array(&$this,
             'post_contact'
@@ -430,10 +438,18 @@ class wpucontactforms {
     }
 }
 
+/* ----------------------------------------------------------
+  Init
+---------------------------------------------------------- */
+
+$wpucontactforms_forms = array();
+
 add_action('init', 'launch_wpucontactforms_default');
 function launch_wpucontactforms_default() {
+    load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
     new wpucontactforms();
 }
+
 
 /* ----------------------------------------------------------
   Shortcode for form

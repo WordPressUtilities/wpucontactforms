@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.3.2
+Version: 0.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.3.2';
+    private $plugin_version = '0.4';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -23,6 +23,7 @@ class wpucontactforms {
         if (in_array($options['id'], $wpucontactforms_forms)) {
             return;
         }
+        load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
         $wpucontactforms_forms[] = $options['id'];
 
         $this->set_options($options);
@@ -446,10 +447,8 @@ $wpucontactforms_forms = array();
 
 add_action('init', 'launch_wpucontactforms_default');
 function launch_wpucontactforms_default() {
-    load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
     new wpucontactforms();
 }
-
 
 /* ----------------------------------------------------------
   Shortcode for form
@@ -517,15 +516,11 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 
             // Add to mail attachments
             $more['attachments'][] = get_attached_file($form->contact_fields[$id]['value']);
-            $form->contact_fields[$id]['value'] = '';
             continue;
         }
 
-        $final_fields[$id] = $field['value'];
-
         // Emptying values
         $mail_content .= '<hr /><p><strong>' . $field['label'] . '</strong>:<br />' . $field['value'] . '</p>';
-        $form->contact_fields[$id]['value'] = '';
     }
 
     if (function_exists('wputh_sendmail')) {
@@ -535,7 +530,53 @@ function wpucontactforms_submit_contactform__sendmail($form) {
     }
 
     // Delete temporary attachments
-    foreach ($attachments_to_destroy as $att_id) {
-        wp_delete_attachment($att_id);
+    if (apply_filters('wpucontactforms__sendmail_delete_attachments', true)) {
+        foreach ($attachments_to_destroy as $att_id) {
+            wp_delete_attachment($att_id);
+        }
+    }
+}
+
+/* Save post
+-------------------------- */
+
+// add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__savepost', 10, 1);
+function wpucontactforms_submit_contactform__savepost($form) {
+
+    $post_content = '';
+    $post_metas = array();
+    $attachments = array();
+
+    foreach ($form->contact_fields as $id => $field) {
+
+        if ($field['type'] == 'file') {
+            $attachments[] = $form->contact_fields[$id]['value'];
+            continue;
+        }
+
+        $post_content .= '<p><strong>' . $field['label'] . '</strong>:<br />' . $field['value'] . '</p><hr />';
+        $post_metas[$id] = $field['value'];
+    }
+
+    // Create post
+    $post_id = wp_insert_post(array(
+        'post_title' => apply_filters('wpucontactforms__createpost_post_title', 'New email', $form),
+        'post_type' => apply_filters('wpucontactforms__createpost_post_type', 'post', $form),
+        'post_content' => apply_filters('wpucontactforms__createpost_post_content', $post_content, $form),
+        'post_author' => apply_filters('wpucontactforms__createpost_postauthor', 1, $form),
+        'post_status' => 'publish'
+    ));
+
+    // Add metas
+    foreach ($post_metas as $id => $value) {
+        update_post_meta($post_id, $id, $value);
+    }
+
+    // Link attachments to the new post
+    foreach ($attachments as $att_id) {
+        wp_update_post(array(
+            'ID' => $att_id,
+            'post_parent' => $post_id
+        ));
     }
 }

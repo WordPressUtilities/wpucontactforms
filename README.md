@@ -15,6 +15,7 @@ add_action('init', 'launch_wpucontactforms_myawesomeform');
 function launch_wpucontactforms_myawesomeform() {
     new wpucontactforms(array(
         'id' => 'myawesomeform',
+        'name' => 'My Awesome Form',
         'contact__settings' => array(
             'group_class' => 'cssc-form cssc-form--default',
         )

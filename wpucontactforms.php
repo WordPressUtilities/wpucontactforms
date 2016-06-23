@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.4
+Version: 0.5
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.4';
+    private $plugin_version = '0.5';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -82,6 +82,7 @@ class wpucontactforms {
         // Default options
         $default_options = array(
             'id' => 'default',
+            'name' => 'Default',
             'contact__success' => apply_filters('wpucontactforms_success', '<p class="contact-success">' . __('Thank you for your message!', 'wpucontactforms') . '</p>'),
             'contact__settings' => array()
         );
@@ -540,9 +541,42 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 /* Save post
 -------------------------- */
 
-// add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__savepost', 10, 1);
+add_action('init', 'wpucontactforms_submit_contactform__savepost__objects');
+function wpucontactforms_submit_contactform__savepost__objects() {
+    add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__savepost', 10, 1);
+
+    // Create a new taxonomy
+    register_taxonomy(
+        'contact_form',
+        array('contact_message'),
+        array(
+            'label' => __('Form'),
+            'show_admin_column' => true
+        )
+    );
+
+    // Create a new post type
+    register_post_type('contact_message',
+        array(
+            'labels' => array(
+                'name' => __('Messages'),
+                'singular_name' => __('Message')
+            ),
+            'menu_icon' => 'dashicons-email-alt',
+            'public' => true,
+            'taxonomies' => array('contact_form'),
+            'publicly_queryable' => false,
+            'has_archive' => false,
+        )
+    );
+
+    add_filter('manage_taxonomies_for_activity_columns', 'activity_type_columns');
+
+}
+
 function wpucontactforms_submit_contactform__savepost($form) {
 
+    $taxonomy = apply_filters('wpucontactforms__createpost_taxonomy', 'contact_form', $form);
     $post_content = '';
     $post_metas = array();
     $attachments = array();
@@ -561,7 +595,7 @@ function wpucontactforms_submit_contactform__savepost($form) {
     // Create post
     $post_id = wp_insert_post(array(
         'post_title' => apply_filters('wpucontactforms__createpost_post_title', 'New email', $form),
-        'post_type' => apply_filters('wpucontactforms__createpost_post_type', 'post', $form),
+        'post_type' => apply_filters('wpucontactforms__createpost_post_type', 'contact_message', $form),
         'post_content' => apply_filters('wpucontactforms__createpost_post_content', $post_content, $form),
         'post_author' => apply_filters('wpucontactforms__createpost_postauthor', 1, $form),
         'post_status' => 'publish'
@@ -570,6 +604,31 @@ function wpucontactforms_submit_contactform__savepost($form) {
     // Add metas
     foreach ($post_metas as $id => $value) {
         update_post_meta($post_id, $id, $value);
+    }
+
+    // Add term
+    $term = wp_insert_term(
+        $form->options['name'],
+        $taxonomy,
+        array(
+            'slug' => $form->options['id']
+        )
+    );
+
+    $term_id = 0;
+    if (!is_wp_error($term) && isset($term['term_id'])) {
+        $term_id = $term['term_id'];
+    }
+
+    if (is_wp_error($term)) {
+        $term_id_tmp = $term->get_error_data();
+        if (is_numeric($term_id_tmp)) {
+            $term_id = $term_id_tmp;
+        }
+    }
+
+    if (is_numeric($term_id) && $term_id) {
+        wp_set_post_terms($post_id, array($term_id), $taxonomy);
     }
 
     // Link attachments to the new post

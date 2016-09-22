@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.5.1
+Version: 0.5.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.5.1';
+    private $plugin_version = '0.5.2';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -228,8 +228,10 @@ class wpucontactforms {
             $field_id_name .= ' required="required"';
         }
         // Placeholder
+        $placeholder = __('Select a value');
         if (!empty($field['placeholder'])) {
             $field_id_name .= ' placeholder="' . esc_attr($field['placeholder']) . '"';
+            $placeholder = $field['placeholder'];
         }
         // Validation
         if (isset($field['validation_pattern']) && !empty($field['validation_pattern'])) {
@@ -252,7 +254,7 @@ class wpucontactforms {
         switch ($field['type']) {
         case 'select':
             $content .= '<select  ' . $field_id_name . '>';
-            $content .= '<option value="" disabled selected style="display:none;">' . __('Select a value') . '</option>';
+            $content .= '<option value="" disabled selected style="display:none;">' . $placeholder . '</option>';
             foreach ($field['datas'] as $key => $val) {
                 $content .= '<option ' . (!empty($field['value']) && $field['value'] == $key ? 'selected="selected"' : '') . ' value="' . esc_attr($key) . '">' . $val . '</option>';
             }

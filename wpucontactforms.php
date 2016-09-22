@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.5
+Version: 0.5.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.5';
+    private $plugin_version = '0.5.1';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -151,8 +151,17 @@ class wpucontactforms {
                 $this->contact_fields[$id]['label'] = ucfirst(str_replace('contact_', '', $id));
             }
 
-            if (!isset($field['datas']) || !is_array($field['datas'])) {
+            if (!isset($field['datas'])) {
                 $this->contact_fields[$id]['datas'] = $this->default_field['datas'];
+            }
+
+            if (!is_array($field['datas'])) {
+                $values = explode("\n", get_option($field['datas']));
+                $this->contact_fields[$id]['datas'] = array();
+                foreach ($values as $val) {
+                    $val = trim($val);
+                    $this->contact_fields[$id]['datas'][$val] = $val;
+                }
             }
         }
 
@@ -566,7 +575,7 @@ function wpucontactforms_submit_contactform__savepost__objects() {
             'public' => true,
             'taxonomies' => array('contact_form'),
             'publicly_queryable' => false,
-            'has_archive' => false,
+            'has_archive' => false
         )
     );
 

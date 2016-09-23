@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.5.2
+Version: 0.5.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.5.2';
+    private $plugin_version = '0.5.3';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -160,7 +160,7 @@ class wpucontactforms {
                 $this->contact_fields[$id]['datas'] = array();
                 foreach ($values as $val) {
                     $val = trim($val);
-                    $this->contact_fields[$id]['datas'][$val] = $val;
+                    $this->contact_fields[$id]['datas'][md5($val)] = $val;
                 }
             }
         }
@@ -254,7 +254,7 @@ class wpucontactforms {
         switch ($field['type']) {
         case 'select':
             $content .= '<select  ' . $field_id_name . '>';
-            $content .= '<option value="" disabled selected style="display:none;">' . $placeholder . '</option>';
+            $content .= '<option value="" disabled selected style="display:none;">' . esc_html($placeholder) . '</option>';
             foreach ($field['datas'] as $key => $val) {
                 $content .= '<option ' . (!empty($field['value']) && $field['value'] == $key ? 'selected="selected"' : '') . ' value="' . esc_attr($key) . '">' . $val . '</option>';
             }

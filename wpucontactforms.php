@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.5.3
+Version: 0.6.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.5.3';
+    private $plugin_version = '0.6.0';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -70,7 +70,10 @@ class wpucontactforms {
             'validation_pattern' => '',
             'html_before' => '',
             'html_after' => '',
+            'html_before_input' => '',
+            'html_after_input' => '',
             'box_class' => '',
+            'classname' => '',
             'placeholder' => '',
             'required' => 0,
             'datas' => array(
@@ -92,10 +95,12 @@ class wpucontactforms {
         $contact__settings = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
             'box_class' => 'box',
+            'input_class' => 'input-text',
             'display_form_after_submit' => true,
             'label_text_required' => '<em>*</em>',
             'submit_class' => 'cssc-button cssc-button--default',
             'submit_label' => __('Submit', 'wpucontactforms'),
+            'submit_type' => 'button',
             'group_submit_class' => '',
             'box_tagname' => 'div',
             'group_tagname' => 'div',
@@ -199,8 +204,12 @@ class wpucontactforms {
         foreach ($hidden_fields as $name => $value) {
             $content_form .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" />';
         }
-        $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit">' . $this->options['contact__settings']['submit_label'] . '</button>
-        </' . $this->options['contact__settings']['box_tagname'] . '>';
+        if ($this->options['contact__settings']['submit_type'] == 'button') {
+            $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit">' . $this->options['contact__settings']['submit_label'] . '</button>';
+        } else {
+            $content_form .= '<input class="' . $this->options['contact__settings']['submit_class'] . '" type="submit" value="' . esc_attr($this->options['contact__settings']['submit_label']) . '">';
+        }
+        $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         $content_form .= '</form>';
@@ -227,6 +236,17 @@ class wpucontactforms {
         if ($field['required']) {
             $field_id_name .= ' required="required"';
         }
+        // Classname
+        $classname = '';
+        if ($this->options['contact__settings']['input_class']) {
+            $classname = $this->options['contact__settings']['input_class'];
+        }
+        if ($field['classname']) {
+            $classname = $field['classname'];
+        }
+        if ($classname) {
+            $field_id_name .= ' class="' . esc_attr($classname) . '"';
+        }
         // Placeholder
         $placeholder = __('Select a value');
         if (!empty($field['placeholder'])) {
@@ -251,6 +271,9 @@ class wpucontactforms {
         if (!empty($label_content)) {
             $content .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $label_content . '</label>';
         }
+
+        $content .= $field['html_before_input'];
+
         switch ($field['type']) {
         case 'select':
             $content .= '<select  ' . $field_id_name . '>';
@@ -267,14 +290,17 @@ class wpucontactforms {
             $content = '<label id="label-' . $id . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' value="1" />' . $after_checkbox . ' ' . $label_content . '</label>';
             break;
         case 'text':
+        case 'tel':
         case 'url':
         case 'email':
             $content .= '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'textarea':
-            $content .= '<textarea cols="30" rows="5" ' . $field_id_name . '>' . $field['value'] . '</textarea>';
+            $content .= '<textarea cols="30" rows="10" ' . $field_id_name . '>' . $field['value'] . '</textarea>';
             break;
         }
+
+        $content .= $field['html_after_input'];
 
         return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' ' . $field['box_class'] . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
     }

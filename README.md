@@ -57,15 +57,17 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **box_class** : 'box'
 * **box_tagname** : 'div'
 * **display_form_after_submit** : true
-* **file_types ** :  'file_types' => array('image/png','image/jpg','image/jpeg','image/gif'),
+* **file_types** :  'file_types' => array('image/png','image/jpg','image/jpeg','image/gif'),
 * **group_class** : 'cssc-form cssc-form--default float-form'
 * **group_submit_class** : ''
 * **group_tagname** : 'div'
+* **input_class** : (string) Field classname.
 * **label_text_required** : '<em>*</em>'
 * **li_submit_class** : ''
 * **max_file_size** :  2 * 1024 * 1024
 * **submit_class** : 'cssc-button cssc-button--default'
 * **submit_label** : 'Submit'
+* **submit_type** : 'button' or 'input'
 * **ul_class** : 'cssc-form cssc-form--default float-form'
 
 ### Fields
@@ -73,6 +75,7 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **value** : (string) Default value.
 * **label** : (string) Field name.
 * **placeholder** : (string) Placeholder text in input content.
+* **classname** : (string) Field classname.
 * **type** : (string) Field type : text, url, email, textarea, select, checkbox.
 * **datas** : (array) 1dim array setting datas for select.
 * **required** : (bool) Field is required.
@@ -80,6 +83,8 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **html_after** : (string) HTML after LI box.
 * **html_before_checkbox** : (string) HTML before a checkbox input.
 * **html_after_checkbox** : (string) HTML after a checkbox input.
+* **html_before_input** : (string) HTML before a common input.
+* **html_after_input** : (string) HTML after a common input.
 * **box_class** : (string) LI Box CSS Class
 * **validation_pattern** : (string) HTML Pattern for validation.
 * **validation_regexp** : (string) Regexp Pattern for validation.

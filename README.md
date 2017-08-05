@@ -77,6 +77,7 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **placeholder** : (string) Placeholder text in input content.
 * **classname** : (string) Field classname.
 * **type** : (string) Field type : text, url, email, textarea, select, checkbox.
+* **autofill** : (string) User meta ID to autocomplete if user is logged in. user_email works too.
 * **datas** : (array) 1dim array setting datas for select.
 * **required** : (bool) Field is required.
 * **html_before** : (string) HTML before LI box.

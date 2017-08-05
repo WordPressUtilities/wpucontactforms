@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.6.0
+Version: 0.7.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.6.0';
+    private $plugin_version = '0.7.0';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -33,6 +33,12 @@ class wpucontactforms {
         add_action('wpucontactforms_content', array(&$this,
             'page_content'
         ), 10, 2);
+        add_action('wp_ajax_wpucontactforms_autofill', array(&$this,
+            'ajax_action_autofill'
+        ));
+        add_action('wp_ajax_nopriv_wpucontactforms_autofill', array(&$this,
+            'ajax_action_autofill'
+        ));
 
         if ($this->options['contact__settings']['ajax_enabled']) {
             add_action('wp_ajax_wpucontactforms', array(&$this,
@@ -158,6 +164,7 @@ class wpucontactforms {
 
             if (!isset($field['datas'])) {
                 $this->contact_fields[$id]['datas'] = $this->default_field['datas'];
+                $field['datas'] = $this->default_field['datas'];
             }
 
             if (!is_array($field['datas'])) {
@@ -178,13 +185,19 @@ class wpucontactforms {
             return '';
         }
 
+        $form_autofill = false;
         $content_form = '';
+        $content_fields = '';
+        foreach ($this->contact_fields as $field) {
+            $content_fields .= $this->field_content($field);
+            if (isset($field['autofill'])) {
+                $form_autofill = true;
+            }
+        }
 
         // Display contact form
-        $content_form .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data' : '') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
-        foreach ($this->contact_fields as $field) {
-            $content_form .= $this->field_content($field);
-        }
+        $content_form .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data' : '') . '"  data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
+        $content_form .= $content_fields;
 
         /* Quick honeypot */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
@@ -473,6 +486,30 @@ class wpucontactforms {
         }
         $this->post_contact();
         $this->page_content(true, $this->options['id']);
+        die;
+    }
+
+    public function ajax_action_autofill() {
+        if (!isset($_POST['form_id']) || $_POST['form_id'] != $this->options['id']) {
+            return;
+        }
+        if (!is_user_logged_in()) {
+            echo '{}';
+        }
+        $response = array();
+        $user_id = get_current_user_id();
+        $user_info = get_userdata($user_id);
+        foreach ($this->contact_fields as $id => $field) {
+            if (!isset($field['autofill'])) {
+                continue;
+            }
+            if ($field['autofill'] == 'user_email') {
+                $response[$id] = $user_info->user_email;
+            } else {
+                $response[$id] = get_user_meta($user_id, $field['autofill'], 1);
+            }
+        }
+        echo json_encode($response);
         die;
     }
 }

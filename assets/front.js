@@ -30,6 +30,9 @@ function set_wpucontactforms_form($wrapper) {
     function ajax_success() {
         $wrapper.removeClass('contact-form-is-loading');
         $wrapper.trigger('wpucontactforms_after_ajax');
+        jQuery('html, body').animate({
+            scrollTop: $wrapper.offset().top - 150
+        }, 300);
     }
 
     function autocompleteform(fields) {
@@ -49,7 +52,7 @@ function set_wpucontactforms_form($wrapper) {
     /* Special actions before AJAX send */
     $wrapper.on('wpucontactforms_before_ajax', function() {
         jQuery('html, body').animate({
-            scrollTop: $wrapper.offset().top - 50
+            scrollTop: $wrapper.offset().top
         }, 300);
     });
 

@@ -1,0 +1,31 @@
+@charset "UTF-8";
+
+/* ----------------------------------------------------------
+  Loader
+---------------------------------------------------------- */
+
+.wpucontactforms-form-wrapper {
+    z-index: 1;
+    position: relative;
+}
+
+.wpucontactforms-form-wrapper:before {
+    content: '';
+    visibility: hidden;
+    z-index: 2;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    opacity: 0;
+    background-color: rgba(255,255,255,0.8);
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.wpucontactforms-form-wrapper.contact-form-is-loading:before {
+    visibility: visible;
+    opacity: 0.999;
+}

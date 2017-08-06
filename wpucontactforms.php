@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.7.0
+Version: 0.7.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.7.0';
+    private $plugin_version = '0.7.1';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -58,6 +58,7 @@ class wpucontactforms {
         wp_enqueue_script('wpucontactforms-front', plugins_url('assets/front.js', __FILE__), array(
             'jquery'
         ), $this->plugin_version, true);
+        wp_enqueue_style('wpucontactforms-frontcss', plugins_url('assets/front.css', __FILE__), array(), $this->plugin_version, 'all');
 
         // Pass Ajax Url to script.js
         wp_localize_script('wpucontactforms-front', 'ajaxurl', admin_url('admin-ajax.php'));
@@ -406,6 +407,7 @@ class wpucontactforms {
                 } else {
 
                     if ($field['type'] == 'select') {
+                        $contact_fields[$id]['value_select'] = $tmp_value;
                         $tmp_value = $field['datas'][$tmp_value];
                     }
 
@@ -580,7 +582,7 @@ function wpucontactforms_submit_contactform__sendmail($form) {
     if (is_email($wpu_opt_email)) {
         $target_email = $wpu_opt_email;
     }
-    $target_email = apply_filters('wpucontactforms_email', $target_email, $form->options);
+    $target_email = apply_filters('wpucontactforms_email', $target_email, $form->options, $form->contact_fields);
 
     foreach ($form->contact_fields as $id => $field) {
 

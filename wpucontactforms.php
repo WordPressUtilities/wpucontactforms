@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.7.1
+Version: 0.8.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.7.1';
+    private $plugin_version = '0.8.0';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -101,45 +101,46 @@ class wpucontactforms {
         // Settings
         $contact__settings = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
+            'attach_to_post' => get_the_ID(),
             'box_class' => 'box',
-            'input_class' => 'input-text',
+            'box_tagname' => 'div',
             'display_form_after_submit' => true,
+            'group_class' => 'cssc-form cssc-form--default float-form',
+            'group_submit_class' => '',
+            'group_tagname' => 'div',
+            'input_class' => 'input-text',
             'label_text_required' => '<em>*</em>',
+            'max_file_size' => 2 * 1024 * 1024,
             'submit_class' => 'cssc-button cssc-button--default',
             'submit_label' => __('Submit', 'wpucontactforms'),
             'submit_type' => 'button',
-            'group_submit_class' => '',
-            'box_tagname' => 'div',
-            'group_tagname' => 'div',
-            'group_class' => 'cssc-form cssc-form--default float-form',
+            'contact_fields' => array(
+                'contact_name' => array(
+                    'label' => __('Name', 'wpucontactforms'),
+                    'required' => 1
+                ),
+                'contact_email' => array(
+                    'label' => __('Email', 'wpucontactforms'),
+                    'type' => 'email',
+                    'required' => 1
+                ),
+                'contact_message' => array(
+                    'label' => __('Message', 'wpucontactforms'),
+                    'type' => 'textarea',
+                    'required' => 1
+                )
+            ),
             'file_types' => array(
                 'image/png',
                 'image/jpg',
                 'image/jpeg',
                 'image/gif'
-            ),
-            'max_file_size' => 2 * 1024 * 1024,
-            'attach_to_post' => get_the_ID()
+            )
         ));
 
         $this->options['contact__settings'] = array_merge($contact__settings, $this->options['contact__settings']);
 
-        $this->contact_fields = apply_filters('wpucontactforms_fields', array(
-            'contact_name' => array(
-                'label' => __('Name', 'wpucontactforms'),
-                'required' => 1
-            ),
-            'contact_email' => array(
-                'label' => __('Email', 'wpucontactforms'),
-                'type' => 'email',
-                'required' => 1
-            ),
-            'contact_message' => array(
-                'label' => __('Message', 'wpucontactforms'),
-                'type' => 'textarea',
-                'required' => 1
-            )
-        ), $this->options);
+        $this->contact_fields = apply_filters('wpucontactforms_fields', $this->options['contact__settings']['contact_fields'], $this->options);
 
         // Testing missing settings
         foreach ($this->contact_fields as $id => $field) {
@@ -245,7 +246,12 @@ class wpucontactforms {
         $content = '';
         $id = $field['id'];
         $id_html = $this->options['id'] . '_' . $id;
-        $field_id_name = ' id="' . $id_html . '" name="' . $id . '" aria-labelledby="label-' . $id . '" aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
+        $field_id_name = '';
+        if ($field['type'] != 'radio') {
+            $field_id_name .= ' id="' . $id_html . '"';
+        }
+
+        $field_id_name .= ' name="' . $id . '" aria-labelledby="label-' . $id . '" aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
         // Required
         if ($field['required']) {
             $field_id_name .= ' required="required"';
@@ -296,6 +302,11 @@ class wpucontactforms {
                 $content .= '<option ' . (!empty($field['value']) && $field['value'] == $key ? 'selected="selected"' : '') . ' value="' . esc_attr($key) . '">' . $val . '</option>';
             }
             $content .= '</select>';
+            break;
+        case 'radio':
+            foreach ($field['datas'] as $key => $val) {
+                $content .= '<label id="label-' . $id . $key . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ' . $val . '</label>';
+            }
             break;
         case 'file':
             $content .= '<input type="file" accept="' . implode(',', $this->options['contact__settings']['file_types']) . '" ' . $field_id_name . ' ' . $field_val . ' />';
@@ -406,7 +417,7 @@ class wpucontactforms {
                     $this->msg_errors[] = sprintf(__('The field "%s" is not correct', 'wpucontactforms'), $field['label']);
                 } else {
 
-                    if ($field['type'] == 'select') {
+                    if ($field['type'] == 'select' || $field['type'] == 'radio') {
                         $contact_fields[$id]['value_select'] = $tmp_value;
                         $tmp_value = $field['datas'][$tmp_value];
                     }

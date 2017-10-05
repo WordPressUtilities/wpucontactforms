@@ -36,12 +36,42 @@ function set_wpucontactforms_form($wrapper) {
     }
 
     function autocompleteform(fields) {
+        var $field;
         for (var i in fields) {
             if (!fields.hasOwnProperty(i)) {
                 continue;
             }
-            $wrapper.find('[name="' + i + '"]').val(fields[i]);
+            $field = $wrapper.find('[name="' + i + '"]');
+            if (typeof fields[i] != 'string') {
+                transformInputIntoSelect($field, fields[i]);
+            }
+            else {
+                $field.val(fields[i]);
+            }
         }
+    }
+
+    function transformInputIntoSelect($field, $values) {
+        var $new_field = jQuery('<select></select>');
+
+        $new_field.attr('aria-labelledby',$field.attr('aria-labelledby'));
+        $new_field.attr('aria-required',$field.attr('aria-required'));
+        $new_field.attr('class',$field.attr('class'));
+        $new_field.attr('id',$field.attr('id'));
+        $new_field.attr('name',$field.attr('name'));
+        $new_field.attr('placeholder',$field.attr('placeholder'));
+        if($field.attr('required')){
+            $new_field.attr('required',$field.attr('required'));
+        }
+
+        jQuery.each($values, function(key, value) {
+            $new_field.append(jQuery("<option></option>").attr("value", key).text(value));
+        });
+
+        $new_field.appendTo($field.parent());
+        $field.remove();
+
+        return $new_field;
     }
 
     /* Events -------------------------- */

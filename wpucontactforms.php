@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.8.0
+Version: 0.9.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.8.0';
+    private $plugin_version = '0.9.0';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -268,7 +268,7 @@ class wpucontactforms {
             $field_id_name .= ' class="' . esc_attr($classname) . '"';
         }
         // Placeholder
-        $placeholder = __('Select a value');
+        $placeholder = __('Select a value', 'wpucontactforms');
         if (!empty($field['placeholder'])) {
             $field_id_name .= ' placeholder="' . esc_attr($field['placeholder']) . '"';
             $placeholder = $field['placeholder'];
@@ -518,6 +518,23 @@ class wpucontactforms {
             }
             if ($field['autofill'] == 'user_email') {
                 $response[$id] = $user_info->user_email;
+            } elseif ($field['autofill'] == 'woocommerce_orders') {
+                $customer_orders = get_posts(array(
+                    'numberposts' => -1,
+                    'meta_key' => '_customer_user',
+                    'meta_value' => $user_id,
+                    'post_type' => wc_get_order_types(),
+                    'post_status' => array_keys(wc_get_order_statuses())
+                ));
+                $response[$id] = array();
+                if (!empty($customer_orders)) {
+                    $response[$id][] = __('Select an order', 'wpucontactforms');
+                    foreach ($customer_orders as $order) {
+                        $response[$id][$order->ID] = sprintf(__('# %s', 'wpucontactforms'), $order->ID);
+                    }
+                } else {
+                    $response[$id] = array(__('No order available', 'wpucontactforms'));
+                }
             } else {
                 $response[$id] = get_user_meta($user_id, $field['autofill'], 1);
             }

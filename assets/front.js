@@ -54,14 +54,14 @@ function set_wpucontactforms_form($wrapper) {
     function transformInputIntoSelect($field, $values) {
         var $new_field = jQuery('<select></select>');
 
-        $new_field.attr('aria-labelledby',$field.attr('aria-labelledby'));
-        $new_field.attr('aria-required',$field.attr('aria-required'));
-        $new_field.attr('class',$field.attr('class'));
-        $new_field.attr('id',$field.attr('id'));
-        $new_field.attr('name',$field.attr('name'));
-        $new_field.attr('placeholder',$field.attr('placeholder'));
-        if($field.attr('required')){
-            $new_field.attr('required',$field.attr('required'));
+        $new_field.attr('aria-labelledby', $field.attr('aria-labelledby'));
+        $new_field.attr('aria-required', $field.attr('aria-required'));
+        $new_field.attr('class', $field.attr('class'));
+        $new_field.attr('id', $field.attr('id'));
+        $new_field.attr('name', $field.attr('name'));
+        $new_field.attr('placeholder', $field.attr('placeholder'));
+        if ($field.attr('required')) {
+            $new_field.attr('required', $field.attr('required'));
         }
 
         jQuery.each($values, function(key, value) {

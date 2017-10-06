@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.9.0
+Version: 0.10.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.9.0';
+    private $plugin_version = '0.10.0';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -177,6 +177,12 @@ class wpucontactforms {
                     $this->contact_fields[$id]['datas'][md5($val)] = $val;
                 }
             }
+
+            /* Loading values */
+            if (empty($field['value']) && isset($field['preload_value']) && !isset($field['autofill']) && !isset($_POST[$id]) && isset($_GET[$id]) && $this->validate_field($_GET[$id], $field)) {
+                $this->contact_fields[$id]['value'] = $_GET[$id];
+            }
+
         }
 
     }
@@ -605,10 +611,9 @@ function wpucontactforms_submit_contactform__sendmail($form) {
     );
 
     // Target Email
-    $target_email = get_option('admin_email');
-    $wpu_opt_email = get_option('wpu_opt_email');
-    if (is_email($wpu_opt_email)) {
-        $target_email = $wpu_opt_email;
+    $target_email = get_option('wpu_opt_email');
+    if (!is_email($target_email)) {
+        $target_email = get_option('admin_email');
     }
     $target_email = apply_filters('wpucontactforms_email', $target_email, $form->options, $form->contact_fields);
 

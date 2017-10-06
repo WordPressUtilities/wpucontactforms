@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2017-10-05 12:19+0200\n"
+"POT-Creation-Date: 2017-10-06 23:51+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -15,11 +15,11 @@ msgstr ""
 "X-Poedit-KeywordsList: __;_e\n"
 "X-Poedit-SearchPath-0: ../.\n"
 
-#: .././wpucontactforms.php:87 .././wpucontactforms.php:426
+#: .././wpucontactforms.php:87 .././wpucontactforms.php:432
 msgid "No"
 msgstr "Non"
 
-#: .././wpucontactforms.php:88 .././wpucontactforms.php:426
+#: .././wpucontactforms.php:88 .././wpucontactforms.php:432
 msgid "Yes"
 msgstr "Oui"
 
@@ -39,54 +39,54 @@ msgstr "Nom"
 msgid "Email"
 msgstr "E-mail"
 
-#: .././wpucontactforms.php:128 .././wpucontactforms.php:667
+#: .././wpucontactforms.php:128 .././wpucontactforms.php:672
 msgid "Message"
 msgstr "Message"
 
-#: .././wpucontactforms.php:271
+#: .././wpucontactforms.php:277
 msgid "Select a value"
 msgstr "Sélectionnez une valeur"
 
-#: .././wpucontactforms.php:375
+#: .././wpucontactforms.php:381
 msgid "Error:"
 msgstr "Erreur :"
 
-#: .././wpucontactforms.php:417
+#: .././wpucontactforms.php:423
 #, php-format
 msgid "The field \"%s\" is not correct"
 msgstr "Le champ \"%s\" n'est pas correct"
 
-#: .././wpucontactforms.php:437
+#: .././wpucontactforms.php:443
 #, php-format
 msgid "The field \"%s\" is required"
 msgstr "Le champ \"%s\" est obligatoire"
 
-#: .././wpucontactforms.php:531
+#: .././wpucontactforms.php:537
 msgid "Select an order"
 msgstr "Sélectionner une commande"
 
-#: .././wpucontactforms.php:533
+#: .././wpucontactforms.php:539
 #, php-format
 msgid "# %s"
 msgstr "N° %s"
 
-#: .././wpucontactforms.php:536
+#: .././wpucontactforms.php:542
 msgid "No order available"
 msgstr "Aucune commande disponible"
 
-#: .././wpucontactforms.php:581
+#: .././wpucontactforms.php:587
 #, php-format
 msgid "No more than %s links, please"
 msgstr "Pas plus de %s liens, s'il vous plaît"
 
-#: .././wpucontactforms.php:597 .././wpucontactforms.php:598
+#: .././wpucontactforms.php:603 .././wpucontactforms.php:604
 msgid "Message from your contact form"
 msgstr "Message depuis votre formulaire de contact"
 
-#: .././wpucontactforms.php:657
+#: .././wpucontactforms.php:662
 msgid "Form"
 msgstr "Formulaire"
 
-#: .././wpucontactforms.php:666
+#: .././wpucontactforms.php:671
 msgid "Messages"
 msgstr "Messages"

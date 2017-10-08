@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.10.1
+Version: 0.10.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.10.1';
+    private $plugin_version = '0.10.2';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -70,19 +70,20 @@ class wpucontactforms {
         $this->has_upload = false;
         $this->content_contact = '';
         $this->default_field = array(
-            'value' => '',
-            'type' => 'text',
-            'validation' => '',
-            'validation_regexp' => '',
-            'validation_pattern' => '',
-            'html_before' => '',
-            'html_after' => '',
-            'html_before_input' => '',
-            'html_after_input' => '',
             'box_class' => '',
             'classname' => '',
+            'html_after' => '',
+            'html_after_input' => '',
+            'html_before' => '',
+            'html_before_input' => '',
             'placeholder' => '',
+            'preload_value' => 0,
             'required' => 0,
+            'type' => 'text',
+            'validation' => '',
+            'validation_pattern' => '',
+            'validation_regexp' => '',
+            'value' => '',
             'datas' => array(
                 __('No', 'wpucontactforms'),
                 __('Yes', 'wpucontactforms')
@@ -178,8 +179,8 @@ class wpucontactforms {
                 }
             }
 
-            /* Loading values */
-            if (empty($field['value']) && isset($field['preload_value']) && !isset($field['autofill']) && !isset($_POST[$id]) && isset($_GET[$id]) && $this->validate_field($_GET[$id], $field)) {
+            /* Preloading value from URL param */
+            if (empty($field['value']) && $field['preload_value'] && !isset($field['autofill']) && !isset($_POST[$id]) && isset($_GET[$id]) && $this->validate_field($_GET[$id], $field)) {
                 $this->contact_fields[$id]['value'] = $_GET[$id];
             }
 
@@ -539,7 +540,9 @@ class wpucontactforms {
                         $response[$id][$order->ID] = sprintf(__('# %s', 'wpucontactforms'), $order->ID);
                     }
                 } else {
-                    $response[$id] = array(__('No order available', 'wpucontactforms'));
+                    if (apply_filters('wpucontactforms_autofill_woocommerce_orders__default_text', true, $id)) {
+                        $response[$id] = array(__('No order available', 'wpucontactforms'));
+                    }
                 }
             } else {
                 $response[$id] = get_user_meta($user_id, $field['autofill'], 1);

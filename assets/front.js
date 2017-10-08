@@ -52,6 +52,9 @@ function set_wpucontactforms_form($wrapper) {
     }
 
     function transformInputIntoSelect($field, $values) {
+        if($values.length < 1){
+            return $field;
+        }
         var $new_field = jQuery('<select></select>');
 
         $new_field.attr('aria-labelledby', $field.attr('aria-labelledby'));

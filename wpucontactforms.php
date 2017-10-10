@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.10.2
+Version: 0.10.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.10.2';
+    private $plugin_version = '0.10.3';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -526,18 +526,16 @@ class wpucontactforms {
             if ($field['autofill'] == 'user_email') {
                 $response[$id] = $user_info->user_email;
             } elseif ($field['autofill'] == 'woocommerce_orders') {
-                $customer_orders = get_posts(array(
-                    'numberposts' => -1,
-                    'meta_key' => '_customer_user',
-                    'meta_value' => $user_id,
-                    'post_type' => wc_get_order_types(),
-                    'post_status' => array_keys(wc_get_order_statuses())
-                ));
                 $response[$id] = array();
+                $customer_orders = array();
+                if (function_exists('wc_get_orders')) {
+                    $customer_orders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', array('customer' => $user_id)));
+                }
                 if (!empty($customer_orders)) {
                     $response[$id][] = __('Select an order', 'wpucontactforms');
                     foreach ($customer_orders as $order) {
-                        $response[$id][$order->ID] = sprintf(__('# %s', 'wpucontactforms'), $order->ID);
+                        $order_id = $order->get_id();
+                        $response[$id][$order_id] = sprintf(__('# %s', 'wpucontactforms'), $order_id);
                     }
                 } else {
                     if (apply_filters('wpucontactforms_autofill_woocommerce_orders__default_text', true, $id)) {

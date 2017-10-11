@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.10.3
+Version: 0.10.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.10.3';
+    private $plugin_version = '0.10.4';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -177,6 +177,10 @@ class wpucontactforms {
                     $val = trim($val);
                     $this->contact_fields[$id]['datas'][md5($val)] = $val;
                 }
+            }
+
+            if (!isset($field['preload_value'])) {
+                $field['preload_value'] = false;
             }
 
             /* Preloading value from URL param */
@@ -529,7 +533,12 @@ class wpucontactforms {
                 $response[$id] = array();
                 $customer_orders = array();
                 if (function_exists('wc_get_orders')) {
-                    $customer_orders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', array('customer' => $user_id)));
+                    /* Add native filters */
+                    $orders_account_query = apply_filters('woocommerce_my_account_my_orders_query', array('customer' => $user_id));
+                    /* Add custom filters */
+                    $orders_account_query = apply_filters('wpucontactforms_autofill_woocommerce_orders__query', $orders_account_query);
+                    /* Launch query */
+                    $customer_orders = wc_get_orders($orders_account_query);
                 }
                 if (!empty($customer_orders)) {
                     $response[$id][] = __('Select an order', 'wpucontactforms');

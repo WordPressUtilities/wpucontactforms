@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.10.4
+Version: 0.10.5
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.10.4';
+    private $plugin_version = '0.10.5';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -94,6 +94,7 @@ class wpucontactforms {
         $default_options = array(
             'id' => 'default',
             'name' => 'Default',
+            'contact__display_form_after_success' => apply_filters('wpucontactforms_display_form_after_success', true),
             'contact__success' => apply_filters('wpucontactforms_success', '<p class="contact-success">' . __('Thank you for your message!', 'wpucontactforms') . '</p>'),
             'contact__settings' => array()
         );
@@ -247,7 +248,9 @@ class wpucontactforms {
             echo '<div class="wpucontactforms-form-wrapper">';
         }
         echo $this->content_contact;
-        echo $content_form;
+        if (!$this->is_successful || ($this->is_successful && $this->options['contact__display_form_after_success'])) {
+            echo $content_form;
+        }
         if ($hide_wrapper !== true) {
             echo '</div>';
         }

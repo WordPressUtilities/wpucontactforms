@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.10.5
+Version: 0.10.6
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.10.5';
+    private $plugin_version = '0.10.6';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -221,18 +221,17 @@ class wpucontactforms {
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
-        $default_hidden_fields = array(
+        $hidden_fields = apply_filters('wpucontactforms_hidden_fields', array(
             'form_id' => $form_id,
             'control_stripslashes' => '&quot;',
             'wpucontactforms_send' => '1',
             'action' => 'wpucontactforms'
-        );
-        $hidden_fields = apply_filters('wpucontactforms_hidden_fields', $default_hidden_fields, $this->options);
+        ), $this->options);
         foreach ($hidden_fields as $name => $value) {
             $content_form .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" />';
         }
         if ($this->options['contact__settings']['submit_type'] == 'button') {
-            $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit">' . $this->options['contact__settings']['submit_label'] . '</button>';
+            $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit"><span>' . $this->options['contact__settings']['submit_label'] . '</span></button>';
         } else {
             $content_form .= '<input class="' . $this->options['contact__settings']['submit_class'] . '" type="submit" value="' . esc_attr($this->options['contact__settings']['submit_label']) . '">';
         }
@@ -262,10 +261,10 @@ class wpucontactforms {
         $id_html = $this->options['id'] . '_' . $id;
         $field_id_name = '';
         if ($field['type'] != 'radio') {
-            $field_id_name .= ' id="' . $id_html . '"';
+            $field_id_name .= ' id="' . $id_html . '" aria-labelledby="label-' . $id . '"';
         }
 
-        $field_id_name .= ' name="' . $id . '" aria-labelledby="label-' . $id . '" aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
+        $field_id_name .= ' name="' . $id . '"  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
         // Required
         if ($field['required']) {
             $field_id_name .= ' required="required"';

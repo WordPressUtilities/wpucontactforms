@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.10.6
+Version: 0.11.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.10.6';
+    private $plugin_version = '0.11.0';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -76,6 +76,7 @@ class wpucontactforms {
             'html_after_input' => '',
             'html_before' => '',
             'html_before_input' => '',
+            'input_inside_label' => true,
             'placeholder' => '',
             'preload_value' => 0,
             'required' => 0,
@@ -108,7 +109,7 @@ class wpucontactforms {
             'box_tagname' => 'div',
             'display_form_after_submit' => true,
             'group_class' => 'cssc-form cssc-form--default float-form',
-            'group_submit_class' => '',
+            'group_submit_class' => 'box--submit',
             'group_tagname' => 'div',
             'input_class' => 'input-text',
             'label_text_required' => '<em>*</em>',
@@ -318,7 +319,16 @@ class wpucontactforms {
             break;
         case 'radio':
             foreach ($field['datas'] as $key => $val) {
-                $content .= '<label id="label-' . $id . $key . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ' . $val . '</label>';
+                $label_for = 'input-' . $id . $key;
+                $input_radio_label_before = '<label for="' . $label_for . '" id="label-' . $id . $key . '" class="label-checkbox">';
+                if ($field['input_inside_label']) {
+                    $content .= $input_radio_label_before;
+                }
+                $content .= $before_checkbox . '<input type="' . $field['type'] . '" id="' . $label_for . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ';
+                if (!$field['input_inside_label']) {
+                    $content .= $input_radio_label_before;
+                }
+                $content .= $val . '</label>';
             }
             break;
         case 'file':
@@ -340,7 +350,12 @@ class wpucontactforms {
 
         $content .= $field['html_after_input'];
 
-        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' ' . $field['box_class'] . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
+        $box_class_name = $this->options['contact__settings']['box_class'];
+        $box_class = $box_class_name;
+        $box_class .= ' ' . $box_class_name . '--' . $id;
+        $box_class .= $field['box_class'];
+
+        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
     }
 
     public function post_contact() {

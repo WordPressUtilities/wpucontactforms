@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2017-11-27 16:39+0100\n"
+"POT-Creation-Date: 2017-12-05 23:50+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -39,7 +39,7 @@ msgstr "Nom"
 msgid "Email"
 msgstr "E-mail"
 
-#: .././wpucontactforms.php:131 .././wpucontactforms.php:699
+#: .././wpucontactforms.php:131 .././wpucontactforms.php:703
 msgid "Message"
 msgstr "Message"
 
@@ -83,10 +83,25 @@ msgstr "Pas plus de %s liens, s'il vous plaît"
 msgid "Message from your contact form"
 msgstr "Message depuis votre formulaire de contact"
 
-#: .././wpucontactforms.php:689
+#: .././wpucontactforms.php:693
 msgid "Form"
 msgstr "Formulaire"
 
-#: .././wpucontactforms.php:698
+#: .././wpucontactforms.php:702
 msgid "Messages"
 msgstr "Messages"
+
+#: .././wpucontactforms.php:739
+msgid "New message"
+msgstr "Nouveau message"
+
+#: .././wpucontactforms.php:749
+#, php-format
+msgid "New message from %s"
+msgstr "Nouveau message de %s"
+
+#~ msgid "New email"
+#~ msgstr "Nouvel e-mail"
+
+#~ msgid "New email from %s"
+#~ msgstr "Nouvel e-mail de %s"

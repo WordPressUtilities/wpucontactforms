@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.11.0
+Version: 0.11.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.11.0';
+    private $plugin_version = '0.11.1';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -628,7 +628,7 @@ add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contact
 function wpucontactforms_submit_contactform__sendmail($form) {
 
     $sendmail_intro = apply_filters('wpucontactforms__sendmail_intro', '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>', $form);
-    $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', __('Message from your contact form', 'wpucontactforms'), $form);
+    $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', '[' . get_bloginfo('name') . ']' . __('Message from your contact form', 'wpucontactforms'), $form);
 
     // Send mail
     $mail_content = $sendmail_intro;
@@ -654,6 +654,10 @@ function wpucontactforms_submit_contactform__sendmail($form) {
             // Add to mail attachments
             $more['attachments'][] = get_attached_file($form->contact_fields[$id]['value']);
             continue;
+        }
+
+        if ($field['type'] == 'textarea') {
+            $field['value'] = nl2br($field['value']);
         }
 
         // Emptying values
@@ -724,13 +728,30 @@ function wpucontactforms_submit_contactform__savepost($form) {
             continue;
         }
 
+        if ($field['type'] == 'textarea') {
+            $field['value'] = nl2br($field['value']);
+        }
+
         $post_content .= '<p><strong>' . $field['label'] . '</strong>:<br />' . $field['value'] . '</p><hr />';
         $post_metas[$id] = $field['value'];
     }
 
+    $default_post_title = __('New message', 'wpucontactforms');
+    $from_name = '';
+    if (isset($form->contact_fields['contact_firstname'])) {
+        $from_name = $form->contact_fields['contact_firstname']['value'];
+    }
+    if (isset($form->contact_fields['contact_name'])) {
+        $from_name .= ' ' . $form->contact_fields['contact_name']['value'];
+        $from_name = trim($from_name);
+    }
+    if (!empty($from_name)) {
+        $default_post_title = sprintf(__('New message from %s', 'wpucontactforms'), $from_name);
+    }
+
     // Create post
     $post_id = wp_insert_post(array(
-        'post_title' => apply_filters('wpucontactforms__createpost_post_title', 'New email', $form),
+        'post_title' => apply_filters('wpucontactforms__createpost_post_title', $default_post_title, $form),
         'post_type' => apply_filters('wpucontactforms__createpost_post_type', 'contact_message', $form),
         'post_content' => apply_filters('wpucontactforms__createpost_post_content', $post_content, $form),
         'post_author' => apply_filters('wpucontactforms__createpost_postauthor', 1, $form),

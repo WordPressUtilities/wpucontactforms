@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.11.1
+Version: 0.11.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.11.1';
+    private $plugin_version = '0.11.2';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -107,6 +107,12 @@ class wpucontactforms {
             'attach_to_post' => get_the_ID(),
             'box_class' => 'box',
             'box_tagname' => 'div',
+            'content_before_wrapper_open' => '',
+            'content_after_wrapper_open' => '',
+            'content_before_content_form' => '',
+            'content_after_content_form' => '',
+            'content_before_wrapper_close' => '',
+            'content_after_wrapper_close' => '',
             'display_form_after_submit' => true,
             'group_class' => 'cssc-form cssc-form--default float-form',
             'group_submit_class' => 'box--submit',
@@ -245,14 +251,20 @@ class wpucontactforms {
         }
 
         if ($hide_wrapper !== true) {
+            echo $this->options['contact__settings']['content_before_wrapper_open'];
             echo '<div class="wpucontactforms-form-wrapper">';
+            echo $this->options['contact__settings']['content_after_wrapper_open'];
         }
         echo $this->content_contact;
         if (!$this->is_successful || ($this->is_successful && $this->options['contact__display_form_after_success'])) {
+            echo $this->options['contact__settings']['content_before_content_form'];
             echo $content_form;
+            echo $this->options['contact__settings']['content_after_content_form'];
         }
         if ($hide_wrapper !== true) {
+            echo $this->options['contact__settings']['content_before_wrapper_close'];
             echo '</div>';
+            echo $this->options['contact__settings']['content_after_wrapper_close'];
         }
     }
 

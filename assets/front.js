@@ -14,6 +14,10 @@ jQuery(document).ready(function() {
 
 function set_wpucontactforms_form($wrapper) {
     var $form = $wrapper.find('form');
+    if ($form.attr('data-wpucontactformset') == '1') {
+        return;
+    }
+    $form.attr('data-wpucontactformset', '1');
 
     function submit_form(e) {
         e.preventDefault();
@@ -52,7 +56,7 @@ function set_wpucontactforms_form($wrapper) {
     }
 
     function transformInputIntoSelect($field, $values) {
-        if($values.length < 1){
+        if ($values.length < 1) {
             return $field;
         }
         var $new_field = jQuery('<select></select>');

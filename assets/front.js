@@ -32,6 +32,7 @@ function set_wpucontactforms_form($wrapper) {
     }
 
     function ajax_success() {
+        $form = $wrapper.find('form');
         $wrapper.removeClass('contact-form-is-loading');
         $wrapper.trigger('wpucontactforms_after_ajax');
         jQuery('html, body').animate({
@@ -84,7 +85,7 @@ function set_wpucontactforms_form($wrapper) {
     /* Events -------------------------- */
 
     /* Form submit */
-    $form.on('submit', submit_form);
+    $wrapper.on('submit', 'form', submit_form);
 
     /* Special actions before AJAX send */
     $wrapper.on('wpucontactforms_before_ajax', function() {

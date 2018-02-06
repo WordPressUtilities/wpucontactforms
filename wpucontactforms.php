@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.11.3
+Version: 0.12.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.11.3';
+    private $plugin_version = '0.12.0';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -185,6 +185,10 @@ class wpucontactforms {
                     $val = trim($val);
                     $this->contact_fields[$id]['datas'][md5($val)] = $val;
                 }
+            }
+
+            if (!isset($field['custom_validation'])) {
+                $this->contact_fields[$id]['custom_validation'] = array(&$this, 'default_validation');
             }
 
             if (!isset($field['preload_value'])) {
@@ -511,7 +515,17 @@ class wpucontactforms {
         return true;
     }
 
+    public function default_validation($tmp_value, $field) {
+        return true;
+    }
+
     public function validate_field($tmp_value, $field) {
+
+        /* Custom validation */
+        if (!call_user_func_array($field['custom_validation'], array($tmp_value, $field))) {
+            return false;
+        }
+
         $zero_one = array('0', '1');
         switch ($field['validation']) {
         case 'select':

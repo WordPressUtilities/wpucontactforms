@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.12.1
+Version: 0.13.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,9 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.12.1';
+    private $plugin_version = '0.13.0';
+
+    private $has_recaptcha = false;
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -43,6 +45,13 @@ class wpucontactforms {
             'ajax_action_autofill'
         ));
 
+        $this->has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
+        if ($this->has_recaptcha) {
+            add_action('wp_head', array(&$this,
+                'load_recaptcha'
+            ));
+        }
+
         if ($this->options['contact__settings']['ajax_enabled']) {
             add_action('wp_ajax_wpucontactforms', array(&$this,
                 'ajax_action'
@@ -54,6 +63,10 @@ class wpucontactforms {
                 'form_scripts'
             ));
         }
+    }
+
+    public function load_recaptcha() {
+        echo "<script src='https://www.google.com/recaptcha/api.js'></script>";
     }
 
     public function form_scripts() {
@@ -123,6 +136,9 @@ class wpucontactforms {
             'input_class' => 'input-text',
             'label_text_required' => '<em>*</em>',
             'max_file_size' => 2 * 1024 * 1024,
+            'recaptcha_enabled' => false,
+            'recaptcha_sitekey' => false,
+            'recaptcha_privatekey' => false,
             'submit_class' => 'cssc-button cssc-button--default',
             'submit_label' => __('Submit', 'wpucontactforms'),
             'submit_type' => 'button',
@@ -232,6 +248,12 @@ class wpucontactforms {
         $content_form .= '<label>If you are human, leave this empty</label>';
         $content_form .= '<input tabindex="-1" name="hu-man-te-st" type="text"/>';
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+
+        if ($this->has_recaptcha) {
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha">';
+            $content_form .= '<div class="g-recaptcha" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '"></div>';
+            $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        }
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
@@ -403,6 +425,28 @@ class wpucontactforms {
         // Checking bots
         if (!isset($_POST['hu-man-te-st']) || !empty($_POST['hu-man-te-st'])) {
             return;
+        }
+
+        // Recaptcha
+        if ($this->has_recaptcha) {
+            $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', array(
+                'method' => 'POST',
+                'timeout' => 45,
+                'redirection' => 5,
+                'httpversion' => '1.0',
+                'blocking' => true,
+                'headers' => array(),
+                'body' => array(
+                    'secret' => $this->options['contact__settings']['recaptcha_privatekey'],
+                    'response' => $_POST["g-recaptcha-response"]
+                ),
+                'cookies' => array()
+            ));
+            $body_response = wp_remote_retrieve_body($response);
+            $body_response_json = json_decode($body_response);
+            if(!is_object($body_response_json) || !isset($body_response_json->success) || !$body_response_json->success){
+                return;
+            }
         }
 
         $this->contact_fields = $this->extract_value_from_post($_POST, $this->contact_fields);

@@ -9,6 +9,18 @@ jQuery(document).ready(function() {
 });
 
 /* ----------------------------------------------------------
+  Recaptcha
+---------------------------------------------------------- */
+
+function wpucontactforms_recaptcha_callback_expired() {
+    jQuery('[data-recaptchavalid]').attr('data-recaptchavalid', '0');
+}
+
+function wpucontactforms_recaptcha_callback() {
+    jQuery('[data-recaptchavalid]').attr('data-recaptchavalid', '1');
+}
+
+/* ----------------------------------------------------------
   Set Contact form
 ---------------------------------------------------------- */
 
@@ -17,10 +29,15 @@ function set_wpucontactforms_form($wrapper) {
     if ($form.attr('data-wpucontactformset') == '1') {
         return;
     }
+    var has_recaptcha = (typeof grecaptcha === 'object');
     $form.attr('data-wpucontactformset', '1');
+    $form.attr('data-recaptchavalid', '0');
 
     function submit_form(e) {
         e.preventDefault();
+        if (has_recaptcha && !grecaptcha.getResponse()) {
+            return;
+        }
         $wrapper.addClass('contact-form-is-loading');
         $wrapper.find('button').attr('aria-disabled', 'true').attr('disabled', 'disabled');
         $wrapper.trigger('wpucontactforms_before_ajax');
@@ -38,6 +55,12 @@ function set_wpucontactforms_form($wrapper) {
         jQuery('html, body').animate({
             scrollTop: $wrapper.offset().top - 150
         }, 300);
+        if (has_recaptcha) {
+            var recaptcha_item = document.querySelector('.g-recaptcha');
+            if (recaptcha_item) {
+                grecaptcha.render(recaptcha_item);
+            }
+        }
     }
 
     function autocompleteform(fields) {

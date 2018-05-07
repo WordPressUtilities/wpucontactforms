@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.1
+Version: 0.13.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.1';
+    private $plugin_version = '0.13.2';
 
     private $has_recaptcha = false;
 
@@ -129,6 +129,8 @@ class wpucontactforms {
             'content_after_content_form' => '',
             'content_before_wrapper_close' => '',
             'content_after_wrapper_close' => '',
+            'content_before_recaptcha' => '',
+            'content_after_recaptcha' => '',
             'display_form_after_submit' => true,
             'group_class' => 'cssc-form cssc-form--default float-form',
             'group_submit_class' => 'box--submit',
@@ -251,7 +253,9 @@ class wpucontactforms {
 
         if ($this->has_recaptcha) {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha">';
+            $content_form .= $this->options['contact__settings']['content_before_recaptcha'];
             $content_form .= '<div class="g-recaptcha" data-callback="wpucontactforms_recaptcha_callback" data-expired-callback="wpucontactforms_recaptcha_callback_expired" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '"></div>';
+            $content_form .= $this->options['contact__settings']['content_after_recaptcha'];
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
 

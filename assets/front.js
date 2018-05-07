@@ -1,8 +1,8 @@
-/* globals jQuery,ajaxurl */
-
-'use strict';
+/*jslint browser:true*/
+/* globals jQuery,ajaxurl,grecaptcha */
 
 jQuery(document).ready(function() {
+    'use strict';
     jQuery('.wpucontactforms-form-wrapper').each(function() {
         set_wpucontactforms_form(jQuery(this));
     });
@@ -13,11 +13,13 @@ jQuery(document).ready(function() {
 ---------------------------------------------------------- */
 
 function wpucontactforms_recaptcha_callback_expired() {
-    jQuery('[data-recaptchavalid]').attr('data-recaptchavalid', '0');
+    'use strict';
+    jQuery('[data-recaptchavalid]').attr('data-recaptchavalid', '0').trigger('wpucontactforms_expired_recaptcha');
 }
 
 function wpucontactforms_recaptcha_callback() {
-    jQuery('[data-recaptchavalid]').attr('data-recaptchavalid', '1');
+    'use strict';
+    jQuery('[data-recaptchavalid]').attr('data-recaptchavalid', '1').trigger('wpucontactforms_valid_recaptcha');
 }
 
 /* ----------------------------------------------------------
@@ -25,6 +27,7 @@ function wpucontactforms_recaptcha_callback() {
 ---------------------------------------------------------- */
 
 function set_wpucontactforms_form($wrapper) {
+    'use strict';
     var $form = $wrapper.find('form');
     if ($form.attr('data-wpucontactformset') == '1') {
         return;
@@ -36,8 +39,10 @@ function set_wpucontactforms_form($wrapper) {
     function submit_form(e) {
         e.preventDefault();
         if (has_recaptcha && !grecaptcha.getResponse()) {
+            $form.trigger('wpucontactforms_invalid_recaptcha');
             return;
         }
+        $form.trigger('wpucontactforms_valid_recaptcha');
         $wrapper.addClass('contact-form-is-loading');
         $wrapper.find('button').attr('aria-disabled', 'true').attr('disabled', 'disabled');
         $wrapper.trigger('wpucontactforms_before_ajax');

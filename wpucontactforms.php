@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.2
+Version: 0.13.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.2';
+    private $plugin_version = '0.13.3';
 
     private $has_recaptcha = false;
 
@@ -448,7 +448,7 @@ class wpucontactforms {
             ));
             $body_response = wp_remote_retrieve_body($response);
             $body_response_json = json_decode($body_response);
-            if(!is_object($body_response_json) || !isset($body_response_json->success) || !$body_response_json->success){
+            if (!is_object($body_response_json) || !isset($body_response_json->success) || !$body_response_json->success) {
                 return;
             }
         }
@@ -543,7 +543,6 @@ class wpucontactforms {
         require_once ABSPATH . 'wp-admin/includes/media.php';
 
         $attachment_id = media_handle_upload($field['id'], $this->options['contact__settings']['attach_to_post']);
-
         if (is_wp_error($attachment_id)) {
             return false;
         } else {
@@ -652,6 +651,32 @@ class wpucontactforms {
         echo json_encode($response);
         die;
     }
+
+}
+
+/* ----------------------------------------------------------
+  Helpers
+---------------------------------------------------------- */
+
+function wpucontactform__set_html_field_content($field) {
+    $field_content = $field['value'];
+
+    /* Better presentation for text */
+    if ($field['type'] == 'textarea') {
+        $field_content = nl2br($field_content);
+    }
+
+    if($field['type'] == 'file'){
+        if(wp_attachment_is_image($field['value'])){
+            $field_content = wp_get_attachment_image($field['value']);
+        }
+        else {
+            $field_content = __('See attached file', 'wpucontactforms');
+        }
+    }
+
+    // Return layout
+    return '<p><strong>' . $field['label'] . '</strong>:<br />' . $field_content . '</p>';
 }
 
 /* ----------------------------------------------------------
@@ -730,15 +755,10 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 
             // Add to mail attachments
             $more['attachments'][] = get_attached_file($form->contact_fields[$id]['value']);
-            continue;
-        }
-
-        if ($field['type'] == 'textarea') {
-            $field['value'] = nl2br($field['value']);
         }
 
         // Emptying values
-        $mail_content .= '<hr /><p><strong>' . $field['label'] . '</strong>:<br />' . $field['value'] . '</p>';
+        $mail_content .= '<hr />' . wpucontactform__set_html_field_content($field);
     }
 
     if (function_exists('wputh_sendmail')) {
@@ -761,6 +781,7 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 add_action('init', 'wpucontactforms_submit_contactform__savepost__objects');
 function wpucontactforms_submit_contactform__savepost__objects() {
     add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__savepost', 10, 1);
+    add_filter('wpucontactforms__sendmail_delete_attachments', '__return_false');
 
     // Create a new taxonomy
     register_taxonomy(
@@ -802,14 +823,9 @@ function wpucontactforms_submit_contactform__savepost($form) {
 
         if ($field['type'] == 'file') {
             $attachments[] = $form->contact_fields[$id]['value'];
-            continue;
         }
 
-        if ($field['type'] == 'textarea') {
-            $field['value'] = nl2br($field['value']);
-        }
-
-        $post_content .= '<p><strong>' . $field['label'] . '</strong>:<br />' . $field['value'] . '</p><hr />';
+        $post_content .= wpucontactform__set_html_field_content($field) . '<hr />';
         $post_metas[$id] = $field['value'];
     }
 

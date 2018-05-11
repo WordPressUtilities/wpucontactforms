@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.3
+Version: 0.13.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.3';
+    private $plugin_version = '0.13.4';
 
     private $has_recaptcha = false;
 
@@ -377,7 +377,7 @@ class wpucontactforms {
             }
             break;
         case 'file':
-            $content .= '<input type="file" accept="' . implode(',', $this->options['contact__settings']['file_types']) . '" ' . $field_id_name . ' ' . $field_val . ' />';
+            $content .= '<input type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'checkbox':
             $content = '<label id="label-' . $id . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' value="1" />' . $after_checkbox . ' ' . $label_content . '</label>';
@@ -558,7 +558,7 @@ class wpucontactforms {
         }
 
         // Type
-        if (!in_array($file['type'], $this->options['contact__settings']['file_types'])) {
+        if (!in_array($file['type'], $this->get_accepted_file_types($field))) {
             return false;
         }
 
@@ -595,6 +595,14 @@ class wpucontactforms {
             break;
         }
         return true;
+    }
+
+    public function get_accepted_file_types($field) {
+        $accepted_files = $this->options['contact__settings']['file_types'];
+        if (isset($field['file_types']) && is_array($field['file_types'])) {
+            $accepted_files = $field['file_types'];
+        }
+        return $accepted_files;
     }
 
     public function ajax_action() {
@@ -666,11 +674,10 @@ function wpucontactform__set_html_field_content($field) {
         $field_content = nl2br($field_content);
     }
 
-    if($field['type'] == 'file'){
-        if(wp_attachment_is_image($field['value'])){
+    if ($field['type'] == 'file') {
+        if (wp_attachment_is_image($field['value'])) {
             $field_content = wp_get_attachment_image($field['value']);
-        }
-        else {
+        } else {
             $field_content = __('See attached file', 'wpucontactforms');
         }
     }

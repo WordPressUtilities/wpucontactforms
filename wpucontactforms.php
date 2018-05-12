@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.4
+Version: 0.13.5
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.4';
+    private $plugin_version = '0.13.5';
 
     private $has_recaptcha = false;
 
@@ -305,12 +305,20 @@ class wpucontactforms {
         $content = '';
         $id = $field['id'];
         $id_html = $this->options['id'] . '_' . $id;
+
+        $input_multiple = ($field['type'] == 'file' && isset($field['multiple']) && $field['multiple']);
+
         $field_id_name = '';
         if ($field['type'] != 'radio') {
             $field_id_name .= ' id="' . $id_html . '" aria-labelledby="label-' . $id . '"';
         }
+        if ($input_multiple) {
+            $field_id_name .= ' name="' . $id . '[]"';
+        } else {
+            $field_id_name .= ' name="' . $id . '"';
 
-        $field_id_name .= ' name="' . $id . '"  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
+        }
+        $field_id_name .= '  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
         // Required
         if ($field['required']) {
             $field_id_name .= ' required="required"';
@@ -337,7 +345,7 @@ class wpucontactforms {
             $field_id_name .= ' pattern="' . $field['validation_pattern'] . '"';
         }
         // Value
-        $field_val = 'value="' . $field['value'] . '"';
+        $field_val = 'value="' . (is_string($field['value']) ? $field['value'] : '') . '"';
 
         // Additional HTML
         $after_checkbox = isset($field['html_after_checkbox']) ? $field['html_after_checkbox'] : '';
@@ -377,7 +385,7 @@ class wpucontactforms {
             }
             break;
         case 'file':
-            $content .= '<input type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' ' . $field_val . ' />';
+            $content .= '<input ' . ($input_multiple ? 'multiple' : '') . ' type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'checkbox':
             $content = '<label id="label-' . $id . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' value="1" />' . $after_checkbox . ' ' . $label_content . '</label>';
@@ -485,16 +493,13 @@ class wpucontactforms {
 
     public function extract_value_from_post($post, $contact_fields) {
         foreach ($contact_fields as $id => $field) {
-
             $tmp_value = '';
             if (isset($post[$id])) {
                 $tmp_value = trim(htmlentities(strip_tags($post[$id])));
             }
 
-            if ($field['type'] == 'file') {
-                if (isset($_FILES[$id]) && $_FILES[$id]['error'] == 0) {
-                    $tmp_value = $_FILES[$id]['tmp_name'];
-                }
+            if ($field['type'] == 'file' && isset($_FILES[$id])) {
+                $tmp_value = $this->convert_files_global_multiple($_FILES[$id]);
             }
 
             if ($field['type'] == 'checkbox' && empty($tmp_value)) {
@@ -503,7 +508,13 @@ class wpucontactforms {
 
             if ($tmp_value != '') {
                 if ($field['type'] == 'file') {
-                    $field_ok = $this->validate_field_file($_FILES[$id], $field);
+                    $field_ok = true;
+                    foreach ($tmp_value as $tmp_file) {
+                        $tmp_ok = $this->validate_field_file($tmp_file, $field);
+                        if (!$tmp_ok) {
+                            $field_ok = false;
+                        }
+                    }
                 } else {
                     $field_ok = $this->validate_field($tmp_value, $field);
                 }
@@ -522,7 +533,11 @@ class wpucontactforms {
                     }
 
                     if ($field['type'] == 'file') {
-                        $tmp_value = $this->upload_file_return_att_id($_FILES[$id], $field);
+                        $tmp_files = $tmp_value;
+                        $tmp_value = array();
+                        foreach ($tmp_files as $tmp_file) {
+                            $tmp_value[] = $this->upload_file_return_att_id($tmp_file, $field);
+                        }
                     }
 
                     $contact_fields[$id]['value'] = $tmp_value;
@@ -541,8 +556,10 @@ class wpucontactforms {
         require_once ABSPATH . 'wp-admin/includes/image.php';
         require_once ABSPATH . 'wp-admin/includes/file.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
-
-        $attachment_id = media_handle_upload($field['id'], $this->options['contact__settings']['attach_to_post']);
+        $_old_files = $_FILES;
+        $_FILES['tmp_attachment'] = $file;
+        $attachment_id = media_handle_upload('tmp_attachment', $this->options['contact__settings']['attach_to_post']);
+        $_FILES = $_old_files;
         if (is_wp_error($attachment_id)) {
             return false;
         } else {
@@ -660,6 +677,27 @@ class wpucontactforms {
         die;
     }
 
+    /** Ensure $_FILES global is always a correct array */
+    public function convert_files_global_multiple($file = array()) {
+        if (!isset($file['error'])) {
+            return array();
+        }
+        if (!is_array($file['error'])) {
+            return array($file);
+        }
+        $final_file = array();
+        foreach ($file['error'] as $key => $var) {
+            $final_file[] = array(
+                'name' => $file['name'][$key],
+                'type' => $file['type'][$key],
+                'tmp_name' => $file['tmp_name'][$key],
+                'error' => $file['error'][$key],
+                'size' => $file['size'][$key]
+            );
+        }
+        return $final_file;
+    }
+
 }
 
 /* ----------------------------------------------------------
@@ -675,11 +713,15 @@ function wpucontactform__set_html_field_content($field) {
     }
 
     if ($field['type'] == 'file') {
-        if (wp_attachment_is_image($field['value'])) {
-            $field_content = wp_get_attachment_image($field['value']);
-        } else {
-            $field_content = __('See attached file', 'wpucontactforms');
+        $field_content_parts = array();
+        foreach ($field['value'] as $field_value) {
+            if (wp_attachment_is_image($field_value)) {
+                $field_content_parts[] = wp_get_attachment_image($field_value);
+            } else {
+                $field_content_parts[] = __('See attached file(s)', 'wpucontactforms');
+            }
         }
+        $field_content = implode('<br />', $field_content_parts);
     }
 
     // Return layout
@@ -755,13 +797,16 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 
     foreach ($form->contact_fields as $id => $field) {
 
-        if ($field['type'] == 'file') {
+        if ($field['type'] == 'file' && is_array($field['value'])) {
 
-            // Store attachment id
-            $attachments_to_destroy[] = $form->contact_fields[$id]['value'];
+            foreach ($field['value'] as $file_id) {
 
-            // Add to mail attachments
-            $more['attachments'][] = get_attached_file($form->contact_fields[$id]['value']);
+                // Store attachment id
+                $attachments_to_destroy[] = $file_id;
+
+                // Add to mail attachments
+                $more['attachments'][] = get_attached_file($file_id);
+            }
         }
 
         // Emptying values
@@ -828,8 +873,10 @@ function wpucontactforms_submit_contactform__savepost($form) {
 
     foreach ($form->contact_fields as $id => $field) {
 
-        if ($field['type'] == 'file') {
-            $attachments[] = $form->contact_fields[$id]['value'];
+        if ($field['type'] == 'file' && is_array($field['value'])) {
+            foreach ($field['value'] as $file_value) {
+                $attachments[] = $file_value;
+            }
         }
 
         $post_content .= wpucontactform__set_html_field_content($field) . '<hr />';

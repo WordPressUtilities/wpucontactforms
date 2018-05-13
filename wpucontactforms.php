@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.5
+Version: 0.13.6
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.5';
+    private $plugin_version = '0.13.6';
 
     private $has_recaptcha = false;
 
@@ -552,19 +552,13 @@ class wpucontactforms {
     }
 
     public function upload_file_return_att_id($file, $field) {
-
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/media.php';
-        $_old_files = $_FILES;
-        $_FILES['tmp_attachment'] = $file;
-        $attachment_id = media_handle_upload('tmp_attachment', $this->options['contact__settings']['attach_to_post']);
-        $_FILES = $_old_files;
-        if (is_wp_error($attachment_id)) {
-            return false;
-        } else {
-            return $attachment_id;
+        if(!function_exists('media_handle_sideload')){
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            require_once ABSPATH . 'wp-admin/includes/media.php';
         }
+        $attachment_id = media_handle_sideload($file, $this->options['contact__settings']['attach_to_post']);
+        return is_numeric($attachment_id) ? $attachment_id : false;
     }
 
     public function validate_field_file($file, $field) {

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2018-05-13 20:10+0200\n"
+"POT-Creation-Date: 2018-05-16 20:09+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -39,7 +39,7 @@ msgstr "Nom"
 msgid "Email"
 msgstr "E-mail"
 
-#: .././wpucontactforms.php:158 .././wpucontactforms.php:847
+#: .././wpucontactforms.php:158 .././wpucontactforms.php:880
 msgid "Message"
 msgstr "Message"
 
@@ -83,26 +83,30 @@ msgstr "Voir le(s) fichier(s) joint(s)"
 msgid "No more than %s links, please"
 msgstr "Pas plus de %s liens, s'il vous plaît"
 
-#: .././wpucontactforms.php:775 .././wpucontactforms.php:776
+#: .././wpucontactforms.php:778 .././wpucontactforms.php:814
 msgid "Message from your contact form"
 msgstr "Message depuis votre formulaire de contact"
 
-#: .././wpucontactforms.php:837
+#: .././wpucontactforms.php:870
 msgid "Form"
 msgstr "Formulaire"
 
-#: .././wpucontactforms.php:846
+#: .././wpucontactforms.php:879
 msgid "Messages"
 msgstr "Messages"
 
-#: .././wpucontactforms.php:880
+#: .././wpucontactforms.php:913
 msgid "New message"
 msgstr "Nouveau message"
 
-#: .././wpucontactforms.php:890
+#: .././wpucontactforms.php:923
 #, php-format
 msgid "New message from %s"
 msgstr "Nouveau message de %s"
+
+#: .././wpucontactforms.php:979
+msgid "Re-send this email"
+msgstr "Ré-envoyer l’email"
 
 #~ msgid "See attached file"
 #~ msgstr "Voir le fichier joint"

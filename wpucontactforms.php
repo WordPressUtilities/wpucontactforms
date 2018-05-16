@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.6
+Version: 0.13.7
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.6';
+    private $plugin_version = '0.13.7';
 
     private $has_recaptcha = false;
 
@@ -552,7 +552,7 @@ class wpucontactforms {
     }
 
     public function upload_file_return_att_id($file, $field) {
-        if(!function_exists('media_handle_sideload')){
+        if (!function_exists('media_handle_sideload')) {
             require_once ABSPATH . 'wp-admin/includes/image.php';
             require_once ABSPATH . 'wp-admin/includes/file.php';
             require_once ABSPATH . 'wp-admin/includes/media.php';
@@ -766,29 +766,58 @@ function wpucontactforms_message___maxlinks($message) {
   Success actions
 ---------------------------------------------------------- */
 
+function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $form = false) {
+    $form_options = array();
+    $form_contact_fields = array();
+    if (is_object($form)) {
+        $form_options = $form->options;
+        $form_contact_fields = $form->contact_fields;
+    }
+
+    /* Subject */
+    $sendmail_subject = __('Message from your contact form', 'wpucontactforms');
+    if (!function_exists('wputh_sendmail')) {
+        $sendmail_subject = '[' . get_bloginfo('name') . ']' . $sendmail_subject;
+    }
+    $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', $sendmail_subject, $form);
+
+    /* Get email */
+    $target_email = get_option('wpu_opt_email');
+    if (!is_email($target_email)) {
+        $target_email = get_option('admin_email');
+    }
+    $target_email = apply_filters('wpucontactforms_email', $target_email, $form_options, $form_contact_fields);
+
+    /* More */
+    if (!is_array($more)) {
+        $more = array();
+    }
+    if (!isset($more['attachments'])) {
+        $more['attachments'] = array();
+    }
+
+    /* Send content */
+    if (function_exists('wputh_sendmail')) {
+        wputh_sendmail($target_email, $sendmail_subject, $mail_content, $more);
+    } else {
+        wp_mail($target_email, $sendmail_subject, $mail_content, '', $more['attachments']);
+    }
+}
+
 /* Send mail
 -------------------------- */
 
 add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__sendmail', 10, 1);
 function wpucontactforms_submit_contactform__sendmail($form) {
 
-    $sendmail_intro = apply_filters('wpucontactforms__sendmail_intro', '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>', $form);
-    $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', '[' . get_bloginfo('name') . ']' . __('Message from your contact form', 'wpucontactforms'), $form);
-
     // Send mail
-    $mail_content = $sendmail_intro;
+    $mail_content = apply_filters('wpucontactforms__sendmail_intro', '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>', $form);
     $attachments_to_destroy = array();
     $more = array(
         'attachments' => array()
     );
 
     // Target Email
-    $target_email = get_option('wpu_opt_email');
-    if (!is_email($target_email)) {
-        $target_email = get_option('admin_email');
-    }
-    $target_email = apply_filters('wpucontactforms_email', $target_email, $form->options, $form->contact_fields);
-
     foreach ($form->contact_fields as $id => $field) {
 
         if ($field['type'] == 'file' && is_array($field['value'])) {
@@ -807,11 +836,7 @@ function wpucontactforms_submit_contactform__sendmail($form) {
         $mail_content .= '<hr />' . wpucontactform__set_html_field_content($field);
     }
 
-    if (function_exists('wputh_sendmail')) {
-        wputh_sendmail($target_email, $sendmail_subject, $mail_content, $more);
-    } else {
-        wp_mail($target_email, $sendmail_subject, $mail_content, '', $more['attachments']);
-    }
+    wpucontactforms_submit_sendmail($mail_content, $more);
 
     // Delete temporary attachments
     if (apply_filters('wpucontactforms__sendmail_delete_attachments', true)) {
@@ -824,15 +849,23 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 /* Save post
 -------------------------- */
 
+function wpucontactforms_savepost__get_post_type() {
+    return apply_filters('wpucontactforms_savepost__get_post_type', 'contact_message');
+}
+
 add_action('init', 'wpucontactforms_submit_contactform__savepost__objects');
 function wpucontactforms_submit_contactform__savepost__objects() {
     add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__savepost', 10, 1);
     add_filter('wpucontactforms__sendmail_delete_attachments', '__return_false');
 
+    /* Resend a mail */
+    add_action('post_submitbox_misc_actions', 'wpucontactforms_submit_contactform__resendmail');
+    add_action('save_post', 'wpucontactforms_submit_contactform__resendmail__action');
+
     // Create a new taxonomy
     register_taxonomy(
         'contact_form',
-        array('contact_message'),
+        array(wpucontactforms_savepost__get_post_type()),
         array(
             'label' => __('Form'),
             'show_admin_column' => true
@@ -840,7 +873,7 @@ function wpucontactforms_submit_contactform__savepost__objects() {
     );
 
     // Create a new post type
-    register_post_type('contact_message',
+    register_post_type(wpucontactforms_savepost__get_post_type(),
         array(
             'labels' => array(
                 'name' => __('Messages'),
@@ -893,7 +926,7 @@ function wpucontactforms_submit_contactform__savepost($form) {
     // Create post
     $post_id = wp_insert_post(array(
         'post_title' => apply_filters('wpucontactforms__createpost_post_title', $default_post_title, $form),
-        'post_type' => apply_filters('wpucontactforms__createpost_post_type', 'contact_message', $form),
+        'post_type' => apply_filters('wpucontactforms__createpost_post_type', wpucontactforms_savepost__get_post_type(), $form),
         'post_content' => apply_filters('wpucontactforms__createpost_post_content', $post_content, $form),
         'post_author' => apply_filters('wpucontactforms__createpost_postauthor', 1, $form),
         'post_status' => 'publish'
@@ -937,3 +970,46 @@ function wpucontactforms_submit_contactform__savepost($form) {
         ));
     }
 }
+
+function wpucontactforms_submit_contactform__resendmail() {
+    if (get_post_type() != wpucontactforms_savepost__get_post_type()) {
+        return;
+    }
+    $html = '<div class="misc-pub-section">';
+    $html .= '<input type="submit" value="' . __('Re-send this email', 'wpucontactforms') . '" class="button-secondary" id="custom" name="wpucontactforms__resendmail" />';
+    $html .= '</div>';
+    echo $html;
+}
+
+function wpucontactforms_submit_contactform__resendmail__action($post_id) {
+
+    if (!isset($_POST['wpucontactforms__resendmail'])) {
+        return;
+    }
+
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    if (get_post_type($post_id) != wpucontactforms_savepost__get_post_type()) {
+        return;
+    }
+
+    $wpq_post = new WP_Query(array(
+        'posts_per_page' => -1,
+        'post_type' => wpucontactforms_savepost__get_post_type(),
+        'p' => $post_id
+    ));
+
+    if ($wpq_post->have_posts()) {
+        $wpq_post->the_post();
+        ob_start();
+        the_content();
+        $out = ob_get_clean();
+        wpucontactforms_submit_sendmail($out);
+
+    }
+    wp_reset_postdata();
+
+}
+

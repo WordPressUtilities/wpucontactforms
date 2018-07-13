@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.8
+Version: 0.13.9
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.8';
+    private $plugin_version = '0.13.9';
 
     private $has_recaptcha = false;
 
@@ -648,7 +648,9 @@ class wpucontactforms {
                 continue;
             }
             if ($field['autofill'] == 'user_email') {
-                $response[$id] = $user_info->user_email;
+                if(is_object($user_info)){
+                    $response[$id] = $user_info->user_email;
+                }
             } elseif ($field['autofill'] == 'woocommerce_orders') {
                 $response[$id] = array();
                 $customer_orders = array();
@@ -843,8 +845,7 @@ function wpucontactforms_submit_contactform__sendmail($form) {
         // Emptying values
         $mail_content .= '<hr />' . wpucontactform__set_html_field_content($field);
     }
-
-    wpucontactforms_submit_sendmail($mail_content, $more);
+    wpucontactforms_submit_sendmail($mail_content, $more, $form);
 
     // Delete temporary attachments
     if (apply_filters('wpucontactforms__sendmail_delete_attachments', true)) {

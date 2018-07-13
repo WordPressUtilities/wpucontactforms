@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2018-05-20 21:27+0200\n"
+"POT-Creation-Date: 2018-07-13 13:44+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -39,7 +39,7 @@ msgstr "Nom"
 msgid "Email"
 msgstr "E-mail"
 
-#: .././wpucontactforms.php:166 .././wpucontactforms.php:888
+#: .././wpucontactforms.php:166 .././wpucontactforms.php:889
 msgid "Message"
 msgstr "Message"
 
@@ -61,50 +61,50 @@ msgstr "Le champ \"%s\" n'est pas correct"
 msgid "The field \"%s\" is required"
 msgstr "Le champ \"%s\" est obligatoire"
 
-#: .././wpucontactforms.php:664
+#: .././wpucontactforms.php:666
 msgid "Select an order"
 msgstr "Sélectionner une commande"
 
-#: .././wpucontactforms.php:667
+#: .././wpucontactforms.php:669
 #, php-format
 msgid "# %s"
 msgstr "N° %s"
 
-#: .././wpucontactforms.php:671
+#: .././wpucontactforms.php:673
 msgid "No order available"
 msgstr "Aucune commande disponible"
 
-#: .././wpucontactforms.php:723
+#: .././wpucontactforms.php:725
 msgid "See attached file(s)"
 msgstr "Voir le(s) fichier(s) joint(s)"
 
-#: .././wpucontactforms.php:767
+#: .././wpucontactforms.php:769
 #, php-format
 msgid "No more than %s links, please"
 msgstr "Pas plus de %s liens, s'il vous plaît"
 
-#: .././wpucontactforms.php:786 .././wpucontactforms.php:822
+#: .././wpucontactforms.php:788 .././wpucontactforms.php:824
 msgid "Message from your contact form"
 msgstr "Message depuis votre formulaire de contact"
 
-#: .././wpucontactforms.php:878
+#: .././wpucontactforms.php:879
 msgid "Form"
 msgstr "Formulaire"
 
-#: .././wpucontactforms.php:887
+#: .././wpucontactforms.php:888
 msgid "Messages"
 msgstr "Messages"
 
-#: .././wpucontactforms.php:921
+#: .././wpucontactforms.php:922
 msgid "New message"
 msgstr "Nouveau message"
 
-#: .././wpucontactforms.php:931
+#: .././wpucontactforms.php:932
 #, php-format
 msgid "New message from %s"
 msgstr "Nouveau message de %s"
 
-#: .././wpucontactforms.php:987
+#: .././wpucontactforms.php:988
 msgid "Re-send this email"
 msgstr "Ré-envoyer l’email"
 

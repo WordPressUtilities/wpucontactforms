@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.10
+Version: 0.13.11
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.10';
+    private $plugin_version = '0.13.11';
 
     private $has_recaptcha = false;
 
@@ -44,7 +44,7 @@ class wpucontactforms {
         add_action('wp_ajax_nopriv_wpucontactforms_autofill', array(&$this,
             'ajax_action_autofill'
         ));
-        include dirname( __FILE__ ) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
+        include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
         $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
             'WordPressUtilities',
             'wpucontactforms',
@@ -594,14 +594,14 @@ class wpucontactforms {
     }
 
     public function validate_field($tmp_value, $field) {
-
         /* Custom validation */
-        if (!call_user_func_array($field['custom_validation'], array($tmp_value, $field))) {
+        if (isset($field['custom_validation']) && !call_user_func_array($field['custom_validation'], array($tmp_value, $field))) {
             return false;
         }
 
         $zero_one = array('0', '1');
         switch ($field['validation']) {
+        case 'radio':
         case 'select':
             return array_key_exists($tmp_value, $field['datas']);
             break;
@@ -653,7 +653,7 @@ class wpucontactforms {
                 continue;
             }
             if ($field['autofill'] == 'user_email') {
-                if(is_object($user_info)){
+                if (is_object($user_info)) {
                     $response[$id] = $user_info->user_email;
                 }
             } elseif ($field['autofill'] == 'woocommerce_orders') {

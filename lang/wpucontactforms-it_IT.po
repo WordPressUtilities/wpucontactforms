@@ -1,11 +1,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2019-06-12 19:09+0200\n"
+"POT-Creation-Date: 2019-06-12 19:24+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
-"Language: fr_FR\n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -17,106 +17,97 @@ msgstr ""
 
 #: .././wpucontactforms.php:115 .././wpucontactforms.php:550
 msgid "No"
-msgstr "Non"
+msgstr "No"
 
 #: .././wpucontactforms.php:116 .././wpucontactforms.php:550
 msgid "Yes"
-msgstr "Oui"
+msgstr "Si"
 
 #: .././wpucontactforms.php:125
 msgid "Thank you for your message!"
-msgstr "Merci pour votre message !"
+msgstr "Grazie per il vostro messaggio!"
 
 #: .././wpucontactforms.php:163
 msgid "Submit"
-msgstr "Envoyer"
+msgstr "Invia"
 
 #: .././wpucontactforms.php:167
 msgid "Name"
-msgstr "Nom"
+msgstr "Nome"
 
 #: .././wpucontactforms.php:171
 msgid "Email"
-msgstr "E-mail"
+msgstr "Email"
 
 #: .././wpucontactforms.php:176 .././wpucontactforms.php:899
 msgid "Message"
-msgstr "Message"
+msgstr "Messaggio"
 
 #: .././wpucontactforms.php:268
 msgid "If you are human, leave this empty"
-msgstr "Si vous êtes humain, laissez ce champ vide"
+msgstr "Se sei umano, lascia questo vuoto"
 
 #: .././wpucontactforms.php:356
 msgid "Select a value"
-msgstr "Sélectionnez une valeur"
+msgstr "Selezionare un valore"
 
 #: .././wpucontactforms.php:496
 msgid "Error:"
-msgstr "Erreur :"
+msgstr "Errore:"
 
 #: .././wpucontactforms.php:541
 #, php-format
 msgid "The field \"%s\" is not correct"
-msgstr "Le champ \"%s\" n'est pas correct"
+msgstr "Il campo \"%s\" non è corretto"
 
 #: .././wpucontactforms.php:565
 #, php-format
 msgid "The field \"%s\" is required"
-msgstr "Le champ \"%s\" est obligatoire"
+msgstr "Il campo \"%s\" è obbligatorio"
 
 #: .././wpucontactforms.php:676
 msgid "Select an order"
-msgstr "Sélectionner une commande"
+msgstr "Selezionare un ordine"
 
 #: .././wpucontactforms.php:679
 #, php-format
 msgid "# %s"
-msgstr "N° %s"
+msgstr "n. %s"
 
 #: .././wpucontactforms.php:683
 msgid "No order available"
-msgstr "Aucune commande disponible"
+msgstr "Nessun ordine disponibile"
 
 #: .././wpucontactforms.php:735
 msgid "See attached file(s)"
-msgstr "Voir le(s) fichier(s) joint(s)"
+msgstr "Vedere i file allegati"
 
 #: .././wpucontactforms.php:779
 #, php-format
 msgid "No more than %s links, please"
-msgstr "Pas plus de %s liens, s'il vous plaît"
+msgstr "Non più di %s link, si prega di"
 
 #: .././wpucontactforms.php:798 .././wpucontactforms.php:834
 msgid "Message from your contact form"
-msgstr "Message depuis votre formulaire de contact"
+msgstr "Messaggio dal modulo di contatto"
 
 #: .././wpucontactforms.php:889
 msgid "Form"
-msgstr "Formulaire"
+msgstr "Modulo"
 
 #: .././wpucontactforms.php:898
 msgid "Messages"
-msgstr "Messages"
+msgstr "Messaggi"
 
 #: .././wpucontactforms.php:932
 msgid "New message"
-msgstr "Nouveau message"
+msgstr "Nuovo messaggio"
 
 #: .././wpucontactforms.php:942
 #, php-format
 msgid "New message from %s"
-msgstr "Nouveau message de %s"
+msgstr "﻿Nuovo messaggio da %s"
 
 #: .././wpucontactforms.php:998
 msgid "Re-send this email"
-msgstr "Ré-envoyer l’email"
-
-#~ msgid "See attached file"
-#~ msgstr "Voir le fichier joint"
-
-#~ msgid "New email"
-#~ msgstr "Nouvel e-mail"
-
-#~ msgid "New email from %s"
-#~ msgstr "Nouvel e-mail de %s"
+msgstr "Invia nuovamente questa email"

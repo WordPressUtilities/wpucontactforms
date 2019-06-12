@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.13.12
+Version: 0.14.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,8 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.13.12';
+    private $plugin_version = '0.14.0';
+    private $humantest_classname = 'hu-man-te-st';
 
     private $has_recaptcha = false;
 
@@ -28,7 +29,13 @@ class wpucontactforms {
         if (in_array($options['id'], $wpucontactforms_forms)) {
             return;
         }
+
         load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
+
+        add_action('wp_loaded', array(&$this,
+            'wp_loaded'
+        ));
+
         $wpucontactforms_forms[] = $options['id'];
 
         $this->set_options($options);
@@ -44,6 +51,7 @@ class wpucontactforms {
         add_action('wp_ajax_nopriv_wpucontactforms_autofill', array(&$this,
             'ajax_action_autofill'
         ));
+
         include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
         $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
             'WordPressUtilities',
@@ -62,6 +70,13 @@ class wpucontactforms {
                 'form_scripts'
             ));
         }
+    }
+
+    public function wp_loaded() {
+
+        /* Set no bot test */
+        $this->humantest_classname = md5($this->humantest_classname . get_bloginfo('name'));
+        $this->humantest_classname = apply_filters('wpucontactforms_humantest_classname', $this->humantest_classname);
     }
 
     public function form_scripts() {
@@ -245,13 +260,13 @@ class wpucontactforms {
         }
 
         // Display contact form
-        $content_form .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data' : '') . '"  data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
+        $content_form .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '') . ' data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
         $content_form .= $content_fields;
 
         /* Quick honeypot */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
-        $content_form .= '<label>If you are human, leave this empty</label>';
-        $content_form .= '<input tabindex="-1" name="hu-man-te-st" type="text"/>';
+        $content_form .= '<label>' . __('If you are human, leave this empty', 'wpucontactforms') . '</label>';
+        $content_form .= '<input tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         if ($this->has_recaptcha) {
@@ -438,7 +453,7 @@ class wpucontactforms {
         }
 
         // Checking bots
-        if (!isset($_POST['hu-man-te-st']) || !empty($_POST['hu-man-te-st'])) {
+        if (!isset($_POST[$this->humantest_classname]) || !empty($_POST[$this->humantest_classname])) {
             return;
         }
 

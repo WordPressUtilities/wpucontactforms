@@ -13,6 +13,9 @@ Contact forms for your WordPress website.
 ```php
 add_action('init', 'launch_wpucontactforms_myawesomeform');
 function launch_wpucontactforms_myawesomeform() {
+    if(!class_exists('wpucontactforms')){
+        return;
+    }
     new wpucontactforms(array(
         'id' => 'myawesomeform',
         'name' => 'My Awesome Form',

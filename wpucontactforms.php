@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.14.0
+Version: 0.14.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.14.0';
+    private $plugin_version = '0.14.1';
     private $humantest_classname = 'hu-man-te-st';
 
     private $has_recaptcha = false;
@@ -52,11 +52,13 @@ class wpucontactforms {
             'ajax_action_autofill'
         ));
 
-        include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
-        $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
-            'WordPressUtilities',
-            'wpucontactforms',
-            $this->plugin_version);
+        if (!class_exists('\wpucontactforms\WPUBaseUpdate')) {
+            include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
+            $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
+                'WordPressUtilities',
+                'wpucontactforms',
+                $this->plugin_version);
+        }
 
         $this->has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
         if ($this->options['contact__settings']['ajax_enabled']) {
@@ -627,9 +629,20 @@ class wpucontactforms {
     }
 
     public function get_accepted_file_types($field) {
-        $accepted_files = $this->options['contact__settings']['file_types'];
+        $accepted_files = $this->extract_file_types($this->options['contact__settings']['file_types']);
         if (isset($field['file_types']) && is_array($field['file_types'])) {
-            $accepted_files = $field['file_types'];
+            $accepted_files = $this->extract_file_types($field['file_types']);
+        }
+        return $accepted_files;
+    }
+
+    public function extract_file_types($types = array()) {
+        $accepted_files = array();
+        foreach ($types as $accepted_file) {
+            if (preg_match('/^([a-z]+)$/', $accepted_file)) {
+                $accepted_file = '.' . $accepted_file;
+            }
+            $accepted_files[] = $accepted_file;
         }
         return $accepted_files;
     }

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.14.1
+Version: 0.14.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,13 +13,16 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.14.1';
+    private $plugin_version = '0.14.2';
     private $humantest_classname = 'hu-man-te-st';
-
+    private $first_init = true;
     private $has_recaptcha = false;
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
+
+        $this->first_init = !class_exists('\wpucontactforms\WPUBaseUpdate');
+
         if (!isset($options['id'])) {
             return;
         }
@@ -30,7 +33,9 @@ class wpucontactforms {
             return;
         }
 
-        load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
+        if (!$this->first_init) {
+            load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
+        }
 
         add_action('wp_loaded', array(&$this,
             'wp_loaded'
@@ -52,7 +57,7 @@ class wpucontactforms {
             'ajax_action_autofill'
         ));
 
-        if (!class_exists('\wpucontactforms\WPUBaseUpdate')) {
+        if ($this->first_init) {
             include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
             $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
                 'WordPressUtilities',
@@ -82,6 +87,9 @@ class wpucontactforms {
     }
 
     public function form_scripts() {
+        if (!$this->first_init) {
+            return;
+        }
         wp_enqueue_script('jquery-form');
         wp_enqueue_script('wpucontactforms-front', plugins_url('assets/front.js', __FILE__), array(
             'jquery'
@@ -423,10 +431,12 @@ class wpucontactforms {
 
         $content .= $field['html_after_input'];
 
-        $box_class_name = $this->options['contact__settings']['box_class'];
+        $box_class_name = esc_attr($this->options['contact__settings']['box_class']);
         $box_class = $box_class_name;
         $box_class .= ' ' . $box_class_name . '--' . $id;
-        $box_class .= $field['box_class'];
+        if ($field['box_class']) {
+            $box_class .= ' ' . esc_attr($field['box_class']);
+        }
 
         return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
     }

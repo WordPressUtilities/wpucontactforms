@@ -2,13 +2,51 @@
 
 Contact forms for your WordPress website.
 
-## Insert into your page
+## Default Form
 
+### Build form infos
 ```php
-<?php do_action('wpucontactforms_content', false, 'default'); ?>
+add_filter('wpucontactforms_default_options', 'wputest__wpucontactforms_default_options', 10, 1);
+function wputest__wpucontactforms_default_options($options) {
+    return array(
+        'id' => 'default',
+        'name' => 'My Awesome Form',
+        'contact__settings' => array(
+            'group_class' => 'cssc-form cssc-form--default',
+            'contact_fields' => array(
+                'contact_name' => array(
+                    'label' => __('Name', 'wpucontactforms'),
+                    'required' => 1
+                ),
+                'contact_email' => array(
+                    'label' => __('Email', 'wpucontactforms'),
+                    'type' => 'email',
+                    'required' => 1
+                ),
+                'contact_photo' => array(
+                    'label' => __('Photos', 'wpucontactforms'),
+                    'type' => 'file'
+                ),
+                'contact_message' => array(
+                    'label' => __('Message', 'wpucontactforms'),
+                    'type' => 'textarea',
+                    'required' => 1
+                )
+            ),
+        )
+    );
+}
 ```
 
-## Create a new form
+## New form
+
+### Insert into your page
+
+```php
+<?php do_action('wpucontactforms_content', false, 'myawesomeform');?>
+```
+
+### Create form infos
 
 ```php
 add_action('init', 'launch_wpucontactforms_myawesomeform');

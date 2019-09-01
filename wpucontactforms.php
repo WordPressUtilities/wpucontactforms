@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.14.2
+Version: 0.14.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.14.2';
+    private $plugin_version = '0.14.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -459,9 +459,7 @@ class wpucontactforms {
 
         // Checking for PHP Conf
         if (isset($_POST['control_stripslashes']) && $_POST['control_stripslashes'] == '\"') {
-            foreach ($_POST as $id => $field) {
-                $_POST[$id] = stripslashes($field);
-            }
+            $_POST = stripslashes_deep($_POST);
         }
 
         // Checking bots
@@ -749,7 +747,7 @@ function wpucontactform__set_html_field_content($field) {
         $field_content = nl2br($field_content);
     }
 
-    if ($field['type'] == 'file') {
+    if ($field['type'] == 'file' && is_array($field['value'])) {
         $field_content_parts = array();
         foreach ($field['value'] as $field_value) {
             if (wp_attachment_is_image($field_value)) {
@@ -773,7 +771,10 @@ $wpucontactforms_forms = array();
 
 add_action('init', 'launch_wpucontactforms_default');
 function launch_wpucontactforms_default() {
-    new wpucontactforms(apply_filters('wpucontactforms_default_options', array()));
+    $options = apply_filters('wpucontactforms_default_options', array());
+    if (!empty($options)) {
+        new wpucontactforms($options);
+    }
 }
 
 /* ----------------------------------------------------------

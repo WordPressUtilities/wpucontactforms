@@ -89,8 +89,11 @@ function set_wpucontactforms_form($wrapper) {
         jQuery('html, body').animate({
             scrollTop: $wrapper.offset().top - 150
         }, 300);
-        if ($form.find('.contact-error').length < 1 && typeof ga != 'undefined') {
-            ga('send', 'event', 'wpucontactforms_success');
+        if ($form.find('.contact-error').length < 1) {
+            if (typeof ga != 'undefined') {
+                ga('send', 'event', 'wpucontactforms_success');
+            }
+            $form.addClass('form--has-success');
         }
         if (has_recaptcha) {
             if (recaptcha_item) {

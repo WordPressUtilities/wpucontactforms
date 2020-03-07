@@ -8,31 +8,45 @@ Contact forms for your WordPress website.
 ```php
 add_filter('wpucontactforms_default_options', 'wputest__wpucontactforms_default_options', 10, 1);
 function wputest__wpucontactforms_default_options($options) {
+
+    $fields = array();
+
+    $fields['contact_name'] = array(
+        'label' => __('Name', 'wpucontactforms'),
+        'required' => 1
+    );
+    $fields['contact_job'] = array(
+        'label' => __('Job', 'wpucontactforms'),
+        'conditions' => array(
+            'display' => array(
+                'contact_name' => 'boss'
+            ),
+            'required' => array(
+                'contact_name' => 'boss'
+            )
+        )
+    );
+    $fields['contact_email'] = array(
+        'label' => __('Email', 'wpucontactforms'),
+        'type' => 'email',
+        'required' => 1
+    );
+    $fields['contact_photo'] = array(
+        'label' => __('Photos', 'wpucontactforms'),
+        'type' => 'file'
+    );
+    $fields['contact_message'] = array(
+        'label' => __('Message', 'wpucontactforms'),
+        'type' => 'textarea',
+        'required' => 1
+    );
+
     return array(
-        'id' => 'default',
+        'id' => 'myawesomeform',
         'name' => 'My Awesome Form',
         'contact__settings' => array(
             'group_class' => 'cssc-form cssc-form--default',
-            'contact_fields' => array(
-                'contact_name' => array(
-                    'label' => __('Name', 'wpucontactforms'),
-                    'required' => 1
-                ),
-                'contact_email' => array(
-                    'label' => __('Email', 'wpucontactforms'),
-                    'type' => 'email',
-                    'required' => 1
-                ),
-                'contact_photo' => array(
-                    'label' => __('Photos', 'wpucontactforms'),
-                    'type' => 'file'
-                ),
-                'contact_message' => array(
-                    'label' => __('Message', 'wpucontactforms'),
-                    'type' => 'textarea',
-                    'required' => 1
-                )
-            ),
+            'contact_fields' => $fields
         )
     );
 }

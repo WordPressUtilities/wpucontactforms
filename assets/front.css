@@ -29,3 +29,7 @@
     visibility: visible;
     opacity: 0.999;
 }
+
+.wpucontactforms-form-wrapper [data-required="true"] > label:after {
+    content: '*';
+}

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.14.5
+Version: 0.15.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.14.5';
+    private $plugin_version = '0.15.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -438,7 +438,12 @@ class wpucontactforms {
             $box_class .= ' ' . esc_attr($field['box_class']);
         }
 
-        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
+        $conditions = '';
+        if (isset($field['conditions'])) {
+            $conditions = ' style="display:none" data-wpucf-conditions="' . esc_attr(json_encode($field['conditions'])) . '" ';
+        }
+
+        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . $conditions . ' class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
     }
 
     public function post_contact() {

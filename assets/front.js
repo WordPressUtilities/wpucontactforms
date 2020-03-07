@@ -144,6 +144,95 @@ function set_wpucontactforms_form($wrapper) {
         return $new_field;
     }
 
+    /* Conditions */
+    (function() {
+
+        var $condition_fields = $wrapper.find('[data-wpucf-conditions]'),
+            _conditions = [];
+
+        $condition_fields.each(function() {
+            _conditions.push(JSON.parse(jQuery(this).attr('data-wpucf-conditions')));
+        });
+
+        function set_field_by_condition(i, el) {
+            var $blockWrapper = jQuery(el),
+                $blockField = $blockWrapper.find('[aria-required]'),
+                _condition = _conditions[i],
+                _tmp_item,
+                _tmp_val;
+
+            /* Change target block display */
+            (function() {
+                if (!_condition.display) {
+                    return;
+                }
+                /* Block will be shown if no condition is invalid */
+                var _showblock = true;
+                for (var _id in _condition.display) {
+                    _tmp_item = $wrapper.find('[name="' + _id + '"]');
+                    if (!_tmp_item.length) {
+                        continue;
+                    }
+                    _tmp_val = _tmp_item.val();
+                    if (_tmp_val != _condition.display[_id]) {
+                        _showblock = false;
+                    }
+                }
+                if (_showblock) {
+                    $blockWrapper.show();
+                }
+                else {
+                    $blockWrapper.hide();
+                }
+            }());
+
+            /* Change target block required */
+            (function() {
+                if (!_condition.required) {
+                    return;
+                }
+                /* Block will not be required if a condition is invalid */
+                var _required = true;
+                for (var _id in _condition.display) {
+                    _tmp_item = $wrapper.find('[name="' + _id + '"]');
+                    if (!_tmp_item.length) {
+                        continue;
+                    }
+                    _tmp_val = _tmp_item.val();
+                    if (_tmp_val != _condition.display[_id]) {
+                        _required = false;
+                    }
+                }
+
+                var _requiredStr = _required.toString();
+
+                $blockWrapper.attr('data-required', _requiredStr);
+                $blockField.attr('aria-required', _requiredStr);
+                if (_required) {
+                    $blockField.attr('required', 'required');
+                }
+                else {
+                    $blockField.removeAttr('required');
+                }
+            }());
+
+        }
+
+        function set_fields_by_condition() {
+            $condition_fields.each(set_field_by_condition);
+        }
+
+        set_fields_by_condition();
+        $wrapper.on('change blur', '[name]', set_fields_by_condition);
+        (function() {
+            var _timeout = false;
+            $wrapper.on('keyup', '[name]', function() {
+                clearTimeout(_timeout);
+                _timeout = setTimeout(set_fields_by_condition, 300);
+            });
+        }());
+    }());
+
     /* Events -------------------------- */
 
     /* Form submit */

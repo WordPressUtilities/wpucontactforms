@@ -177,6 +177,9 @@ function set_wpucontactforms_form($wrapper) {
                     if (_tmp_val != _condition.display[_id]) {
                         _showblock = false;
                     }
+                    if(_condition.display[_id] == 'checked' && _tmp_item.attr('type') == 'checkbox' && _tmp_item.prop('checked')){
+                        _showblock = true;
+                    }
                 }
                 if (_showblock) {
                     $blockWrapper.show();
@@ -201,6 +204,9 @@ function set_wpucontactforms_form($wrapper) {
                     _tmp_val = _tmp_item.val();
                     if (_tmp_val != _condition.display[_id]) {
                         _required = false;
+                    }
+                    if(_condition.display[_id] == 'checked' && _tmp_item.attr('type') == 'checkbox' && _tmp_item.prop('checked')){
+                        _required = true;
                     }
                 }
 

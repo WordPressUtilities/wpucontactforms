@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.15.2
+Version: 0.15.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.15.2';
+    private $plugin_version = '0.15.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -151,6 +151,8 @@ class wpucontactforms {
             'attach_to_post' => get_the_ID(),
             'box_class' => 'box',
             'box_tagname' => 'div',
+            'fieldgroup_class' => 'twoboxes',
+            'fieldgroup_tagname' => 'div',
             'content_before_wrapper_open' => '',
             'content_after_wrapper_open' => '',
             'content_before_content_form' => '',
@@ -442,12 +444,16 @@ class wpucontactforms {
         if (isset($field['conditions'])) {
             $conditions = ' style="display:none" data-wpucf-conditions="' . esc_attr(json_encode($field['conditions'])) . '" ';
         }
-        if(isset($field['group_start']) && $field['group_start']){
-            $field['html_before'] .= '<div class="twoboxes">';
+        if (isset($field['fieldgroup_start']) && $field['fieldgroup_start']) {
+            $field['html_before'] .= '<' . $this->options['contact__settings']['fieldgroup_tagname'] . ' class="' . $this->options['contact__settings']['fieldgroup_class'] . '">';
         }
 
-        if(isset($field['group_end']) && $field['group_end']){
-            $field['html_after'] .= '</div>';
+        if (isset($field['fieldgroup_end']) && $field['fieldgroup_end']) {
+            $field['html_after'] .= '</' . $this->options['contact__settings']['fieldgroup_tagname'] . '>';
+        }
+
+        if (isset($field['help']) && $field['help']) {
+            $content .= '<small class="help">' . $field['help'] . '</small>';
         }
 
         return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . $conditions . ' class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];

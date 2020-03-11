@@ -218,7 +218,7 @@ function set_wpucontactforms_form($wrapper) {
                 /* Block will not be required if a condition is invalid */
                 var _required = true;
                 for (var _id in _condition.display) {
-                    _tmp_item = getItemById(_id);
+                    _tmp_item = getItemById(_id, _condition.display[_id]);
                     if (!_tmp_item) {
                         continue;
                     }

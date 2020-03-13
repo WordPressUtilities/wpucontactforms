@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.15.3
+Version: 0.16.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.15.3';
+    private $plugin_version = '0.16.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -335,19 +335,23 @@ class wpucontactforms {
         $content = '';
         $id = $field['id'];
         $id_html = $this->options['id'] . '_' . $id;
+        $is_multiple = isset($field['multiple']) && $field['multiple'];
+        if ($field['type'] == 'checkbox-list') {
+            $is_multiple = true;
+        }
 
-        $input_multiple = ($field['type'] == 'file' && isset($field['multiple']) && $field['multiple']);
+        $input_multiple = ($field['type'] == 'file' && $is_multiple);
 
         $field_id_name = '';
-        if ($field['type'] != 'radio') {
+        if ($field['type'] != 'radio' && $field['type'] != 'checkbox-list') {
             $field_id_name .= ' id="' . $id_html . '" aria-labelledby="label-' . $id . '"';
         }
-        if ($input_multiple) {
+        if ($input_multiple || $is_multiple) {
             $field_id_name .= ' name="' . $id . '[]"';
         } else {
             $field_id_name .= ' name="' . $id . '"';
-
         }
+
         $field_id_name .= '  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
         // Required
         if ($field['required']) {
@@ -400,14 +404,19 @@ class wpucontactforms {
             }
             $content .= '</select>';
             break;
+        case 'checkbox-list':
         case 'radio':
+            $field_type = 'radio';
+            if ($field['type'] == 'checkbox-list') {
+                $field_type = 'checkbox';
+            }
             foreach ($field['datas'] as $key => $val) {
                 $label_for = 'input-' . $id . $key;
                 $input_radio_label_before = '<label for="' . $label_for . '" id="label-' . $id . $key . '" class="label-checkbox">';
                 if ($field['input_inside_label']) {
                     $content .= $input_radio_label_before;
                 }
-                $content .= $before_checkbox . '<input type="' . $field['type'] . '" id="' . $label_for . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ';
+                $content .= $before_checkbox . '<input type="' . $field_type . '" id="' . $label_for . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ';
                 if (!$field['input_inside_label']) {
                     $content .= $input_radio_label_before;
                 }
@@ -539,9 +548,20 @@ class wpucontactforms {
 
     public function extract_value_from_post($post, $contact_fields) {
         foreach ($contact_fields as $id => $field) {
+            $is_multiple = isset($field['multiple']) && $field['multiple'];
+            if ($field['type'] == 'checkbox-list') {
+                $is_multiple = true;
+            }
+
             $tmp_value = '';
             if (isset($post[$id])) {
-                $tmp_value = trim(htmlentities(strip_tags($post[$id])));
+                if ($is_multiple) {
+                    $tmp_value = array_map('strip_tags', $post[$id]);
+                    $tmp_value = array_map('htmlentities', $tmp_value);
+                    $tmp_value = array_map('trim', $tmp_value);
+                } else {
+                    $tmp_value = trim(htmlentities(strip_tags($post[$id])));
+                }
             }
 
             if ($field['type'] == 'file' && isset($_FILES[$id])) {
@@ -552,7 +572,7 @@ class wpucontactforms {
                 $tmp_value = '0';
             }
 
-            if ($tmp_value != '') {
+            if ($tmp_value != '' && !empty($tmp_value)) {
                 if ($field['type'] == 'file') {
                     $field_ok = true;
                     foreach ($tmp_value as $tmp_file) {
@@ -640,6 +660,17 @@ class wpucontactforms {
             break;
         case 'checkbox':
             return in_array($tmp_value, $zero_one);
+            break;
+        case 'checkbox-list':
+            if (!is_array($tmp_value)) {
+                return false;
+            }
+            foreach ($tmp_value as $tmp_value_item) {
+                if (!array_key_exists($tmp_value_item, $field['datas'])) {
+                    return false;
+                }
+            }
+            return true;
             break;
         case 'email':
             return filter_var($tmp_value, FILTER_VALIDATE_EMAIL) !== false;
@@ -763,6 +794,18 @@ function wpucontactform__set_html_field_content($field) {
     /* Better presentation for text */
     if ($field['type'] == 'textarea') {
         $field_content = nl2br($field_content);
+    }
+
+    if ($field['type'] == 'checkbox-list' && is_array($field['value'])) {
+        $field_parts = array();
+
+        foreach ($field['value'] as $val_item) {
+            if (isset($field['datas'][$val_item])) {
+                $field_parts[] = $field['datas'][$val_item];
+            }
+        }
+        $field_content = implode(', ', $field_parts);
+
     }
 
     if ($field['type'] == 'file' && is_array($field['value'])) {

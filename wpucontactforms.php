@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.16.0
+Version: 0.16.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.16.0';
+    private $plugin_version = '0.16.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -407,16 +407,18 @@ class wpucontactforms {
         case 'checkbox-list':
         case 'radio':
             $field_type = 'radio';
+            $field_type_extra = '';
             if ($field['type'] == 'checkbox-list') {
                 $field_type = 'checkbox';
+                $field_type_extra = ' data-checkbox-list="1"';
             }
             foreach ($field['datas'] as $key => $val) {
-                $label_for = 'input-' . $id . $key;
+                $label_for = $id_html . '__' . $key;
                 $input_radio_label_before = '<label for="' . $label_for . '" id="label-' . $id . $key . '" class="label-checkbox">';
                 if ($field['input_inside_label']) {
                     $content .= $input_radio_label_before;
                 }
-                $content .= $before_checkbox . '<input type="' . $field_type . '" id="' . $label_for . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ';
+                $content .= $before_checkbox . '<input ' . $field_type_extra . ' type="' . $field_type . '" id="' . $label_for . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ';
                 if (!$field['input_inside_label']) {
                     $content .= $input_radio_label_before;
                 }

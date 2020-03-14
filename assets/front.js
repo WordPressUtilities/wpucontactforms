@@ -164,7 +164,10 @@ function set_wpucontactforms_form($wrapper) {
             function getItemById(_id, _value) {
                 var _tmp_item = $wrapper.find('[name="' + _id + '"]');
                 if (!_tmp_item.length) {
-                    return false;
+                    _tmp_item = $wrapper.find('[name="' + _id + '[]"]');
+                    if(!_tmp_item.length){
+                        return false;
+                    }
                 }
                 if (_tmp_item.attr('type') == 'radio') {
                     _tmp_item = $wrapper.find('[name="' + _id + '"][value="' + _value + '"]');
@@ -195,7 +198,7 @@ function set_wpucontactforms_form($wrapper) {
                     if (_condition.display[_id] == 'checked' && _tmp_item.attr('type') == 'checkbox' && _tmp_item.prop('checked')) {
                         _showblock = true;
                     }
-                    if (_tmp_item.attr('type') == 'radio') {
+                    if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
                         if (!_tmp_item.get(0).checked) {
                             _showblock = false;
                         }
@@ -229,7 +232,7 @@ function set_wpucontactforms_form($wrapper) {
                     if (_condition.display[_id] == 'checked' && _tmp_item.attr('type') == 'checkbox' && _tmp_item.prop('checked')) {
                         _required = true;
                     }
-                    if (_tmp_item.attr('type') == 'radio') {
+                    if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
                         if (!_tmp_item.get(0).checked) {
                             _required = false;
                         }

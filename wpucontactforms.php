@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.16.1
+Version: 0.16.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.16.1';
+    private $plugin_version = '0.16.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -264,6 +264,7 @@ class wpucontactforms {
         $form_autofill = false;
         $content_form = '';
         $content_fields = '';
+        $this->contact_fields = apply_filters('wpucontactforms_contact_fields_before_display', $this->contact_fields);
         foreach ($this->contact_fields as $field) {
             $content_fields .= $this->field_content($field);
             if (isset($field['autofill'])) {

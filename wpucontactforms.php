@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.17.0
+Version: 0.17.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.17.0';
+    private $plugin_version = '0.17.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -273,13 +273,13 @@ class wpucontactforms {
         }
 
         // Display contact form
-        $content_form .= '<form class="wpucontactforms__form" action="" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '') . ' data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
+        $content_form .= '<form class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '') . ' data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
         $content_form .= $content_fields;
 
         /* Quick honeypot */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
-        $content_form .= '<label>' . __('If you are human, leave this empty', 'wpucontactforms') . '</label>';
-        $content_form .= '<input tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
+        $content_form .= '<label id="label-' . $this->humantest_classname . '" for="id-' . $this->humantest_classname . '">' . __('If you are human, leave this empty', 'wpucontactforms') . '</label>';
+        $content_form .= '<input aria-labelledby="label-' . $this->humantest_classname . '" id="input-' . $this->humantest_classname . '" tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         if ($this->has_recaptcha) {

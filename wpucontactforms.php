@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.17.1
+Version: 0.17.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.17.1';
+    private $plugin_version = '0.17.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -961,6 +961,10 @@ function wpucontactforms_savepost__get_post_type() {
     return apply_filters('wpucontactforms_savepost__get_post_type', 'contact_message');
 }
 
+function wpucontactforms_savepost__get_taxonomy() {
+    return apply_filters('wpucontactforms_savepost__get_taxonomy', 'contact_form');
+}
+
 add_action('init', 'wpucontactforms_submit_contactform__savepost__objects');
 function wpucontactforms_submit_contactform__savepost__objects() {
     add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__savepost', 10, 1);
@@ -972,10 +976,10 @@ function wpucontactforms_submit_contactform__savepost__objects() {
 
     // Create a new taxonomy
     register_taxonomy(
-        'contact_form',
+        wpucontactforms_savepost__get_taxonomy(),
         array(wpucontactforms_savepost__get_post_type()),
         array(
-            'label' => __('Form'),
+            'label' => __('Forms', 'wpucontactforms'),
             'show_admin_column' => true
         )
     );
@@ -984,17 +988,19 @@ function wpucontactforms_submit_contactform__savepost__objects() {
     register_post_type(wpucontactforms_savepost__get_post_type(),
         array(
             'labels' => array(
-                'name' => __('Messages'),
-                'singular_name' => __('Message')
+                'name' => __('Messages', 'wpucontactforms'),
+                'singular_name' => __('Message', 'wpucontactforms')
             ),
-            'menu_icon' => 'dashicons-email-alt',
-            'public' => true,
-            'show_in_rest' => false,
-            'publicly_queryable' => false,
             'exclude_from_search' => true,
-            'taxonomies' => array('contact_form'),
-            'publicly_queryable' => false,
-            'has_archive' => false
+            'has_archive' => false,
+            'menu_icon' => 'dashicons-email-alt',
+            'public' => false,
+            'rewrite' => false,
+            'show_in_admin_bar' => false,
+            'show_in_nav_menus' => false,
+            'show_in_rest' => false,
+            'show_ui' => true,
+            'taxonomies' => array(wpucontactforms_savepost__get_taxonomy())
         )
     );
 
@@ -1004,7 +1010,7 @@ function wpucontactforms_submit_contactform__savepost__objects() {
 
 function wpucontactforms_submit_contactform__savepost($form) {
 
-    $taxonomy = apply_filters('wpucontactforms__createpost_taxonomy', 'contact_form', $form);
+    $taxonomy = apply_filters('wpucontactforms__createpost_taxonomy', wpucontactforms_savepost__get_taxonomy(), $form);
     $post_content = '';
     $post_metas = array();
     $attachments = array();

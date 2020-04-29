@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2020-04-22 11:39+0200\n"
+"POT-Creation-Date: 2020-04-29 12:48+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -39,7 +39,7 @@ msgstr "Nombre"
 msgid "Email"
 msgstr "Email"
 
-#: .././wpucontactforms.php:188 .././wpucontactforms.php:988
+#: .././wpucontactforms.php:188 .././wpucontactforms.php:992
 msgid "Message"
 msgstr "Mensaje"
 
@@ -95,23 +95,26 @@ msgstr "No más de %s links, por favor"
 msgid "Message from your contact form"
 msgstr "Mensaje de su formulario de contacto"
 
-#: .././wpucontactforms.php:978
-msgid "Form"
-msgstr "Formulario"
+#: .././wpucontactforms.php:982
+msgid "Forms"
+msgstr "Formularios"
 
-#: .././wpucontactforms.php:987
+#: .././wpucontactforms.php:991
 msgid "Messages"
 msgstr "Mensajes"
 
-#: .././wpucontactforms.php:1024
+#: .././wpucontactforms.php:1030
 msgid "New message"
 msgstr "Nuevo mensaje"
 
-#: .././wpucontactforms.php:1034
+#: .././wpucontactforms.php:1040
 #, php-format
 msgid "New message from %s"
 msgstr "Nuevo mensaje de %s"
 
-#: .././wpucontactforms.php:1090
+#: .././wpucontactforms.php:1096
 msgid "Re-send this email"
 msgstr "Vuelva a enviar este correo electrónico"
+
+#~ msgid "Form"
+#~ msgstr "Formulario"

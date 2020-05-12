@@ -1006,10 +1006,31 @@ function wpucontactforms_submit_contactform__savepost__objects() {
 
     add_filter('manage_taxonomies_for_activity_columns', 'activity_type_columns');
 
+    add_action('add_meta_boxes', 'wpucontactforms__meta_box');
+
+}
+
+function wpucontactforms__meta_box() {
+    if (get_post_type() != wpucontactforms_savepost__get_post_type()) {
+        return;
+    }
+    $metas = get_post_meta(get_the_ID(), 'wpucontactforms_metas', 1);
+    if (!$metas) {
+        return;
+    }
+    add_meta_box('wpucontactforms-meta-box', __('Contact metas', 'wpucontactforms'), 'wpucontactforms__meta_box__content', wpucontactforms_savepost__get_post_type());
+}
+
+function wpucontactforms__meta_box__content($post) {
+    $metas = get_post_meta($post->ID, 'wpucontactforms_metas', 1);
+    echo '<table>';
+    foreach ($metas as $meta_key => $meta_value) {
+        echo '<tr><td>' . esc_html($meta_key) . '</td><td>' . esc_html($meta_value) . '</td></tr>';
+    }
+    echo '</table>';
 }
 
 function wpucontactforms_submit_contactform__savepost($form) {
-
     $taxonomy = apply_filters('wpucontactforms__createpost_taxonomy', wpucontactforms_savepost__get_taxonomy(), $form);
     $post_content = '';
     $post_metas = array();
@@ -1053,6 +1074,7 @@ function wpucontactforms_submit_contactform__savepost($form) {
     foreach ($post_metas as $id => $value) {
         update_post_meta($post_id, $id, $value);
     }
+    update_post_meta($post_id, 'wpucontactforms_metas', $post_metas);
 
     // Add term
     $term = wp_insert_term(

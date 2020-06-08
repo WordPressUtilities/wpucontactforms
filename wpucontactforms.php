@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.17.3
+Version: 0.17.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.17.3';
+    private $plugin_version = '0.17.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -137,14 +137,6 @@ class wpucontactforms {
         );
         $this->options = array_merge($default_options, $options);
 
-        // Max file size
-        $post_max_size = intval(str_replace('M', '', ini_get('post_max_size')), 10) * 1024 * 1024;
-        $upload_max_filesize = intval(str_replace('M', '', ini_get('upload_max_filesize')), 10) * 1024 * 1024;
-        $max_file_size = $upload_max_filesize;
-        if ($post_max_size < $upload_max_filesize) {
-            $max_file_size = $post_max_size;
-        }
-
         // Settings
         $contact__settings = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
@@ -167,7 +159,7 @@ class wpucontactforms {
             'group_tagname' => 'div',
             'input_class' => 'input-text',
             'label_text_required' => '<em>*</em>',
-            'max_file_size' => $max_file_size,
+            'max_file_size' => wp_max_upload_size(),
             'recaptcha_enabled' => false,
             'recaptcha_sitekey' => false,
             'recaptcha_privatekey' => false,

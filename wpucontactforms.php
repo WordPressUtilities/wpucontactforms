@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.17.6
+Version: 0.18.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.17.6';
+    private $plugin_version = '0.18.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -447,7 +447,11 @@ class wpucontactforms {
 
         $conditions = '';
         if (isset($field['conditions'])) {
-            $conditions = ' style="display:none" data-wpucf-conditions="' . esc_attr(json_encode($field['conditions'])) . '" ';
+            $conditions = '';
+            if (isset($field['conditions']['display'])) {
+                $conditions .= ' style="display:none"';
+            }
+            $conditions .= ' data-wpucf-conditions="' . esc_attr(json_encode($field['conditions'])) . '" ';
         }
         if (isset($field['fieldgroup_start']) && $field['fieldgroup_start']) {
             $field['html_before'] .= '<' . $this->options['contact__settings']['fieldgroup_tagname'] . ' class="' . $this->options['contact__settings']['fieldgroup_class'] . '">';
@@ -461,7 +465,7 @@ class wpucontactforms {
             $content .= '<small class="help">' . $field['help'] . '</small>';
         }
 
-        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . $conditions . ' data-boxtype="'.esc_attr($field['type']).'" class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
+        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . $conditions . ' data-boxtype="' . esc_attr($field['type']) . '" class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
     }
 
     public function post_contact() {
@@ -669,7 +673,7 @@ class wpucontactforms {
             return true;
             break;
         case 'number':
-            return is_numeric($value);
+            return is_numeric($tmp_value);
             break;
         case 'email':
             return filter_var($tmp_value, FILTER_VALIDATE_EMAIL) !== false;

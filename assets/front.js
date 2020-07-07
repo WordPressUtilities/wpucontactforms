@@ -195,8 +195,13 @@ function set_wpucontactforms_form($wrapper) {
                     if (_tmp_val != _condition.display[_id]) {
                         _showblock = false;
                     }
-                    if (_condition.display[_id] == 'checked' && _tmp_item.attr('type') == 'checkbox' && _tmp_item.prop('checked')) {
-                        _showblock = true;
+                    if (_tmp_item.attr('type') == 'checkbox') {
+                        if(_tmp_item.prop('checked')){
+                            _showblock = (_condition.display[_id] == 'checked');
+                        }
+                        else {
+                            _showblock = (_condition.display[_id] == 'notchecked');
+                        }
                     }
                     if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
                         if (!_tmp_item.get(0).checked) {
@@ -220,17 +225,23 @@ function set_wpucontactforms_form($wrapper) {
                 }
                 /* Block will not be required if a condition is invalid */
                 var _required = true;
-                for (var _id in _condition.display) {
-                    _tmp_item = getItemById(_id, _condition.display[_id]);
+                for (var _id in _condition.required) {
+                    _tmp_item = getItemById(_id, _condition.required[_id]);
                     if (!_tmp_item) {
                         continue;
                     }
                     _tmp_val = _tmp_item.val();
-                    if (_tmp_val != _condition.display[_id]) {
+                    if (_tmp_val != _condition.required[_id]) {
                         _required = false;
                     }
-                    if (_condition.display[_id] == 'checked' && _tmp_item.attr('type') == 'checkbox' && _tmp_item.prop('checked')) {
-                        _required = true;
+
+                    if (_tmp_item.attr('type') == 'checkbox') {
+                        if(_tmp_item.prop('checked')){
+                            _required = (_condition.required[_id] == 'checked');
+                        }
+                        else {
+                            _required = (_condition.required[_id] == 'notchecked');
+                        }
                     }
                     if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
                         if (!_tmp_item.get(0).checked) {

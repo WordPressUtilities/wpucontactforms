@@ -165,7 +165,7 @@ function set_wpucontactforms_form($wrapper) {
                 var _tmp_item = $wrapper.find('[name="' + _id + '"]');
                 if (!_tmp_item.length) {
                     _tmp_item = $wrapper.find('[name="' + _id + '[]"]');
-                    if(!_tmp_item.length){
+                    if (!_tmp_item.length) {
                         return false;
                     }
                 }
@@ -178,37 +178,62 @@ function set_wpucontactforms_form($wrapper) {
                 return _tmp_item;
             }
 
+            function get_condition_status(conditions_array_src) {
+                var conditions_array = Object.assign({}, conditions_array_src),
+                    _return_condition = true,
+                    _isNegativeCond;
+
+                for (var _id in conditions_array) {
+                    _isNegativeCond = conditions_array[_id].substr(0, 4) == 'not:';
+                    if (_isNegativeCond) {
+                        conditions_array[_id] = conditions_array[_id].substr(4);
+                    }
+
+                    _tmp_item = getItemById(_id, conditions_array[_id]);
+                    if (!_tmp_item) {
+                        continue;
+                    }
+
+                    _tmp_val = _tmp_item.val();
+
+                    /* Textual value */
+                    if (_isNegativeCond && _tmp_val == conditions_array[_id]) {
+                        _return_condition = false;
+                    }
+                    if (!_isNegativeCond && _tmp_val != conditions_array[_id]) {
+                        _return_condition = false;
+                    }
+
+                    /* Checkbox */
+                    if (_tmp_item.attr('type') == 'checkbox') {
+                        if (_tmp_item.prop('checked')) {
+                            _return_condition = (conditions_array[_id] == 'checked');
+                        }
+                        else {
+                            _return_condition = (conditions_array[_id] == 'notchecked');
+                        }
+                    }
+
+                    /* Radio */
+                    if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
+                        if (_isNegativeCond) {
+                            _return_condition = !_tmp_item.get(0).checked;
+                        }
+                        else {
+                            _return_condition = _tmp_item.get(0).checked;
+                        }
+                    }
+                }
+                return _return_condition;
+            }
+
             /* Change target block display */
             (function() {
                 if (!_condition.display) {
                     return;
                 }
                 /* Block will be shown if no condition is invalid */
-                var _showblock = true;
-                for (var _id in _condition.display) {
-                    _tmp_item = getItemById(_id, _condition.display[_id]);
-                    if (!_tmp_item) {
-                        continue;
-                    }
-
-                    _tmp_val = _tmp_item.val();
-                    if (_tmp_val != _condition.display[_id]) {
-                        _showblock = false;
-                    }
-                    if (_tmp_item.attr('type') == 'checkbox') {
-                        if(_tmp_item.prop('checked')){
-                            _showblock = (_condition.display[_id] == 'checked');
-                        }
-                        else {
-                            _showblock = (_condition.display[_id] == 'notchecked');
-                        }
-                    }
-                    if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
-                        if (!_tmp_item.get(0).checked) {
-                            _showblock = false;
-                        }
-                    }
-                }
+                var _showblock = get_condition_status(_condition.display);
 
                 if (_showblock) {
                     $blockWrapper.show();
@@ -224,32 +249,7 @@ function set_wpucontactforms_form($wrapper) {
                     return;
                 }
                 /* Block will not be required if a condition is invalid */
-                var _required = true;
-                for (var _id in _condition.required) {
-                    _tmp_item = getItemById(_id, _condition.required[_id]);
-                    if (!_tmp_item) {
-                        continue;
-                    }
-                    _tmp_val = _tmp_item.val();
-                    if (_tmp_val != _condition.required[_id]) {
-                        _required = false;
-                    }
-
-                    if (_tmp_item.attr('type') == 'checkbox') {
-                        if(_tmp_item.prop('checked')){
-                            _required = (_condition.required[_id] == 'checked');
-                        }
-                        else {
-                            _required = (_condition.required[_id] == 'notchecked');
-                        }
-                    }
-                    if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
-                        if (!_tmp_item.get(0).checked) {
-                            _required = false;
-                        }
-                    }
-                }
-
+                var _required = get_condition_status(_condition.display);
                 var _requiredStr = _required.toString();
                 $blockWrapper.attr('data-required', _requiredStr);
                 $blockField.attr('aria-required', _requiredStr);

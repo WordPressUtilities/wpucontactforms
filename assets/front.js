@@ -147,11 +147,19 @@ function set_wpucontactforms_form($wrapper) {
     /* Conditions */
     (function() {
 
-        var $condition_fields = $wrapper.find('[data-wpucf-conditions]'),
+        var $condition_fields,
             _conditions = [];
 
-        $condition_fields.each(function() {
-            _conditions.push(JSON.parse(jQuery(this).attr('data-wpucf-conditions')));
+        function load_conditions() {
+            $condition_fields = $wrapper.find('[data-wpucf-conditions]')
+            $condition_fields.each(function() {
+                _conditions.push(JSON.parse(jQuery(this).attr('data-wpucf-conditions')));
+            });
+        }
+
+        load_conditions();
+        $wrapper.on('wpucontactforms_after_ajax', function(e){
+            load_conditions();
         });
 
         function set_field_by_condition(i, el) {
@@ -269,6 +277,10 @@ function set_wpucontactforms_form($wrapper) {
 
         set_fields_by_condition();
         $wrapper.on('change blur', '[name]', set_fields_by_condition);
+        $wrapper.on('wpucontactforms_after_ajax', function(e){
+            set_fields_by_condition();
+        });
+
         (function() {
             var _timeout = false;
             $wrapper.on('keyup', '[name]', function() {

@@ -151,14 +151,14 @@ function set_wpucontactforms_form($wrapper) {
             _conditions = [];
 
         function load_conditions() {
-            $condition_fields = $wrapper.find('[data-wpucf-conditions]')
+            $condition_fields = $wrapper.find('[data-wpucf-conditions]');
             $condition_fields.each(function() {
                 _conditions.push(JSON.parse(jQuery(this).attr('data-wpucf-conditions')));
             });
         }
 
         load_conditions();
-        $wrapper.on('wpucontactforms_after_ajax', function(e){
+        $wrapper.on('wpucontactforms_after_ajax', function(e) {
             load_conditions();
         });
 
@@ -242,13 +242,13 @@ function set_wpucontactforms_form($wrapper) {
                 }
                 /* Block will be shown if no condition is invalid */
                 var _showblock = get_condition_status(_condition.display);
-
                 if (_showblock) {
-                    $blockWrapper.show();
+                    $blockWrapper.attr('data-displayed', 1).show();
                 }
                 else {
-                    $blockWrapper.hide();
+                    $blockWrapper.attr('data-displayed', 0).hide();
                 }
+                $blockWrapper.trigger('wpucontactforms_block_change_display');
             }());
 
             /* Change target block required */
@@ -267,6 +267,7 @@ function set_wpucontactforms_form($wrapper) {
                 else {
                     $blockField.removeAttr('required');
                 }
+                $blockField.trigger('wpucontactforms_block_change_required');
             }());
 
         }
@@ -277,7 +278,7 @@ function set_wpucontactforms_form($wrapper) {
 
         set_fields_by_condition();
         $wrapper.on('change blur', '[name]', set_fields_by_condition);
-        $wrapper.on('wpucontactforms_after_ajax', function(e){
+        $wrapper.on('wpucontactforms_after_ajax', function(e) {
             set_fields_by_condition();
         });
 

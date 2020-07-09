@@ -204,26 +204,31 @@ function set_wpucontactforms_form($wrapper) {
 
                     _tmp_val = _tmp_item.val();
 
+                    var _isCheckbox = _tmp_item.attr('type') == 'checkbox';
+                    var _isRadio = (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1');
+
                     /* Textual value */
-                    if (_isNegativeCond && _tmp_val == conditions_array[_id]) {
-                        _return_condition = false;
-                    }
-                    if (!_isNegativeCond && _tmp_val != conditions_array[_id]) {
-                        _return_condition = false;
+                    if (!_isRadio && !_isCheckbox) {
+                        if (_isNegativeCond && _tmp_val == conditions_array[_id]) {
+                            _return_condition = false;
+                        }
+                        if (!_isNegativeCond && _tmp_val != conditions_array[_id]) {
+                            _return_condition = false;
+                        }
                     }
 
                     /* Checkbox */
-                    if (_tmp_item.attr('type') == 'checkbox') {
-                        if (_tmp_item.prop('checked')) {
-                            _return_condition = (conditions_array[_id] == 'checked');
+                    if (_isCheckbox) {
+                        if (_tmp_item.prop('checked') && conditions_array[_id] != 'checked') {
+                            _return_condition = false;
                         }
-                        else {
-                            _return_condition = (conditions_array[_id] == 'notchecked');
+                        if (!_tmp_item.prop('checked') && conditions_array[_id] != 'notchecked') {
+                            _return_condition = false;
                         }
                     }
 
                     /* Radio */
-                    if (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1') {
+                    if (_isRadio) {
                         if (_isNegativeCond) {
                             _return_condition = !_tmp_item.get(0).checked;
                         }
@@ -257,7 +262,7 @@ function set_wpucontactforms_form($wrapper) {
                     return;
                 }
                 /* Block will not be required if a condition is invalid */
-                var _required = get_condition_status(_condition.display);
+                var _required = get_condition_status(_condition.required);
                 var _requiredStr = _required.toString();
                 $blockWrapper.attr('data-required', _requiredStr);
                 $blockField.attr('aria-required', _requiredStr);

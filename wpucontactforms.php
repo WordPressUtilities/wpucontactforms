@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.19.3
+Version: 0.20.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.19.3';
+    private $plugin_version = '0.20.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -242,7 +242,6 @@ class wpucontactforms {
             if (empty($field['value']) && $field['preload_value'] && !isset($field['autofill']) && !isset($_POST[$id]) && isset($_GET[$id]) && $this->validate_field($_GET[$id], $field)) {
                 $this->contact_fields[$id]['value'] = $_GET[$id];
             }
-
         }
 
     }
@@ -591,7 +590,9 @@ class wpucontactforms {
 
                     if ($field['type'] == 'select' || $field['type'] == 'radio') {
                         $contact_fields[$id]['value_select'] = $tmp_value;
-                        $tmp_value = $field['datas'][$tmp_value];
+                        if(isset($field['datas'][$tmp_value])){
+                            $tmp_value = $field['datas'][$tmp_value];
+                        }
                     }
 
                     if ($field['type'] == 'checkbox') {
@@ -883,8 +884,12 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
         $form_contact_fields = $form->contact_fields;
     }
 
+
     /* Subject */
     $sendmail_subject = __('Message from your contact form', 'wpucontactforms');
+    if (isset($form->options['name'])) {
+        $sendmail_subject = '[' . $form->options['name']. '] ' . __('New message', 'wpucontactforms');
+    }
     if (!function_exists('wputh_sendmail')) {
         $sendmail_subject = '[' . get_bloginfo('name') . ']' . $sendmail_subject;
     }

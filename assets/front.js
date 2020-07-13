@@ -189,12 +189,20 @@ function set_wpucontactforms_form($wrapper) {
             function get_condition_status(conditions_array_src) {
                 var conditions_array = Object.assign({}, conditions_array_src),
                     _return_condition = true,
+                    _tmpValNum,
+                    _isSupCond,
+                    _isInfCond,
                     _isNegativeCond;
 
                 for (var _id in conditions_array) {
                     _isNegativeCond = conditions_array[_id].substr(0, 4) == 'not:';
+                    _isSupCond = conditions_array[_id].substr(0, 1) == '>';
+                    _isInfCond = conditions_array[_id].substr(0, 1) == '<';
                     if (_isNegativeCond) {
                         conditions_array[_id] = conditions_array[_id].substr(4);
+                    }
+                    if (_isSupCond || _isInfCond) {
+                        conditions_array[_id] = parseInt(conditions_array[_id].substr(1), 10);
                     }
 
                     _tmp_item = getItemById(_id, conditions_array[_id]);
@@ -208,7 +216,19 @@ function set_wpucontactforms_form($wrapper) {
                     var _isRadio = (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1');
 
                     /* Textual value */
-                    if (!_isRadio && !_isCheckbox) {
+                    if (_isSupCond || _isInfCond) {
+                        _tmpValNum = parseInt(_tmp_val, 10);
+                        if (isNaN(_tmpValNum)) {
+                            _tmpValNum = 0;
+                        }
+                        if (_isSupCond && _tmpValNum <= conditions_array[_id]) {
+                            _return_condition = false;
+                        }
+                        if (_isInfCond && _tmpValNum >= conditions_array[_id]) {
+                            _return_condition = false;
+                        }
+                    }
+                    if (!_isRadio && !_isCheckbox && !_isSupCond && !_isInfCond) {
                         if (_isNegativeCond && _tmp_val == conditions_array[_id]) {
                             _return_condition = false;
                         }

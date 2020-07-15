@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.21.0
+Version: 0.21.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.21.0';
+    private $plugin_version = '0.21.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -370,6 +370,12 @@ class wpucontactforms {
         if (isset($field['validation_pattern']) && !empty($field['validation_pattern'])) {
             $field_id_name .= ' pattern="' . $field['validation_pattern'] . '"';
         }
+
+        // Extra attributes
+        if (isset($field['attributes_extra']) && !empty($field['attributes_extra'])) {
+            $field_id_name .= $field['attributes_extra'];
+        }
+
         // Value
         $field_val = 'value="' . (is_string($field['value']) ? $field['value'] : '') . '"';
 
@@ -452,10 +458,22 @@ class wpucontactforms {
             }
             $conditions .= ' data-wpucf-conditions="' . esc_attr(json_encode($field['conditions'])) . '" ';
         }
-        if (isset($field['fieldgroup_start']) && $field['fieldgroup_start']) {
-            $field['html_before'] .= '<' . $this->options['contact__settings']['fieldgroup_tagname'] . ' class="' . $this->options['contact__settings']['fieldgroup_class'] . '">';
+
+        $fieldgroup_class = $this->options['contact__settings']['fieldgroup_class'];
+        if (isset($field['fieldgroup_class'])) {
+            $fieldgroup_class = $field['fieldgroup_class'];
         }
 
+        if (isset($field['fieldgroup_start']) && $field['fieldgroup_start']) {
+            $field['html_before'] .= '<' . $this->options['contact__settings']['fieldgroup_tagname'] . ' class="' . esc_attr($fieldgroup_class) . '">';
+        }
+        if (isset($field['fieldgroup_html_before'])) {
+            $field['html_before'] .= $field['fieldgroup_html_before'];
+        }
+
+        if (isset($field['fieldgroup_html_after'])) {
+            $field['html_after'] .= $field['fieldgroup_html_after'];
+        }
         if (isset($field['fieldgroup_end']) && $field['fieldgroup_end']) {
             $field['html_after'] .= '</' . $this->options['contact__settings']['fieldgroup_tagname'] . '>';
         }
@@ -590,7 +608,7 @@ class wpucontactforms {
 
                     if ($field['type'] == 'select' || $field['type'] == 'radio') {
                         $contact_fields[$id]['value_select'] = $tmp_value;
-                        if(isset($field['datas'][$tmp_value])){
+                        if (isset($field['datas'][$tmp_value])) {
                             $tmp_value = $field['datas'][$tmp_value];
                         }
                     }
@@ -884,11 +902,10 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
         $form_contact_fields = $form->contact_fields;
     }
 
-
     /* Subject */
     $sendmail_subject = __('Message from your contact form', 'wpucontactforms');
     if (isset($form->options['name'])) {
-        $sendmail_subject = '[' . $form->options['name']. '] ' . __('New message', 'wpucontactforms');
+        $sendmail_subject = '[' . $form->options['name'] . '] ' . __('New message', 'wpucontactforms');
     }
     if (!function_exists('wputh_sendmail')) {
         $sendmail_subject = '[' . get_bloginfo('name') . ']' . $sendmail_subject;

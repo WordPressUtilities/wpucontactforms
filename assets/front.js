@@ -284,13 +284,24 @@ function set_wpucontactforms_form($wrapper) {
                 /* Block will not be required if a condition is invalid */
                 var _required = get_condition_status(_condition.required);
                 var _requiredStr = _required.toString();
+                var _blockType = $blockWrapper.attr('data-boxtype');
                 $blockWrapper.attr('data-required', _requiredStr);
                 $blockField.attr('aria-required', _requiredStr);
-                if (_required) {
-                    $blockField.attr('required', 'required');
+                if (_blockType == 'checkbox-list') {
+                    if (!_required || (_required && $blockField.is(':checked'))) {
+                        $blockField.removeAttr('required');
+                    }
+                    if (_required && !$blockField.is(':checked')) {
+                        $blockField.attr('required', 'required');
+                    }
                 }
-                else {
-                    $blockField.removeAttr('required');
+                if (_blockType != 'checkbox-list') {
+                    if (_required) {
+                        $blockField.attr('required', 'required');
+                    }
+                    else {
+                        $blockField.removeAttr('required');
+                    }
                 }
                 $blockField.trigger('wpucontactforms_block_change_required');
             }());

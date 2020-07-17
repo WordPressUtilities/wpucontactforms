@@ -30,6 +30,6 @@
     opacity: 0.999;
 }
 
-.wpucontactforms-form-wrapper [data-required="true"] > label:after {
+.wpucontactforms-form-wrapper [data-required="true"] > label:not(.label-checkbox):after {
     content: '*';
 }

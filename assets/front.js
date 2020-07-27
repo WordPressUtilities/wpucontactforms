@@ -94,6 +94,7 @@ function set_wpucontactforms_form($wrapper) {
                 ga('send', 'event', 'wpucontactforms_success');
             }
             $form.addClass('form--has-success');
+            $wrapper.trigger('wpucontactforms_after_success');
         }
         if (has_recaptcha) {
             if (recaptcha_item) {

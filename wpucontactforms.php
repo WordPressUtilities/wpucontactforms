@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.22.1
+Version: 0.22.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.22.1';
+    private $plugin_version = '0.22.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -810,7 +810,7 @@ class wpucontactforms {
   Helpers
 ---------------------------------------------------------- */
 
-function wpucontactform__set_html_field_content($field) {
+function wpucontactform__set_html_field_content($field, $wrap_html = true) {
     $field_content = $field['value'];
 
     /* Better presentation for text */
@@ -844,7 +844,7 @@ function wpucontactform__set_html_field_content($field) {
     }
 
     // Return layout
-    return '<p><strong>' . $field['label'] . '</strong>:<br />' . $field_content . '</p>';
+    return $wrap_html ? '<p><strong>' . $field['label'] . '</strong>:<br />' . $field_content . '</p>' : $field_content;
 }
 
 /* ----------------------------------------------------------
@@ -1047,6 +1047,9 @@ function wpucontactforms_submit_contactform__savepost($form) {
 
         $post_content .= wpucontactform__set_html_field_content($field) . '<hr />';
         $post_metas[$id] = $field['value'];
+        if (apply_filters('wpucontactforms__save_post_meta_html', false) && !in_array($field['type'], array('file'))) {
+            $post_metas[$id] = wpucontactform__set_html_field_content($field, false);
+        }
     }
 
     $default_post_title = __('New message', 'wpucontactforms');

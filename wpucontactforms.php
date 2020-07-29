@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.22.2
+Version: 0.22.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.22.2';
+    private $plugin_version = '0.22.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -427,7 +427,7 @@ class wpucontactforms {
             $content .= '<input ' . ($input_multiple ? 'multiple' : '') . ' type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'checkbox':
-            $content = '<label id="label-' . $id . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' value="1" />' . $after_checkbox . ' ' . $label_content . '</label>';
+            $content = '<label id="label-' . $id . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . (isset($field['checked']) && $field['checked'] ? 'checked="checked"' : '') . ' value="1" />' . $after_checkbox . ' ' . $label_content . '</label>';
             break;
         case 'text':
         case 'tel':

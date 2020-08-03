@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.22.3
+Version: 0.22.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.22.3';
+    private $plugin_version = '0.22.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -37,9 +37,7 @@ class wpucontactforms {
             load_plugin_textdomain('wpucontactforms', false, dirname(plugin_basename(__FILE__)) . '/lang/');
         }
 
-        add_action('wp_loaded', array(&$this,
-            'wp_loaded'
-        ));
+        $this->set_humantest_classname($options['id']);
 
         $wpucontactforms_forms[] = $options['id'];
 
@@ -79,10 +77,10 @@ class wpucontactforms {
         }
     }
 
-    public function wp_loaded() {
+    public function set_humantest_classname($form_id) {
 
-        /* Set no bot test */
-        $this->humantest_classname = md5($this->humantest_classname . get_bloginfo('name'));
+        /* Init classname no bot test */
+        $this->humantest_classname = md5($this->humantest_classname . get_bloginfo('name') . $form_id);
         $this->humantest_classname = apply_filters('wpucontactforms_humantest_classname', $this->humantest_classname);
     }
 
@@ -589,7 +587,7 @@ class wpucontactforms {
                 $tmp_value = '0';
             }
 
-            if ($tmp_value != '' && !empty($tmp_value)) {
+            if ($tmp_value != '' && $tmp_value != array('') && !empty($tmp_value)) {
                 if ($field['type'] == 'file') {
                     $field_ok = true;
                     foreach ($tmp_value as $tmp_file) {

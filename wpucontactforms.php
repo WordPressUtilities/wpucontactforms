@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.22.4
+Version: 0.23.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.22.4';
+    private $plugin_version = '0.23.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -56,6 +56,7 @@ class wpucontactforms {
         ));
 
         if ($this->first_init) {
+            add_action('admin_menu', array(&$this, 'create_admin_form_submenus'));
             include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
             $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
                 'WordPressUtilities',
@@ -96,6 +97,24 @@ class wpucontactforms {
 
         // Pass Ajax Url to script.js
         wp_localize_script('wpucontactforms-front', 'ajaxurl', admin_url('admin-ajax.php'));
+    }
+
+    public function create_admin_form_submenus() {
+        global $submenu;
+        $forms = get_terms(array(
+            'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
+            'hide_empty' => false
+        ));
+        /* Display form submenus only if needed */
+        if (!$forms || count($forms) < 2) {
+            return;
+        }
+
+        $base_link = 'edit.php?post_type=' . wpucontactforms_savepost__get_post_type();
+        foreach ($forms as $form) {
+            $form_link = admin_url($base_link . '&taxonomy=' . wpucontactforms_savepost__get_taxonomy() . '&term=' . $form->slug);
+            $submenu[$base_link][] = array('- ' . $form->name, 'edit_pages', $form_link);
+        }
     }
 
     public function set_options($options) {
@@ -281,6 +300,7 @@ class wpucontactforms {
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
+        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '');
         $hidden_fields = apply_filters('wpucontactforms_hidden_fields', array(
             'form_id' => $form_id,
             'control_stripslashes' => '&quot;',
@@ -295,6 +315,7 @@ class wpucontactforms {
         } else {
             $content_form .= '<input class="' . $this->options['contact__settings']['submit_class'] . '" type="submit" value="' . esc_attr($this->options['contact__settings']['submit_label']) . '">';
         }
+        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_after', '');
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';

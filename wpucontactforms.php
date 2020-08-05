@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.23.0
+Version: 0.23.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.23.0';
+    private $plugin_version = '0.23.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -959,6 +959,9 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
 
 add_action('wpucontactforms_submit_contactform', 'wpucontactforms_submit_contactform__sendmail', 10, 1);
 function wpucontactforms_submit_contactform__sendmail($form) {
+    if (apply_filters('wpucontactforms_submit_contactform__sendmail__disable', false, $form)) {
+        return false;
+    }
 
     // Send mail
     $mail_content = apply_filters('wpucontactforms__sendmail_intro', '<p>' . __('Message from your contact form', 'wpucontactforms') . '</p>', $form);

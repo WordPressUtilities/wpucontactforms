@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.23.1
+Version: 0.24.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.23.1';
+    private $plugin_version = '0.24.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -57,6 +57,7 @@ class wpucontactforms {
 
         if ($this->first_init) {
             add_action('admin_menu', array(&$this, 'create_admin_form_submenus'));
+            add_action('add_meta_boxes', array(&$this, 'register_meta_boxes'));
             include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
             $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
                 'WordPressUtilities',
@@ -821,6 +822,34 @@ class wpucontactforms {
             );
         }
         return $final_file;
+    }
+
+    public function register_meta_boxes() {
+        add_meta_box('wpucontactforms-meta-boxes', __('Attachments','wpucontactforms'), array(&$this, 'callback_meta_box'), wpucontactforms_savepost__get_post_type());
+    }
+
+    /**
+     * Meta box display callback.
+     *
+     * @param WP_Post $post Current post object.
+     */
+    public function callback_meta_box($post) {
+        $attachments = get_posts(array(
+            'post_type' => 'attachment',
+            'posts_per_page' => -1,
+            'post_parent' => $post->ID
+        ));
+
+        if ($attachments) {
+            echo '<ul>';
+            foreach ($attachments as $attachment) {
+                echo '<li>- <a download href="' . wp_get_attachment_url($attachment->ID) . '">' . $attachment->post_title . ' (' . $attachment->post_mime_type . ')</a></li>';
+            }
+            echo '</ul>';
+
+        } else {
+            echo '<p>' . __('No attachments available', 'wpucontactforms') . '</p>';
+        }
     }
 
 }

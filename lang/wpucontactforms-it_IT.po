@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2020-04-29 12:48+0200\n"
+"POT-Creation-Date: 2020-08-06 19:17+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -9,110 +9,118 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.4\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: __;_e\n"
 "X-Poedit-SearchPath-0: ../.\n"
 
-#: .././wpucontactforms.php:125 .././wpucontactforms.php:601
+#: .././wpucontactforms.php:143 .././wpucontactforms.php:637
 msgid "No"
 msgstr "No"
 
-#: .././wpucontactforms.php:126 .././wpucontactforms.php:601
+#: .././wpucontactforms.php:144 .././wpucontactforms.php:637
 msgid "Yes"
 msgstr "Si"
 
-#: .././wpucontactforms.php:135
+#: .././wpucontactforms.php:153
 msgid "Thank you for your message!"
 msgstr "Grazie per il vostro messaggio!"
 
-#: .././wpucontactforms.php:175
+#: .././wpucontactforms.php:185
 msgid "Submit"
 msgstr "Invia"
 
-#: .././wpucontactforms.php:179
+#: .././wpucontactforms.php:189
 msgid "Name"
 msgstr "Nome"
 
-#: .././wpucontactforms.php:183
+#: .././wpucontactforms.php:193
 msgid "Email"
 msgstr "Email"
 
-#: .././wpucontactforms.php:188 .././wpucontactforms.php:992
+#: .././wpucontactforms.php:198 .././wpucontactforms.php:1065
 msgid "Message"
 msgstr "Messaggio"
 
-#: .././wpucontactforms.php:281
+#: .././wpucontactforms.php:290
 msgid "If you are human, leave this empty"
 msgstr "Se sei umano, lascia questo vuoto"
 
-#: .././wpucontactforms.php:373
+#: .././wpucontactforms.php:384
 msgid "Select a value"
 msgstr "Selezionare un valore"
 
-#: .././wpucontactforms.php:536
+#: .././wpucontactforms.php:570
 msgid "Error:"
 msgstr "Errore:"
 
-#: .././wpucontactforms.php:592
+#: .././wpucontactforms.php:626
 #, php-format
 msgid "The field \"%s\" is not correct"
 msgstr "Il campo \"%s\" non è corretto"
 
-#: .././wpucontactforms.php:616
+#: .././wpucontactforms.php:652
 #, php-format
 msgid "The field \"%s\" is required"
 msgstr "Il campo \"%s\" è obbligatorio"
 
-#: .././wpucontactforms.php:749
+#: .././wpucontactforms.php:788
 msgid "Select an order"
 msgstr "Selezionare un ordine"
 
-#: .././wpucontactforms.php:752
+#: .././wpucontactforms.php:791
 #, php-format
 msgid "# %s"
 msgstr "n. %s"
 
-#: .././wpucontactforms.php:756
+#: .././wpucontactforms.php:795
 msgid "No order available"
 msgstr "Nessun ordine disponibile"
 
-#: .././wpucontactforms.php:820
+#: .././wpucontactforms.php:828
+msgid "Attachments"
+msgstr "Allegati"
+
+#: .././wpucontactforms.php:851
+msgid "No attachments available"
+msgstr "Nessun allegato disponibile"
+
+#: .././wpucontactforms.php:887
 msgid "See attached file(s)"
 msgstr "Vedere i file allegati"
 
-#: .././wpucontactforms.php:821
+#: .././wpucontactforms.php:888
 msgid "Or click here"
 msgstr "Oppure clicca qui"
 
-#: .././wpucontactforms.php:868
+#: .././wpucontactforms.php:935
 #, php-format
 msgid "No more than %s links, please"
 msgstr "Non più di %s link, si prega di"
 
-#: .././wpucontactforms.php:887 .././wpucontactforms.php:923
+#: .././wpucontactforms.php:954 .././wpucontactforms.php:996
 msgid "Message from your contact form"
 msgstr "Messaggio dal modulo di contatto"
 
-#: .././wpucontactforms.php:982
-msgid "Forms"
-msgstr "Formulari"
-
-#: .././wpucontactforms.php:991
-msgid "Messages"
-msgstr "Messaggi"
-
-#: .././wpucontactforms.php:1030
+#: .././wpucontactforms.php:956 .././wpucontactforms.php:1106
 msgid "New message"
 msgstr "Nuovo messaggio"
 
-#: .././wpucontactforms.php:1040
+#: .././wpucontactforms.php:1055
+msgid "Forms"
+msgstr "Formulari"
+
+#: .././wpucontactforms.php:1064
+msgid "Messages"
+msgstr "Messaggi"
+
+#: .././wpucontactforms.php:1116
 #, php-format
 msgid "New message from %s"
 msgstr "﻿Nuovo messaggio da %s"
 
-#: .././wpucontactforms.php:1096
+#: .././wpucontactforms.php:1175
 msgid "Re-send this email"
 msgstr "Invia nuovamente questa email"
 

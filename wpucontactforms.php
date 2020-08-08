@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.24.0
+Version: 0.25.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.24.0';
+    private $plugin_version = '0.25.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -97,7 +97,10 @@ class wpucontactforms {
         wp_enqueue_style('wpucontactforms-frontcss', plugins_url('assets/front.css', __FILE__), array(), $this->plugin_version, 'all');
 
         // Pass Ajax Url to script.js
-        wp_localize_script('wpucontactforms-front', 'ajaxurl', admin_url('admin-ajax.php'));
+        wp_localize_script('wpucontactforms-front', 'wpucontactforms_obj', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'enable_custom_validation' => $this->options['contact__settings']['enable_custom_validation']
+        ));
     }
 
     public function create_admin_form_submenus() {
@@ -172,6 +175,7 @@ class wpucontactforms {
             'content_before_recaptcha' => '',
             'content_after_recaptcha' => '',
             'display_form_after_submit' => true,
+            'enable_custom_validation' => false,
             'group_class' => 'cssc-form cssc-form--default float-form',
             'group_submit_class' => 'box--submit',
             'group_tagname' => 'div',
@@ -501,8 +505,9 @@ class wpucontactforms {
         if (isset($field['help']) && $field['help']) {
             $content .= '<small class="help">' . $field['help'] . '</small>';
         }
+        $content .= '<div data-error-invalid="' . esc_attr(__('This field is invalid', 'wpucontactforms')) . '" data-error-empty="' . esc_attr(__('This field should not be empty', 'wpucontactforms')) . '" class="error" aria-live="polite"></div>';
 
-        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . $conditions . ' data-boxtype="' . esc_attr($field['type']) . '" class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
+        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . $conditions . ' data-boxtype="' . esc_attr($field['type']) . '" data-boxid="' . esc_attr($field['id']) . '" class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
     }
 
     public function post_contact() {
@@ -825,7 +830,7 @@ class wpucontactforms {
     }
 
     public function register_meta_boxes() {
-        add_meta_box('wpucontactforms-meta-boxes', __('Attachments','wpucontactforms'), array(&$this, 'callback_meta_box'), wpucontactforms_savepost__get_post_type());
+        add_meta_box('wpucontactforms-meta-boxes', __('Attachments', 'wpucontactforms'), array(&$this, 'callback_meta_box'), wpucontactforms_savepost__get_post_type());
     }
 
     /**

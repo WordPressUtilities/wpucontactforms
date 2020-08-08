@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2020-08-06 19:17+0200\n"
+"POT-Creation-Date: 2020-08-08 14:54+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -15,112 +15,120 @@ msgstr ""
 "X-Poedit-KeywordsList: __;_e\n"
 "X-Poedit-SearchPath-0: ../.\n"
 
-#: .././wpucontactforms.php:143 .././wpucontactforms.php:637
+#: .././wpucontactforms.php:146 .././wpucontactforms.php:642
 msgid "No"
 msgstr "No"
 
-#: .././wpucontactforms.php:144 .././wpucontactforms.php:637
+#: .././wpucontactforms.php:147 .././wpucontactforms.php:642
 msgid "Yes"
 msgstr "Si"
 
-#: .././wpucontactforms.php:153
+#: .././wpucontactforms.php:156
 msgid "Thank you for your message!"
 msgstr "Grazie per il vostro messaggio!"
 
-#: .././wpucontactforms.php:185
+#: .././wpucontactforms.php:189
 msgid "Submit"
 msgstr "Invia"
 
-#: .././wpucontactforms.php:189
+#: .././wpucontactforms.php:193
 msgid "Name"
 msgstr "Nome"
 
-#: .././wpucontactforms.php:193
+#: .././wpucontactforms.php:197
 msgid "Email"
 msgstr "Email"
 
-#: .././wpucontactforms.php:198 .././wpucontactforms.php:1065
+#: .././wpucontactforms.php:202 .././wpucontactforms.php:1070
 msgid "Message"
 msgstr "Messaggio"
 
-#: .././wpucontactforms.php:290
+#: .././wpucontactforms.php:294
 msgid "If you are human, leave this empty"
 msgstr "Se sei umano, lascia questo vuoto"
 
-#: .././wpucontactforms.php:384
+#: .././wpucontactforms.php:388
 msgid "Select a value"
 msgstr "Selezionare un valore"
 
-#: .././wpucontactforms.php:570
+#: .././wpucontactforms.php:508
+msgid "This field is invalid"
+msgstr "Questo campo non è valido"
+
+#: .././wpucontactforms.php:508
+msgid "This field should not be empty"
+msgstr "Questo campo non deve essere vuoto"
+
+#: .././wpucontactforms.php:575
 msgid "Error:"
 msgstr "Errore:"
 
-#: .././wpucontactforms.php:626
+#: .././wpucontactforms.php:631
 #, php-format
 msgid "The field \"%s\" is not correct"
 msgstr "Il campo \"%s\" non è corretto"
 
-#: .././wpucontactforms.php:652
+#: .././wpucontactforms.php:657
 #, php-format
 msgid "The field \"%s\" is required"
 msgstr "Il campo \"%s\" è obbligatorio"
 
-#: .././wpucontactforms.php:788
+#: .././wpucontactforms.php:793
 msgid "Select an order"
 msgstr "Selezionare un ordine"
 
-#: .././wpucontactforms.php:791
+#: .././wpucontactforms.php:796
 #, php-format
 msgid "# %s"
 msgstr "n. %s"
 
-#: .././wpucontactforms.php:795
+#: .././wpucontactforms.php:800
 msgid "No order available"
 msgstr "Nessun ordine disponibile"
 
-#: .././wpucontactforms.php:828
+#: .././wpucontactforms.php:833
 msgid "Attachments"
 msgstr "Allegati"
 
-#: .././wpucontactforms.php:851
+#: .././wpucontactforms.php:856
 msgid "No attachments available"
 msgstr "Nessun allegato disponibile"
 
-#: .././wpucontactforms.php:887
+#: .././wpucontactforms.php:892
 msgid "See attached file(s)"
 msgstr "Vedere i file allegati"
 
-#: .././wpucontactforms.php:888
+#: .././wpucontactforms.php:893
 msgid "Or click here"
 msgstr "Oppure clicca qui"
 
-#: .././wpucontactforms.php:935
+#: .././wpucontactforms.php:940
 #, php-format
 msgid "No more than %s links, please"
 msgstr "Non più di %s link, si prega di"
 
-#: .././wpucontactforms.php:954 .././wpucontactforms.php:996
+#: .././wpucontactforms.php:959 .././wpucontactforms.php:1001
 msgid "Message from your contact form"
 msgstr "Messaggio dal modulo di contatto"
 
-#: .././wpucontactforms.php:956 .././wpucontactforms.php:1106
+#: .././wpucontactforms.php:961 .././wpucontactforms.php:1111
 msgid "New message"
 msgstr "Nuovo messaggio"
 
-#: .././wpucontactforms.php:1055
+#: .././wpucontactforms.php:1060
 msgid "Forms"
 msgstr "Formulari"
 
-#: .././wpucontactforms.php:1064
+#: .././wpucontactforms.php:1069
 msgid "Messages"
 msgstr "Messaggi"
 
-#: .././wpucontactforms.php:1116
+#: .././wpucontactforms.php:1121
 #, php-format
 msgid "New message from %s"
 msgstr "﻿Nuovo messaggio da %s"
 
-#: .././wpucontactforms.php:1175
+#: .././wpucontactforms.php:1180
 msgid "Re-send this email"
 msgstr "Invia nuovamente questa email"
 

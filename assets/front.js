@@ -65,8 +65,74 @@ function set_wpucontactforms_form($wrapper) {
     $form.attr('data-wpucontactformset', '1');
     $form.attr('data-recaptchavalid', '0');
 
+    /* Form validation */
+    if (wpucontactforms_obj.enable_custom_validation == '1') {
+        $form.attr('novalidate', 'novalidate');
+    }
+
+    function check_field_error($box) {
+        var _hasError = false,
+            _type = $box.attr('data-boxtype'),
+            _id = $box.attr('data-boxid'),
+            $error = $box.find('[data-error-invalid]'),
+            $field = $box.find('[name="' + _id + '"]').eq(0),
+            _field = $field.get(0);
+
+        /* Start without error */
+        $box.attr('data-has-error', 0);
+        $error.get(0).textContent = '';
+
+
+
+        if (!_field || _field.validity.valid) {
+            return false;
+        }
+
+        /* Validate simple fields */
+        if (_type == 'text' || _type == 'textarea' || _type == 'email' || _type == 'url' || _type == 'select') {
+
+            /* Empty field */
+            if (_field.validity.valueMissing) {
+                _hasError = true;
+                $box.attr('data-has-error', 1);
+                $error.get(0).textContent += $error.attr('data-error-empty');
+            }
+
+            /* Invalid field */
+            if (_field.validity.typeMismatch) {
+                _hasError = true;
+                $box.attr('data-has-error', 1);
+                $error.get(0).textContent += $error.attr('data-error-invalid');
+            }
+        }
+
+        return _hasError;
+    }
+
+    function check_form_error($form) {
+        var _hasError = false;
+        $form.find('[data-boxtype]').each(function() {
+            var $box = jQuery(this);
+            if (!check_field_error($box)) {
+                return;
+            }
+            /* First visible error : Scroll to box */
+            if (!_hasError) {
+                jQuery('html,body').animate({
+                    scrollTop: $box.offset().top - 100
+                }, 300);
+            }
+            _hasError = true;
+        });
+
+        return _hasError;
+    }
+
     function submit_form(e) {
         e.preventDefault();
+        if (wpucontactforms_obj.enable_custom_validation == '1' && check_form_error(jQuery(e.target))) {
+            return false;
+        }
         if (has_recaptcha && !grecaptcha.getResponse()) {
             $form.trigger('wpucontactforms_invalid_recaptcha');
             return;
@@ -77,7 +143,7 @@ function set_wpucontactforms_form($wrapper) {
         $wrapper.trigger('wpucontactforms_before_ajax');
         $form.ajaxSubmit({
             target: $wrapper,
-            url: ajaxurl,
+            url: wpucontactforms_obj.ajaxurl,
             success: ajax_success
         });
     }
@@ -330,6 +396,13 @@ function set_wpucontactforms_form($wrapper) {
 
     /* Events -------------------------- */
 
+    /* Field validation */
+    if (wpucontactforms_obj.enable_custom_validation == '1') {
+        $wrapper.on('change blur', '[name]', function() {
+            check_field_error(jQuery(this).closest('[data-boxtype]'));
+        });
+    }
+
     /* Form submit */
     $wrapper.on('submit', 'form', submit_form);
 
@@ -343,7 +416,7 @@ function set_wpucontactforms_form($wrapper) {
     /* Autocomplete */
     if ($form.attr('data-autofill') == '1') {
         jQuery.post(
-            ajaxurl, {
+            wpucontactforms_obj.ajaxurl, {
                 'action': 'wpucontactforms_autofill',
                 'form_id': $wrapper.find('[name="form_id"]').val(),
             },

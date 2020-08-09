@@ -74,22 +74,19 @@ function set_wpucontactforms_form($wrapper) {
         var _hasError = false,
             _type = $box.attr('data-boxtype'),
             _id = $box.attr('data-boxid'),
+            _required = $box.attr('data-required') == 'true',
             $error = $box.find('[data-error-invalid]'),
             $field = $box.find('[name="' + _id + '"]').eq(0),
-            _field = $field.get(0);
+            _field = $field.get(0),
+            simple_fields = ['text', 'textarea', 'email', 'url', 'select', 'number', 'tel', 'file', 'checkbox'],
+            multiple_fields = ['radio', 'checkbox-list'];
 
         /* Start without error */
         $box.attr('data-has-error', 0);
         $error.get(0).textContent = '';
 
-
-
-        if (!_field || _field.validity.valid) {
-            return false;
-        }
-
         /* Validate simple fields */
-        if (_type == 'text' || _type == 'textarea' || _type == 'email' || _type == 'url' || _type == 'select') {
+        if (!_field && simple_fields.indexOf(_type) > -1 && !_field.validity.valid) {
 
             /* Empty field */
             if (_field.validity.valueMissing) {
@@ -103,6 +100,15 @@ function set_wpucontactforms_form($wrapper) {
                 _hasError = true;
                 $box.attr('data-has-error', 1);
                 $error.get(0).textContent += $error.attr('data-error-invalid');
+            }
+        }
+
+        /* Multiple fields */
+        if (multiple_fields.indexOf(_type) > -1 && _required) {
+            if ($box.find('[name]:checked').length < 1) {
+                $box.attr('data-has-error', 1);
+                _hasError = true;
+                $error.get(0).textContent += $error.attr('data-error-choose');
             }
         }
 

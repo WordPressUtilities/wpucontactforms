@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.25.0
+Version: 0.25.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.25.0';
+    private $plugin_version = '0.25.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha = false;
@@ -505,9 +505,21 @@ class wpucontactforms {
         if (isset($field['help']) && $field['help']) {
             $content .= '<small class="help">' . $field['help'] . '</small>';
         }
-        $content .= '<div data-error-invalid="' . esc_attr(__('This field is invalid', 'wpucontactforms')) . '" data-error-empty="' . esc_attr(__('This field should not be empty', 'wpucontactforms')) . '" class="error" aria-live="polite"></div>';
+        $content .= '<div' .
+        ' data-error-invalid="' . esc_attr(__('This field is invalid', 'wpucontactforms')) . '"' .
+        ' data-error-choose="' . esc_attr(__('A value should be selected', 'wpucontactforms')) . '"' .
+        ' data-error-empty="' . esc_attr(__('This field should not be empty', 'wpucontactforms')) . '"' .
+            ' class="error" aria-live="polite"></div>';
 
-        return $field['html_before'] . '<' . $this->options['contact__settings']['box_tagname'] . $conditions . ' data-boxtype="' . esc_attr($field['type']) . '" data-boxid="' . esc_attr($field['id']) . '" class="' . trim($box_class) . '">' . $content . '</' . $this->options['contact__settings']['box_tagname'] . '>' . $field['html_after'];
+        return $field['html_before'] .
+            '<' . $this->options['contact__settings']['box_tagname'] . $conditions . '' .
+            ' data-boxtype="' . esc_attr($field['type']) . '"' .
+            ' data-required="' . ($field['required'] ? 'true' : 'false') . '"' .
+            ' data-boxid="' . esc_attr($field['id']) . '"' .
+            ' class="' . trim($box_class) . '">' .
+            $content .
+            '</' . $this->options['contact__settings']['box_tagname'] . '>' .
+            $field['html_after'];
     }
 
     public function post_contact() {

@@ -86,17 +86,19 @@ function set_wpucontactforms_form($wrapper) {
         $error.get(0).textContent = '';
 
         /* Validate simple fields */
-        if (!_field && simple_fields.indexOf(_type) > -1 && !_field.validity.valid) {
+        if (_field && simple_fields.indexOf(_type) > -1 && !_field.validity.valid) {
+            var _isEmpty = _field.validity.valueMissing,
+                _isInvalid = _field.validity.typeMismatch || _field.validity.patternMismatch || _field.validity.badInput;
 
             /* Empty field */
-            if (_field.validity.valueMissing) {
+            if (_isEmpty && !_isInvalid) {
                 _hasError = true;
                 $box.attr('data-has-error', 1);
                 $error.get(0).textContent += $error.attr('data-error-empty');
             }
 
             /* Invalid field */
-            if (_field.validity.typeMismatch) {
+            else if (_isInvalid) {
                 _hasError = true;
                 $box.attr('data-has-error', 1);
                 $error.get(0).textContent += $error.attr('data-error-invalid');

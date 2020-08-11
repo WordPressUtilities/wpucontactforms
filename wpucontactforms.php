@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.26.0
+Version: 0.26.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.26.0';
+    private $plugin_version = '0.26.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -513,11 +513,13 @@ class wpucontactforms {
         if (isset($field['help']) && $field['help']) {
             $content .= '<small class="help">' . $field['help'] . '</small>';
         }
-        $content .= '<div' .
-        ' data-error-invalid="' . esc_attr(__('This field is invalid', 'wpucontactforms')) . '"' .
-        ' data-error-choose="' . esc_attr(__('A value should be selected', 'wpucontactforms')) . '"' .
-        ' data-error-empty="' . esc_attr(__('This field should not be empty', 'wpucontactforms')) . '"' .
-            ' class="error" aria-live="polite"></div>';
+        if (isset($this->options['contact__settings']['enable_custom_validation']) && $this->options['contact__settings']['enable_custom_validation']) {
+            $content .= '<div' .
+            ' data-error-invalid="' . esc_attr(__('This field is invalid', 'wpucontactforms')) . '"' .
+            ' data-error-choose="' . esc_attr(__('A value should be selected', 'wpucontactforms')) . '"' .
+            ' data-error-empty="' . esc_attr(__('This field should not be empty', 'wpucontactforms')) . '"' .
+                ' class="error" aria-live="polite"></div>';
+        }
 
         return $field['html_before'] .
             '<' . $this->options['contact__settings']['box_tagname'] . $conditions . '' .

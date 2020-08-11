@@ -39,10 +39,11 @@ function set_wpucontactforms_form($wrapper) {
     if ($form.attr('data-wpucontactformset') == '1') {
         return;
     }
-    var recaptcha_item = document.querySelector('.g-recaptcha');
-    var has_recaptcha = !!recaptcha_item;
+    var recaptcha_item_v2 = document.querySelector('.g-recaptcha');
+    var has_recaptcha_v2 = !!recaptcha_item_v2;
+
     /* Async loading for recaptcha */
-    if (has_recaptcha) {
+    if (has_recaptcha_v2) {
         /* Init recaptcha */
         if (typeof grecaptcha !== 'object') {
             /* Disable form until recaptcha has loaded */
@@ -59,9 +60,30 @@ function set_wpucontactforms_form($wrapper) {
         }
         /* Init recaptcha */
         else {
-            grecaptcha.render(recaptcha_item);
+            grecaptcha.render(recaptcha_item_v2);
         }
     }
+
+    var recaptcha_item_v3 = document.querySelector('.box-recaptcha-v3');
+    var has_recaptcha_v3 = !!recaptcha_item_v3;
+    var recaptcha_sitekey = false;
+    if (has_recaptcha_v3) {
+        recaptcha_sitekey = recaptcha_item_v3.getAttribute('data-sitekey');
+        if (typeof grecaptcha !== 'object') {
+            /* Disable form until recaptcha has loaded */
+            $form.find(':input').attr('readonly', 'true');
+            /* Load recaptcha */
+            (function() {
+                var s = document.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = 'https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha&render=' + recaptcha_sitekey;
+                var x = document.getElementsByTagName('script')[0];
+                x.parentNode.insertBefore(s, x);
+            })();
+        }
+    }
+
     $form.attr('data-wpucontactformset', '1');
     $form.attr('data-recaptchavalid', '0');
 
@@ -141,10 +163,23 @@ function set_wpucontactforms_form($wrapper) {
         if (wpucontactforms_obj.enable_custom_validation == '1' && check_form_error(jQuery(e.target))) {
             return false;
         }
-        if (has_recaptcha && !grecaptcha.getResponse()) {
+        if (has_recaptcha_v2 && !grecaptcha.getResponse()) {
             $form.trigger('wpucontactforms_invalid_recaptcha');
             return;
         }
+        if (has_recaptcha_v3) {
+            grecaptcha.execute(recaptcha_sitekey, {
+                action: 'create_comment'
+            }).then(function(token) {
+                $form.prepend('<input type="hidden" name="g-recaptcha-response" value="' + token + '">');
+                submit_form_trigger();
+            });
+            return;
+        }
+        submit_form_trigger();
+    }
+
+    function submit_form_trigger() {
         $form.trigger('wpucontactforms_valid_recaptcha');
         $wrapper.addClass('contact-form-is-loading');
         $wrapper.find('button').attr('aria-disabled', 'true').attr('disabled', 'disabled');
@@ -170,9 +205,9 @@ function set_wpucontactforms_form($wrapper) {
             $form.addClass('form--has-success');
             $wrapper.trigger('wpucontactforms_after_success');
         }
-        if (has_recaptcha) {
-            if (recaptcha_item) {
-                grecaptcha.render(recaptcha_item);
+        if (has_recaptcha_v2) {
+            if (recaptcha_item_v2) {
+                grecaptcha.render(recaptcha_item_v2);
             }
         }
     }

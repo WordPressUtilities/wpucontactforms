@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.25.2
+Version: 0.26.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,10 +13,11 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.25.2';
+    private $plugin_version = '0.26.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
-    private $has_recaptcha = false;
+    private $has_recaptcha_v2 = false;
+    private $has_recaptcha_v3 = false;
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -65,7 +66,9 @@ class wpucontactforms {
                 $this->plugin_version);
         }
 
-        $this->has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
+        $has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
+        $this->has_recaptcha_v2 = $has_recaptcha && $this->options['contact__settings']['recaptcha_type'] == 'v2';
+        $this->has_recaptcha_v3 = $has_recaptcha && $this->options['contact__settings']['recaptcha_type'] == 'v3';
         if ($this->options['contact__settings']['ajax_enabled']) {
             add_action('wp_ajax_wpucontactforms', array(&$this,
                 'ajax_action'
@@ -182,6 +185,7 @@ class wpucontactforms {
             'input_class' => 'input-text',
             'label_text_required' => '<em>*</em>',
             'max_file_size' => wp_max_upload_size(),
+            'recaptcha_type' => 'v2',
             'recaptcha_enabled' => false,
             'recaptcha_sitekey' => false,
             'recaptcha_privatekey' => false,
@@ -295,11 +299,15 @@ class wpucontactforms {
         $content_form .= '<input aria-labelledby="label-' . $this->humantest_classname . '" id="input-' . $this->humantest_classname . '" tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
-        if ($this->has_recaptcha) {
+        if ($this->has_recaptcha_v2) {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha">';
             $content_form .= $this->options['contact__settings']['content_before_recaptcha'];
             $content_form .= '<div class="g-recaptcha" data-callback="wpucontactforms_recaptcha_callback" data-expired-callback="wpucontactforms_recaptcha_callback_expired" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '"></div>';
             $content_form .= $this->options['contact__settings']['content_after_recaptcha'];
+            $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        }
+        if ($this->has_recaptcha_v3) {
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-v3" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
 
@@ -549,7 +557,7 @@ class wpucontactforms {
         }
 
         // Recaptcha
-        if ($this->has_recaptcha) {
+        if ($this->has_recaptcha_v2 || $this->has_recaptcha_v3) {
             $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', array(
                 'method' => 'POST',
                 'timeout' => 45,

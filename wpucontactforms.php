@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.26.1
+Version: 0.26.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.26.1';
+    private $plugin_version = '0.26.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -1057,6 +1057,11 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 /* Save post
 -------------------------- */
 
+function wpucontactforms_savepost__pll_get_post_types($post_types, $hide) {
+    $post_types['contact_message'] = 'contact_message';
+    return $post_types;
+}
+
 function wpucontactforms_savepost__get_post_type() {
     return apply_filters('wpucontactforms_savepost__get_post_type', 'contact_message');
 }
@@ -1103,6 +1108,9 @@ function wpucontactforms_submit_contactform__savepost__objects() {
             'taxonomies' => array(wpucontactforms_savepost__get_taxonomy())
         )
     );
+
+    // Allow sorting by lang
+    add_filter('pll_get_post_types', 'wpucontactforms_savepost__pll_get_post_types', 10, 2);
 
     add_filter('manage_taxonomies_for_activity_columns', 'activity_type_columns');
 
@@ -1154,6 +1162,11 @@ function wpucontactforms_submit_contactform__savepost($form) {
 
     global $wpucontactforms_last_post_id;
     $wpucontactforms_last_post_id = $post_id;
+
+    // Set language
+    if (function_exists('pll_current_language')) {
+        pll_set_post_language($post_id, pll_current_language());
+    }
 
     // Add metas
     foreach ($post_metas as $id => $value) {

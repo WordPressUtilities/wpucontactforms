@@ -423,18 +423,12 @@ function set_wpucontactforms_form($wrapper) {
         }
 
         set_fields_by_condition();
-        $wrapper.on('change blur', '[name]', set_fields_by_condition);
+        $wrapper.on('change blur', '[name]', debounce(set_fields_by_condition, 300));
         $wrapper.on('wpucontactforms_after_ajax', function(e) {
             set_fields_by_condition();
         });
+        $wrapper.on('keyup', '[name]', debounce(set_fields_by_condition, 300));
 
-        (function() {
-            var _timeout = false;
-            $wrapper.on('keyup', '[name]', function() {
-                clearTimeout(_timeout);
-                _timeout = setTimeout(set_fields_by_condition, 300);
-            });
-        }());
     }());
 
     /* Events -------------------------- */
@@ -473,4 +467,18 @@ function set_wpucontactforms_form($wrapper) {
         );
     }
 
+    function debounce(callback, delay) {
+        var timer;
+        if (!delay) {
+            delay = 300;
+        }
+        return function() {
+            var args = arguments;
+            var context = this;
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                callback.apply(context, args);
+            }, delay);
+        };
+    }
 }

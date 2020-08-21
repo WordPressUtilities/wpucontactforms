@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.26.3
+Version: 0.26.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.26.3';
+    private $plugin_version = '0.26.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -448,9 +448,11 @@ class wpucontactforms {
                 if ($field['input_inside_label']) {
                     $content .= $input_radio_label_before;
                 }
-                $content .= $before_checkbox . '<input ' . $field_type_extra . ' type="' . $field_type . '" id="' . $label_for . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox . ' ';
+                $content .= $before_checkbox . '<input ' . $field_type_extra . ' type="' . $field_type . '" id="' . $label_for . '" ' . $field_id_name . ' ' . (!empty($field['value']) && $field['value'] == $key ? 'checked="checked"' : '') . ' value="' . $key . '" />' . $after_checkbox;
                 if (!$field['input_inside_label']) {
                     $content .= $input_radio_label_before;
+                } else {
+                    $content .= ' ';
                 }
                 $content .= $val . '</label>';
             }
@@ -459,7 +461,16 @@ class wpucontactforms {
             $content .= '<input ' . ($input_multiple ? 'multiple' : '') . ' type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'checkbox':
-            $content = '<label id="label-' . $id . '" class="label-checkbox">' . $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . (isset($field['checked']) && $field['checked'] ? 'checked="checked"' : '') . ' value="1" />' . $after_checkbox . ' ' . $label_content . '</label>';
+            $content = '';
+            $checkbox_content = $before_checkbox . '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . (isset($field['checked']) && $field['checked'] ? 'checked="checked"' : '') . ' value="1" />' . $after_checkbox;
+            if (!$field['input_inside_label']) {
+                $content .= $checkbox_content;
+            }
+            $content .= '<label id="label-' . $id . '" class="label-checkbox" for="' . $id_html . '">';
+            if ($field['input_inside_label']) {
+                $content .= $checkbox_content . ' ';
+            }
+            $content .= $label_content . '</label>';
             break;
         case 'text':
         case 'tel':

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.26.4
+Version: 0.26.5
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.26.4';
+    private $plugin_version = '0.26.5';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -570,8 +570,11 @@ class wpucontactforms {
         }
 
         // Recaptcha
-        if ($this->has_recaptcha_v2 || $this->has_recaptcha_v3) {
-            $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', array(
+        if (($this->has_recaptcha_v2 || $this->has_recaptcha_v3) && !isset($_POST["g-recaptcha-response"])) {
+            $this->msg_errors[] = __('The captcha is invalid', 'wpucontactforms');
+        }
+        if (($this->has_recaptcha_v2 || $this->has_recaptcha_v3) && isset($_POST["g-recaptcha-response"])) {
+            $recaptcha_args = apply_filters('wpucontactforms__recaptcha_args', array(
                 'method' => 'POST',
                 'timeout' => 45,
                 'redirection' => 5,
@@ -584,9 +587,11 @@ class wpucontactforms {
                 ),
                 'cookies' => array()
             ));
+            $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', $recaptcha_args);
             $body_response = wp_remote_retrieve_body($response);
             $body_response_json = json_decode($body_response);
             if (!is_object($body_response_json) || !isset($body_response_json->success) || !$body_response_json->success) {
+                $this->msg_errors[] = __('The captcha is invalid', 'wpucontactforms');
                 return;
             }
         }

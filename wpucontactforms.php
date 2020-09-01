@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.26.5
+Version: 0.26.6
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.26.5';
+    private $plugin_version = '0.26.6';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -994,9 +994,21 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
     }
 
     /* Subject */
-    $sendmail_subject = __('Message from your contact form', 'wpucontactforms');
+    $from_name = '';
+    if (isset($form_contact_fields['contact_firstname'])) {
+        $from_name = $form_contact_fields['contact_firstname']['value'];
+    }
+    if (isset($form_contact_fields['contact_name'])) {
+        $from_name .= ' ' . $form_contact_fields['contact_name']['value'];
+        $from_name = trim($from_name);
+    }
+    $sendmail_subject = __('New message', 'wpucontactforms');
+    if($from_name){
+        $sendmail_subject = sprintf(__('New message from %s', 'wpucontactforms'), $from_name);
+    }
+
     if (isset($form->options['name'])) {
-        $sendmail_subject = '[' . $form->options['name'] . '] ' . __('New message', 'wpucontactforms');
+        $sendmail_subject = '[' . $form->options['name'] . '] ' . $sendmail_subject;
     }
     if (!function_exists('wputh_sendmail')) {
         $sendmail_subject = '[' . get_bloginfo('name') . ']' . $sendmail_subject;

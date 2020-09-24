@@ -25,6 +25,10 @@
     transition: all 0.3s ease;
 }
 
+.wp-admin .wpucontactforms-form-wrapper:before {
+    background-color: rgba(241,241,241,0.8);
+}
+
 .wpucontactforms-form-wrapper.contact-form-is-loading:before {
     visibility: visible;
     opacity: 0.999;

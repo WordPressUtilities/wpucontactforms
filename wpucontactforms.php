@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.26.6
+Version: 0.27.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.26.6';
+    private $plugin_version = '0.27.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -43,6 +43,9 @@ class wpucontactforms {
         $wpucontactforms_forms[] = $options['id'];
 
         $this->set_options($options);
+        if(isset($this->options['contact__settings']['admin_form']) && $this->options['contact__settings']['admin_form'] && !is_admin()){
+            return;
+        }
         add_action('template_redirect', array(&$this,
             'post_contact'
         ), 10, 1);
@@ -79,6 +82,9 @@ class wpucontactforms {
             add_action('wp_enqueue_scripts', array(&$this,
                 'form_scripts'
             ));
+            add_action('admin_enqueue_scripts', array(&$this,
+                'form_scripts'
+            ));
         }
     }
 
@@ -98,6 +104,9 @@ class wpucontactforms {
             'jquery'
         ), $this->plugin_version, true);
         wp_enqueue_style('wpucontactforms-frontcss', plugins_url('assets/front.css', __FILE__), array(), $this->plugin_version, 'all');
+        if (is_admin()) {
+            wp_enqueue_style('wpucontactforms-admincss', plugins_url('assets/admin.css', __FILE__), array(), $this->plugin_version, 'all');
+        }
 
         // Pass Ajax Url to script.js
         wp_localize_script('wpucontactforms-front', 'wpucontactforms_obj', array(
@@ -151,12 +160,17 @@ class wpucontactforms {
             )
         );
 
+        $contact__success = '<p class="contact-success">' . __('Thank you for your message!', 'wpucontactforms') . '</p>';
+        if (is_admin()) {
+            $contact__success = '<div class="notice notice-success">' . $contact__success . '</div>';
+        }
+
         // Default options
         $default_options = array(
             'id' => 'default',
             'name' => 'Default',
             'contact__display_form_after_success' => apply_filters('wpucontactforms_display_form_after_success', true),
-            'contact__success' => apply_filters('wpucontactforms_success', '<p class="contact-success">' . __('Thank you for your message!', 'wpucontactforms') . '</p>'),
+            'contact__success' => apply_filters('wpucontactforms_success', $contact__success),
             'contact__settings' => array()
         );
         $this->options = array_merge($default_options, $options);
@@ -164,6 +178,7 @@ class wpucontactforms {
         // Settings
         $contact__settings = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
+            'admin_form' => false,
             'attach_to_post' => get_the_ID(),
             'box_class' => 'box',
             'box_tagname' => 'div',
@@ -1003,7 +1018,7 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
         $from_name = trim($from_name);
     }
     $sendmail_subject = __('New message', 'wpucontactforms');
-    if($from_name){
+    if ($from_name) {
         $sendmail_subject = sprintf(__('New message from %s', 'wpucontactforms'), $from_name);
     }
 

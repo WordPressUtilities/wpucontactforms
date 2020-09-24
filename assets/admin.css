@@ -1,0 +1,59 @@
+@charset "UTF-8";
+
+/* ----------------------------------------------------------
+  Layout
+---------------------------------------------------------- */
+
+.wpucontactforms__form {
+    max-width: 600px;
+}
+
+.wpucontactforms__form textarea,
+.wpucontactforms__form input[type="email"],
+.wpucontactforms__form input[type="text"] {
+    display: block;
+    width: 100%;
+}
+
+/* ----------------------------------------------------------
+  Boxes
+---------------------------------------------------------- */
+
+@media(min-width:769px) {
+    .wpucontactforms__form .twoboxes {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .wpucontactforms__form .twoboxes > .box {
+        display: table-cell;
+        vertical-align: top;
+    }
+
+    .wpucontactforms__form .twoboxes > .box:not(:first-child) {
+        padding-left: 10px;
+    }
+
+    .wpucontactforms__form .twoboxes > .box:not(:last-child) {
+        padding-right: 10px;
+    }
+}
+
+.wpucontactforms__form .twoboxes,
+.wpucontactforms__form [data-boxtype] {
+    margin-bottom: 15px;
+}
+
+.wpucontactforms__form label:not(.label-checkbox) {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* ----------------------------------------------------------
+  Fixes
+---------------------------------------------------------- */
+
+.wpucontactforms__form label em {
+    display: none;
+}

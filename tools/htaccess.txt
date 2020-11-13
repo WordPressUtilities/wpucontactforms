@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteBase /wp-content/uploads/wpucontactforms/
+RewriteCond %{REQUEST_URI} ^(.*)/([^.]+)\.((?!php$).+) [NC]
+RewriteRule .* /wp-content/uploads/wpucontactforms/index.php?file=%2.%3 [R,L,NC]

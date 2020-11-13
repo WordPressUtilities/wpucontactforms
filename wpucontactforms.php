@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 0.27.1
+Version: 1.0.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '0.27.1';
+    private $plugin_version = '1.0.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -43,7 +43,7 @@ class wpucontactforms {
         $wpucontactforms_forms[] = $options['id'];
 
         $this->set_options($options);
-        if(isset($this->options['contact__settings']['admin_form']) && $this->options['contact__settings']['admin_form'] && !is_admin()){
+        if (isset($this->options['contact__settings']['admin_form']) && $this->options['contact__settings']['admin_form'] && !is_admin()) {
             return;
         }
         add_action('template_redirect', array(&$this,
@@ -548,13 +548,13 @@ class wpucontactforms {
         }
 
         return $field['html_before'] .
-            '<' . $this->options['contact__settings']['box_tagname'] . $conditions . '' .
-            ' data-boxtype="' . esc_attr($field['type']) . '"' .
-            ' data-required="' . ($field['required'] ? 'true' : 'false') . '"' .
-            ' data-boxid="' . esc_attr($field['id']) . '"' .
-            ' class="' . trim($box_class) . '">' .
-            $content .
-            '</' . $this->options['contact__settings']['box_tagname'] . '>' .
+        '<' . $this->options['contact__settings']['box_tagname'] . $conditions . '' .
+        ' data-boxtype="' . esc_attr($field['type']) . '"' .
+        ' data-required="' . ($field['required'] ? 'true' : 'false') . '"' .
+        ' data-boxid="' . esc_attr($field['id']) . '"' .
+        ' class="' . trim($box_class) . '">' .
+        $content .
+        '</' . $this->options['contact__settings']['box_tagname'] . '>' .
             $field['html_after'];
     }
 
@@ -714,13 +714,40 @@ class wpucontactforms {
         return $contact_fields;
     }
 
+    public function setup_upload_protection($dirs = array()) {
+        if (apply_filters('wpucontactforms__upload_protection_disabled', false)) {
+            return $dirs;
+        }
+
+        $plugin_dir = dirname(__FILE__) . '/tools';
+
+        $dirs['subdir'] = '/wpucontactforms';
+        $dirs['path'] = $dirs['basedir'] . $dirs['subdir'];
+        $dirs['url'] = $dirs['baseurl'] . $dirs['subdir'];
+
+        if (!is_dir($dirs['path'])) {
+            mkdir($dirs['path']);
+        }
+        if (file_exists($dirs['path'] . '/.htaccess')) {
+            unlink($dirs['path'] . '/.htaccess');
+        }
+        copy($plugin_dir . '/htaccess.txt', $dirs['path'] . '/.htaccess');
+        if (file_exists($dirs['path'] . '/index.php')) {
+            unlink($dirs['path'] . '/index.php');
+        }
+        copy($plugin_dir . '/file.php', $dirs['path'] . '/index.php');
+        return $dirs;
+    }
+
     public function upload_file_return_att_id($file, $field) {
         if (!function_exists('media_handle_sideload')) {
             require_once ABSPATH . 'wp-admin/includes/image.php';
             require_once ABSPATH . 'wp-admin/includes/file.php';
             require_once ABSPATH . 'wp-admin/includes/media.php';
         }
+        add_filter('upload_dir', array(&$this, 'setup_upload_protection'));
         $attachment_id = media_handle_sideload($file, $this->options['contact__settings']['attach_to_post']);
+        remove_filter('upload_dir', array(&$this, 'setup_upload_protection'));
         return is_numeric($attachment_id) ? $attachment_id : false;
     }
 
@@ -936,10 +963,12 @@ function wpucontactform__set_html_field_content($field, $wrap_html = true) {
 
     }
 
+    $wpucontactforms__upload_protection_disabled = apply_filters('wpucontactforms__upload_protection_disabled', false);
+
     if ($field['type'] == 'file' && is_array($field['value'])) {
         $field_content_parts = array();
         foreach ($field['value'] as $field_value) {
-            if (wp_attachment_is_image($field_value)) {
+            if (wp_attachment_is_image($field_value) && $wpucontactforms__upload_protection_disabled) {
                 $field_content_parts[] = wp_get_attachment_image($field_value);
             } else {
                 $field_content_parts[] = __('See attached file(s)', 'wpucontactforms');
@@ -1134,7 +1163,7 @@ function wpucontactforms_submit_contactform__savepost__objects() {
             'show_in_admin_bar' => false,
             'show_in_nav_menus' => false,
             'show_in_rest' => false,
-            'show_ui' => true,
+            'show_ui' => true
         )
     );
 

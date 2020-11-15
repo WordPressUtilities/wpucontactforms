@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.0.0
+Version: 1.1.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.0.0';
+    private $plugin_version = '1.1.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -58,6 +58,10 @@ class wpucontactforms {
         add_action('wp_ajax_nopriv_wpucontactforms_autofill', array(&$this,
             'ajax_action_autofill'
         ));
+
+        add_filter('ajax_query_attachments_args', array(&$this,
+            'ajax_query_attachments_args'
+        ), 10, 1);
 
         if ($this->first_init) {
             add_action('admin_menu', array(&$this, 'create_admin_form_submenus'));
@@ -748,7 +752,13 @@ class wpucontactforms {
         add_filter('upload_dir', array(&$this, 'setup_upload_protection'));
         $attachment_id = media_handle_sideload($file, $this->options['contact__settings']['attach_to_post']);
         remove_filter('upload_dir', array(&$this, 'setup_upload_protection'));
-        return is_numeric($attachment_id) ? $attachment_id : false;
+        if (!is_numeric($attachment_id)) {
+            return false;
+        }
+
+        add_post_meta($attachment_id, '_wpucontactforms_att', '1');
+
+        return $attachment_id;
     }
 
     public function validate_field_file($file, $field) {
@@ -935,6 +945,20 @@ class wpucontactforms {
         } else {
             echo '<p>' . __('No attachments available', 'wpucontactforms') . '</p>';
         }
+    }
+
+    /* Hide attachments from library */
+    public function ajax_query_attachments_args($query = array()) {
+        if (apply_filters('wpucontactforms__hide_from_library', true)) {
+            if (!isset($query['meta_query'])) {
+                $query['meta_query'] = array();
+            }
+            $query['meta_query'][] = array(
+                'key' => '_wpucontactforms_att',
+                'compare' => 'NOT EXISTS'
+            );
+        }
+        return $query;
     }
 
 }

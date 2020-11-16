@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.1.0
+Version: 1.1.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.1.0';
+    private $plugin_version = '1.1.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -723,23 +723,34 @@ class wpucontactforms {
             return $dirs;
         }
 
+        $default_folder_name = 'wpucontactforms';
+        $folder_name = apply_filters('wpucontactforms__uploads_dir', $default_folder_name);
+
         $plugin_dir = dirname(__FILE__) . '/tools';
 
-        $dirs['subdir'] = '/wpucontactforms';
+        $dirs['subdir'] = '/' . $folder_name;
         $dirs['path'] = $dirs['basedir'] . $dirs['subdir'];
         $dirs['url'] = $dirs['baseurl'] . $dirs['subdir'];
 
+        /* Create dir if needed */
         if (!is_dir($dirs['path'])) {
             mkdir($dirs['path']);
         }
+
+        /* Ensure htaccess is up-to-date */
         if (file_exists($dirs['path'] . '/.htaccess')) {
             unlink($dirs['path'] . '/.htaccess');
         }
         copy($plugin_dir . '/htaccess.txt', $dirs['path'] . '/.htaccess');
+        $file_contents = str_replace($default_folder_name, $folder_name, file_get_contents($dirs['path'] . '/.htaccess'));
+        file_put_contents($dirs['path'] . '/.htaccess', $file_contents);
+
+        /* Ensure index.php is up-to-date */
         if (file_exists($dirs['path'] . '/index.php')) {
             unlink($dirs['path'] . '/index.php');
         }
         copy($plugin_dir . '/file.php', $dirs['path'] . '/index.php');
+
         return $dirs;
     }
 

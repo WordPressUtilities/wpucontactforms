@@ -10,13 +10,15 @@ if (!isset($_GET['file'])) {
     return;
 }
 
-$file = dirname(__FILE__) . '/' . $_GET['file'];
+$file_name = $_GET['file'];
+
+$file = dirname(__FILE__) . '/' . $file_name;
 if (!file_exists($file)) {
     return;
 }
 
 /* Avoid / */
-if (strpos($_GET['file'], "/") !== false) {
+if (strpos($file_name, "/") !== false) {
     return;
 }
 
@@ -47,6 +49,12 @@ wp();
 ---------------------------------------------------------- */
 
 if (!is_user_logged_in()) {
+    status_header(404);
+    return;
+}
+
+if (!apply_filters('wpucontactforms__user_can_access_file', true, $file_name)) {
+    status_header(404);
     return;
 }
 
@@ -58,4 +66,4 @@ $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $mime = finfo_file($finfo, $file);
 finfo_close($finfo);
 header('Content-Type: ' . $mime);
-include $_GET['file'];
+include $file_name;

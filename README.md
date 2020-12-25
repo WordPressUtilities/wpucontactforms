@@ -2,6 +2,10 @@
 
 Contact forms for your WordPress website.
 
+## Notes :
+
+- When updating from 1.1.0, you must delete the wpucontactforms/index.php and wpucontactforms/.htaccess.
+
 ## Default Form
 
 ### Build form infos
@@ -124,6 +128,7 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **submit_label** : 'Submit'
 * **submit_type** : 'button' or 'input'
 * **ul_class** : 'cssc-form cssc-form--default float-form'
+
 
 ### Fields
 

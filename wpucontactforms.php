@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.1.1
+Version: 1.2.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.1.1';
+    private $plugin_version = '1.2.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -728,28 +728,30 @@ class wpucontactforms {
 
         $plugin_dir = dirname(__FILE__) . '/tools';
 
-        $dirs['subdir'] = '/' . $folder_name;
+        $root_dir = $dirs['basedir'] . '/' . $folder_name;
+
+        $dirs['subdir'] = '/' . $folder_name . $dirs['subdir'];
         $dirs['path'] = $dirs['basedir'] . $dirs['subdir'];
         $dirs['url'] = $dirs['baseurl'] . $dirs['subdir'];
 
         /* Create dir if needed */
         if (!is_dir($dirs['path'])) {
-            mkdir($dirs['path']);
+            mkdir($dirs['path'], true);
         }
 
         /* Ensure htaccess is up-to-date */
-        if (file_exists($dirs['path'] . '/.htaccess')) {
-            unlink($dirs['path'] . '/.htaccess');
+        if (file_exists($root_dir . '/.htaccess')) {
+            unlink($root_dir . '/.htaccess');
         }
-        copy($plugin_dir . '/htaccess.txt', $dirs['path'] . '/.htaccess');
-        $file_contents = str_replace($default_folder_name, $folder_name, file_get_contents($dirs['path'] . '/.htaccess'));
-        file_put_contents($dirs['path'] . '/.htaccess', $file_contents);
+        copy($plugin_dir . '/htaccess.txt', $root_dir . '/.htaccess');
+        $file_contents = str_replace($default_folder_name, $folder_name, file_get_contents($root_dir . '/.htaccess'));
+        file_put_contents($root_dir . '/.htaccess', $file_contents);
 
         /* Ensure index.php is up-to-date */
-        if (file_exists($dirs['path'] . '/index.php')) {
-            unlink($dirs['path'] . '/index.php');
+        if (file_exists($root_dir . '/index.php')) {
+            unlink($root_dir . '/index.php');
         }
-        copy($plugin_dir . '/file.php', $dirs['path'] . '/index.php');
+        copy($plugin_dir . '/file.php', $root_dir . '/index.php');
 
         return $dirs;
     }

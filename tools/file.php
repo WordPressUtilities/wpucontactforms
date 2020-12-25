@@ -17,8 +17,8 @@ if (!file_exists($file)) {
     return;
 }
 
-/* Avoid / */
-if (strpos($file_name, "/") !== false) {
+/* Basic upload model OR avoid / */
+if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[^\.]*\.[^\.]*$/', $file_name) && strpos($file_name, "/") !== false) {
     return;
 }
 

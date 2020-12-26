@@ -1,6 +1,6 @@
 <?php
 
-/* WPUContactForms v 1.0.0 */
+/* WPUContactForms v 1.2.1 */
 
 /* ----------------------------------------------------------
   Check file

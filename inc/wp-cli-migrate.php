@@ -41,21 +41,34 @@ if (defined('WP_CLI') && WP_CLI) {
 
             $old_file = $base_old_dir . '/' . $att_file;
             $old_dir = dirname($old_file);
+            $old_file_rel = str_replace(ABSPATH, '', $old_file);
             $new_file = $base_new_dir . '/' . $att_file;
             $new_dir = dirname($new_file);
+            $new_file_rel = str_replace(ABSPATH, '', $new_file);
 
             if (!file_exists($old_file)) {
                 echo "Error : File does not exists : \n" . $old_file;
                 continue;
             }
 
+            if (!is_dir($new_dir)) {
+                mkdir($new_dir, 0755, true);
+            }
+
             /* Move attachment */
             rename($old_file, $new_file);
+            $wpdb->query($wpdb->prepare("UPDATE $wpdb->posts SET post_content = REPLACE(post_content, %s, %s)", $old_file_rel, $new_file_rel));
 
             /* Move sizes */
             foreach ($att_metadata['sizes'] as $size) {
-                if (file_exists($old_dir . '/' . $size['file'])) {
-                    rename($old_dir . '/' . $size['file'], $new_dir . '/' . $size['file']);
+                $old_size_file = $old_dir . '/' . $size['file'];
+                $old_size_file_rel = str_replace(ABSPATH, '', $old_size_file);
+                $new_size_file = $new_dir . '/' . $size['file'];
+                $new_size_file_rel = str_replace(ABSPATH, '', $new_size_file);
+
+                if (file_exists($old_size_file)) {
+                    rename($old_size_file, $new_size_file);
+                    $wpdb->query($wpdb->prepare("UPDATE $wpdb->posts SET post_content = REPLACE(post_content, %s, %s)", $old_size_file_rel, $new_size_file_rel));
                 }
             }
 

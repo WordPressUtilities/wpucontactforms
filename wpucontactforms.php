@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.2.2
+Version: 1.2.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.2.2';
+    private $plugin_version = '1.2.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -411,12 +411,19 @@ class wpucontactforms {
         if ($classname) {
             $field_id_name .= ' class="' . esc_attr($classname) . '"';
         }
+
+        // Autocomplete
+        if (isset($field['autocomplete']) && $field['autocomplete']) {
+            $field_id_name .= ' autocomplete="' . esc_attr($field['autocomplete']) . '"';
+        }
+
         // Placeholder
         $placeholder = __('Select a value', 'wpucontactforms');
         if (!empty($field['placeholder'])) {
             $field_id_name .= ' placeholder="' . esc_attr($field['placeholder']) . '"';
             $placeholder = $field['placeholder'];
         }
+
         // Validation
         if (isset($field['validation_pattern']) && !empty($field['validation_pattern'])) {
             $field_id_name .= ' pattern="' . $field['validation_pattern'] . '"';

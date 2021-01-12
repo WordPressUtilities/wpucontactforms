@@ -16,6 +16,7 @@ function wputest__wpucontactforms_default_options($options) {
     $fields = array();
 
     $fields['contact_name'] = array(
+        'autocomplete' => 'name',
         'label' => __('Name', 'wpucontactforms'),
         'required' => 1
     );

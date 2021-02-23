@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.3.0
+Version: 1.3.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.3.0';
+    private $plugin_version = '1.3.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -1333,6 +1333,9 @@ function wpucontactforms_submit_contactform__savepost($form) {
     }
 }
 
+/* Re-send mail
+-------------------------- */
+
 function wpucontactforms_submit_contactform__resendmail() {
     if (get_post_type() != wpucontactforms_savepost__get_post_type()) {
         return;
@@ -1374,5 +1377,23 @@ function wpucontactforms_submit_contactform__resendmail__action($post_id) {
     wp_reset_postdata();
 
 }
+
+/* Get data from a textarea option
+-------------------------- */
+
+function wpucontactforms_get_select_data_from_opt($opt_value = '') {
+    $opt_value = explode("\n", $opt_value);
+    $opt_value = array_map('trim', $opt_value);
+    $data = array();
+    foreach ($opt_value as $i => $opt_data) {
+        if ($opt_data) {
+            $data['k' . $i] = $opt_data;
+        }
+    }
+    return $data;
+}
+
+/* WP-CLI action
+-------------------------- */
 
 require_once dirname(__FILE__) . '/inc/wp-cli-migrate.php';

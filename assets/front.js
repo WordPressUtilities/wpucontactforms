@@ -105,6 +105,7 @@ function set_wpucontactforms_form($wrapper) {
 
         /* Start without error */
         $box.attr('data-has-error', 0);
+        $box.attr('data-field-ok', 0);
         $error.get(0).textContent = '';
 
         /* Validate simple fields */
@@ -125,6 +126,10 @@ function set_wpucontactforms_form($wrapper) {
                 $box.attr('data-has-error', 1);
                 $error.get(0).textContent += $error.attr('data-error-invalid');
             }
+
+            if (_isEmpty && !_isInvalid) {
+                $box.attr('data-field-ok', 1);
+            }
         }
 
         /* Multiple fields */
@@ -133,6 +138,9 @@ function set_wpucontactforms_form($wrapper) {
                 $box.attr('data-has-error', 1);
                 _hasError = true;
                 $error.get(0).textContent += $error.attr('data-error-choose');
+            }
+            else {
+                $box.attr('data-field-ok', 1);
             }
         }
 

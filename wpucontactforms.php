@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.4.0
+Version: 1.4.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.4.0';
+    private $plugin_version = '1.4.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -308,24 +308,30 @@ class wpucontactforms {
             }
         }
 
+        $is_preview_mode = $this->is_preview_form();
+
+        $form_tag = $is_preview_mode ? 'div' : 'form';
+
         // Display contact form
-        $content_form .= '<form class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '') . ' data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
+        $content_form .= '<' . $form_tag . ' class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '') . ' data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
         $content_form .= $content_fields;
 
         /* Quick honeypot */
-        $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
-        $content_form .= '<label id="label-' . $this->humantest_classname . '" for="input-' . $this->humantest_classname . '">' . __('If you are human, leave this empty', 'wpucontactforms') . '</label>';
-        $content_form .= '<input aria-labelledby="label-' . $this->humantest_classname . '" id="input-' . $this->humantest_classname . '" tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
-        $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        if (!$is_preview_mode) {
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
+            $content_form .= '<label id="label-' . $this->humantest_classname . '" for="input-' . $this->humantest_classname . '">' . __('If you are human, leave this empty', 'wpucontactforms') . '</label>';
+            $content_form .= '<input aria-labelledby="label-' . $this->humantest_classname . '" id="input-' . $this->humantest_classname . '" tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
+            $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        }
 
-        if ($this->has_recaptcha_v2) {
+        if (!$is_preview_mode && $this->has_recaptcha_v2) {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha">';
             $content_form .= $this->options['contact__settings']['content_before_recaptcha'];
             $content_form .= '<div class="g-recaptcha" data-callback="wpucontactforms_recaptcha_callback" data-expired-callback="wpucontactforms_recaptcha_callback_expired" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '"></div>';
             $content_form .= $this->options['contact__settings']['content_after_recaptcha'];
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
-        if ($this->has_recaptcha_v3) {
+        if (!$is_preview_mode && $this->has_recaptcha_v3) {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-v3" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
@@ -339,8 +345,10 @@ class wpucontactforms {
             'wpucontactforms_send' => '1',
             'action' => 'wpucontactforms'
         ), $this->options);
-        foreach ($hidden_fields as $name => $value) {
-            $content_form .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" />';
+        if (!$is_preview_mode) {
+            foreach ($hidden_fields as $name => $value) {
+                $content_form .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" />';
+            }
         }
         if ($this->options['contact__settings']['submit_type'] == 'button') {
             $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit"><span>' . $this->options['contact__settings']['submit_label'] . '</span></button>';
@@ -351,7 +359,7 @@ class wpucontactforms {
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
-        $content_form .= '</form>';
+        $content_form .= '</' . $form_tag . '>';
         if ($this->is_successful && !$this->options['contact__settings']['display_form_after_submit']) {
             $content_form = '';
         }
@@ -375,8 +383,13 @@ class wpucontactforms {
     }
 
     public function field_content($field) {
+        $is_preview_mode = $this->is_preview_form();
+
         $content = '';
         $id = $field['id'];
+        if ($is_preview_mode) {
+            $id = 'preview_wpucontactforms__' . $id;
+        }
         $id_html = $this->options['id'] . '_' . $id;
         $is_multiple = isset($field['multiple']) && $field['multiple'];
         if ($field['type'] == 'checkbox-list') {
@@ -389,6 +402,7 @@ class wpucontactforms {
         if ($field['type'] != 'radio' && $field['type'] != 'checkbox-list') {
             $field_id_name .= ' id="' . $id_html . '" aria-labelledby="label-' . $id . '"';
         }
+
         if ($input_multiple || $is_multiple) {
             $field_id_name .= ' name="' . $id . '[]"';
         } else {
@@ -397,7 +411,7 @@ class wpucontactforms {
 
         $field_id_name .= '  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
         // Required
-        if ($field['required']) {
+        if ($field['required'] && !$is_preview_mode) {
             $field_id_name .= ' required="required"';
         }
         // Classname
@@ -547,7 +561,7 @@ class wpucontactforms {
             $field['html_after'] .= '</' . $this->options['contact__settings']['fieldgroup_tagname'] . '>';
         }
 
-        if (isset($this->options['contact__settings']['enable_custom_validation']) && $this->options['contact__settings']['enable_custom_validation']) {
+        if (isset($this->options['contact__settings']['enable_custom_validation']) && $this->options['contact__settings']['enable_custom_validation'] && !$is_preview_mode) {
             $content .= '<div' .
             ' data-error-invalid="' . esc_attr(__('This field is invalid', 'wpucontactforms')) . '"' .
             ' data-error-choose="' . esc_attr(__('A value should be selected', 'wpucontactforms')) . '"' .
@@ -983,6 +997,16 @@ class wpucontactforms {
             );
         }
         return $query;
+    }
+
+    /* Display a form without interfering with the admin */
+    public function is_preview_form() {
+        global $is_preview;
+        $is_preview_mode = false;
+        if (isset($is_preview) && $is_preview) {
+            $is_preview_mode = true;
+        }
+        return $is_preview_mode;
     }
 
 }

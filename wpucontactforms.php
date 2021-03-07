@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.4.1';
+    private $plugin_version = '1.4.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -469,8 +469,23 @@ class wpucontactforms {
         case 'select':
             $content .= '<select  ' . $field_id_name . '>';
             $content .= '<option value="" disabled selected style="display:none;">' . esc_html($placeholder) . '</option>';
+            $has_optgroup = false;
             foreach ($field['datas'] as $key => $val) {
+                /* Optgroup : load value and ignore opt line */
+                if (is_array($val) && isset($val['optgroup'])) {
+                    $opt_displayed_value = $val['optgroup'];
+                    /* Close if an optgroup was opened */
+                    if ($has_optgroup) {
+                        $content .= '</optgroup>';
+                    }
+                    $content .= '<optgroup label="' . esc_attr($val['optgroup']) . '">';
+                    $has_optgroup = true;
+                    continue;
+                }
                 $content .= '<option ' . (!empty($field['value']) && $field['value'] == $key ? 'selected="selected"' : '') . ' value="' . esc_attr($key) . '">' . $val . '</option>';
+            }
+            if ($has_optgroup) {
+                $content .= '</optgroup>';
             }
             $content .= '</select>';
             break;

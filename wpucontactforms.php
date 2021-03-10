@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.4.3
+Version: 1.4.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.4.3';
+    private $plugin_version = '1.4.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -736,7 +736,7 @@ class wpucontactforms {
                     }
 
                     if ($field['type'] == 'checkbox') {
-                        $tmp_value = ($tmp_value == '1') ? __('Yes') : __('No');
+                        $tmp_value = ($tmp_value == '1') ? __('Yes', 'wpucontactforms') : __('No', 'wpucontactforms');
                     }
 
                     if ($field['type'] == 'file') {

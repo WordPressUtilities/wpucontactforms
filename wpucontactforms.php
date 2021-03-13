@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.4.4
+Version: 1.5.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.4.4';
+    private $plugin_version = '1.5.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -577,10 +577,24 @@ class wpucontactforms {
         }
 
         if (isset($this->options['contact__settings']['enable_custom_validation']) && $this->options['contact__settings']['enable_custom_validation'] && !$is_preview_mode) {
+
+            $error_invalid = apply_filters('wpucontactforms__error_invalid_txt', __('This field is invalid', 'wpucontactforms'));
+            if (isset($field['error_invalid'])) {
+                $error_invalid = $field['error_invalid'];
+            }
+            $error_choose = apply_filters('wpucontactforms__error_choose_txt', __('A value should be selected', 'wpucontactforms'));
+            if (isset($field['error_choose'])) {
+                $error_choose = $field['error_choose'];
+            }
+            $error_empty = apply_filters('wpucontactforms__error_empty_txt', __('This field should not be empty', 'wpucontactforms'));
+            if (isset($field['error_empty'])) {
+                $error_empty = $field['error_empty'];
+            }
+
             $content .= '<div' .
-            ' data-error-invalid="' . esc_attr(__('This field is invalid', 'wpucontactforms')) . '"' .
-            ' data-error-choose="' . esc_attr(__('A value should be selected', 'wpucontactforms')) . '"' .
-            ' data-error-empty="' . esc_attr(__('This field should not be empty', 'wpucontactforms')) . '"' .
+            ' data-error-invalid="' . esc_attr($error_invalid) . '"' .
+            ' data-error-choose="' . esc_attr($error_choose) . '"' .
+            ' data-error-empty="' . esc_attr($error_empty) . '"' .
                 ' class="error" aria-live="polite"></div>';
         }
 

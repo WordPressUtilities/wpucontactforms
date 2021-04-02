@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.5.0
+Version: 1.5.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.5.0';
+    private $plugin_version = '1.5.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -1217,6 +1217,9 @@ function wpucontactforms_submit_contactform__sendmail($form) {
         // Emptying values
         $mail_content .= '<hr />' . wpucontactform__set_html_field_content($field);
     }
+
+    $mail_content = apply_filters('wpucontactforms_submit_contactform__sendmail__mail_content', $mail_content, $form);
+
     wpucontactforms_submit_sendmail($mail_content, $more, $form);
 
     // Delete temporary attachments
@@ -1298,6 +1301,10 @@ function wpucontactforms_submit_contactform__savepost__objects() {
 
 function wpucontactforms_submit_contactform__savepost($form) {
 
+    if (apply_filters('wpucontactforms_submit_contactform__savepost__disable', false, $form)) {
+        return false;
+    }
+
     $taxonomy = apply_filters('wpucontactforms__createpost_taxonomy', wpucontactforms_savepost__get_taxonomy(), $form);
     $post_content = '';
     $post_metas = array();
@@ -1331,6 +1338,8 @@ function wpucontactforms_submit_contactform__savepost($form) {
     if (!empty($from_name)) {
         $default_post_title = sprintf(__('New message from %s', 'wpucontactforms'), $from_name);
     }
+
+    $post_content = apply_filters('wpucontactforms_submit_contactform__savepost__post_content', $post_content, $form);
 
     // Create post
     $post_id = wp_insert_post(array(

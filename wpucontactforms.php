@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.5.2
+Version: 1.5.3
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.5.2';
+    private $plugin_version = '1.5.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -184,6 +184,7 @@ class wpucontactforms {
             'ajax_enabled' => true,
             'admin_form' => false,
             'attach_to_post' => get_the_ID(),
+            'autocomplete' => '',
             'box_class' => 'box',
             'box_tagname' => 'div',
             'fieldgroup_class' => 'twoboxes',
@@ -313,7 +314,11 @@ class wpucontactforms {
         $form_tag = $is_preview_mode ? 'div' : 'form';
 
         // Display contact form
-        $content_form .= '<' . $form_tag . ' class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '') . ' data-autofill="' . ($form_autofill ? '1' : '0') . '"><' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
+        $content_form .= '<' . $form_tag . ' class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ';
+        $content_form .= ' ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '');
+        $content_form .= ' ' . ($this->options['contact__settings']['autocomplete'] ? 'autocomplete="' . esc_attr($this->options['contact__settings']['autocomplete']) . '"' : '');
+        $content_form .= ' data-autofill="' . ($form_autofill ? '1' : '0') . '">';
+        $content_form .= '<' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
         $content_form .= $content_fields;
 
         /* Quick honeypot */

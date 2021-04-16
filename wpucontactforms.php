@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.5.3
+Version: 1.5.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.5.3';
+    private $plugin_version = '1.5.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -415,10 +415,12 @@ class wpucontactforms {
         }
 
         $field_id_name .= '  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
+
         // Required
         if ($field['required'] && !$is_preview_mode) {
             $field_id_name .= ' required="required"';
         }
+
         // Classname
         $classname = '';
         if ($this->options['contact__settings']['input_class']) {
@@ -429,6 +431,11 @@ class wpucontactforms {
         }
         if ($classname) {
             $field_id_name .= ' class="' . esc_attr($classname) . '"';
+        }
+
+        // Disabled
+        if (isset($field['disabled']) && $field['disabled']) {
+            $field_id_name .= ' disabled="disabled"';
         }
 
         // Autocomplete

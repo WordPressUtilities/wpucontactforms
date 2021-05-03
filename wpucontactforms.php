@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.5.4
+Version: 1.6.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.5.4';
+    private $plugin_version = '1.6.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -389,6 +389,10 @@ class wpucontactforms {
 
     public function field_content($field) {
         $is_preview_mode = $this->is_preview_form();
+
+        if (!$is_preview_mode && isset($field['type'], $field['html']) && $field['type'] == 'html') {
+            return $field['html'];
+        }
 
         $content = '';
         $id = $field['id'];
@@ -1215,6 +1219,9 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 
     // Target Email
     foreach ($form->contact_fields as $id => $field) {
+        if ($field['type'] == 'html') {
+            continue;
+        }
 
         if ($field['type'] == 'file' && is_array($field['value'])) {
 
@@ -1325,6 +1332,9 @@ function wpucontactforms_submit_contactform__savepost($form) {
     $attachments = array();
 
     foreach ($form->contact_fields as $id => $field) {
+        if ($field['type'] == 'html') {
+            continue;
+        }
 
         if ($field['type'] == 'file' && is_array($field['value'])) {
             foreach ($field['value'] as $file_value) {

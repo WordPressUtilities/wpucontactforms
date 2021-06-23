@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.6.3
+Version: 1.6.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.6.3';
+    private $plugin_version = '1.6.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -1396,10 +1396,10 @@ function wpucontactforms_submit_contactform__savepost($form) {
 
     // Add term
     $term = wp_insert_term(
-        $form->options['name'],
+        apply_filters('wpucontactforms_submit_contactform__savepost__term_name', $form->options['name']),
         $taxonomy,
         array(
-            'slug' => $form->options['id']
+            'slug' => apply_filters('wpucontactforms_submit_contactform__savepost__term_slug', $form->options['id'])
         )
     );
 

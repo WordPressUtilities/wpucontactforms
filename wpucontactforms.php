@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.6.4
+Version: 1.7.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.6.4';
+    private $plugin_version = '1.7.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -152,6 +152,8 @@ class wpucontactforms {
             'input_inside_label' => true,
             'placeholder' => '',
             'preload_value' => 0,
+            'min' => -99999,
+            'max' => 99999,
             'required' => 0,
             'type' => 'text',
             'validation' => '',
@@ -465,6 +467,12 @@ class wpucontactforms {
         // Extra attributes
         if (isset($field['attributes_extra']) && !empty($field['attributes_extra'])) {
             $field_id_name .= $field['attributes_extra'];
+        }
+
+        // Number
+        if ($field['type'] == 'number') {
+            $field_id_name .= ' min="' . $field['min'] . '"';
+            $field_id_name .= ' max="' . $field['max'] . '"';
         }
 
         // Value
@@ -897,7 +905,7 @@ class wpucontactforms {
             return true;
             break;
         case 'number':
-            return is_numeric($tmp_value);
+            return (is_numeric($tmp_value) && $tmp_value >= $field['min'] && $tmp_value <= $field['max']);
             break;
         case 'email':
             return filter_var($tmp_value, FILTER_VALIDATE_EMAIL) !== false;

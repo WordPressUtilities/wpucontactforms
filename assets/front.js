@@ -127,6 +127,15 @@ function set_wpucontactforms_form($wrapper) {
                 $error.get(0).textContent += $error.attr('data-error-invalid');
             }
 
+            /* Custom error messages for some specific fields */
+            if (_field.validationMessage && !_field.validity.valueMissing) {
+                if (simple_fields.indexOf('number') > -1) {
+                    _hasError = true;
+                    $box.attr('data-has-error', 1);
+                    $error.get(0).textContent = _field.validationMessage;
+                }
+            }
+
             if (_isEmpty && !_isInvalid) {
                 $box.attr('data-field-ok', 1);
             }

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.7.1
+Version: 1.8.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,11 +13,12 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.7.1';
+    private $plugin_version = '1.8.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
     private $has_recaptcha_v3 = false;
+    private $user_options = false;
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -63,14 +64,57 @@ class wpucontactforms {
             'ajax_query_attachments_args'
         ), 10, 1);
 
+        $this->settings_details = array(
+            # Admin page
+            'create_page' => true,
+            'plugin_basename' => plugin_basename(__FILE__),
+            # Default
+            'plugin_name' => 'Contact Forms',
+            'plugin_id' => 'wpucontactforms',
+            'option_id' => 'wpucontactforms_options',
+            'sections' => array(
+                'content' => array(
+                    'name' => __('Content Settings', 'wpucontactforms')
+                )
+            )
+        );
+        $this->settings = array(
+            'excluded_words' => array(
+                'label' => __('Excluded Words', 'wpucontactforms'),
+                'help' => __('One word or expression per line.', 'wpucontactforms'),
+                'type' => 'textarea'
+            )
+        );
+
         if ($this->first_init) {
+            /* Add submenus */
             add_action('admin_menu', array(&$this, 'create_admin_form_submenus'));
+
+            /* Add meta boxes */
             add_action('add_meta_boxes', array(&$this, 'register_meta_boxes'));
+
+            /* Update */
             include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
             $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
                 'WordPressUtilities',
                 'wpucontactforms',
                 $this->plugin_version);
+
+            if (is_admin()) {
+                include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
+                new \wpucontactforms\WPUBaseSettings($this->settings_details, $this->settings);
+            }
+        }
+
+        $this->user_options = get_option('wpucontactforms_options');
+        if (!is_array($this->user_options)) {
+            $this->user_options = array();
+        }
+        if (!isset($this->user_options['excluded_words'])) {
+            $this->user_options['excluded_words'] = array();
+        } else {
+            $this->user_options['excluded_words'] = explode("\n", $this->user_options['excluded_words']);
+            $this->user_options['excluded_words'] = array_map('trim', $this->user_options['excluded_words']);
         }
 
         $has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
@@ -882,6 +926,15 @@ class wpucontactforms {
         /* Custom validation */
         if (isset($field['custom_validation']) && !call_user_func_array($field['custom_validation'], array($tmp_value, $field))) {
             return false;
+        }
+
+        /* Check if value contains excluded words */
+        if (isset($field['check_excluded_words']) && $field['check_excluded_words']) {
+            foreach ($this->user_options['excluded_words'] as $word) {
+                if (strpos($tmp_value, $word) !== false) {
+                    return false;
+                }
+            }
         }
 
         $zero_one = array('0', '1');

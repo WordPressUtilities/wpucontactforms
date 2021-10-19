@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.8.0
+Version: 1.8.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.8.0';
+    private $plugin_version = '1.8.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -75,6 +75,9 @@ class wpucontactforms {
             'sections' => array(
                 'content' => array(
                     'name' => __('Content Settings', 'wpucontactforms')
+                ),
+                'recaptcha' => array(
+                    'name' => __('Recaptcha', 'wpucontactforms')
                 )
             )
         );
@@ -83,6 +86,28 @@ class wpucontactforms {
                 'label' => __('Excluded Words', 'wpucontactforms'),
                 'help' => __('One word or expression per line.', 'wpucontactforms'),
                 'type' => 'textarea'
+            ),
+            'recaptcha_enabled' => array(
+                'label' => __('Enabled', 'wpucontactforms'),
+                'type' => 'checkbox',
+                'section' => 'recaptcha'
+            ),
+            'recaptcha_type' => array(
+                'label' => __('Type', 'wpucontactforms'),
+                'type' => 'select',
+                'section' => 'recaptcha',
+                'datas' => array(
+                    'v2' => 'v2',
+                    'v3' => 'v3'
+                )
+            ),
+            'recaptcha_sitekey' => array(
+                'label' => __('Site key', 'wpucontactforms'),
+                'section' => 'recaptcha'
+            ),
+            'recaptcha_privatekey' => array(
+                'label' => __('Private key', 'wpucontactforms'),
+                'section' => 'recaptcha'
             )
         );
 
@@ -106,16 +131,7 @@ class wpucontactforms {
             }
         }
 
-        $this->user_options = get_option('wpucontactforms_options');
-        if (!is_array($this->user_options)) {
-            $this->user_options = array();
-        }
-        if (!isset($this->user_options['excluded_words'])) {
-            $this->user_options['excluded_words'] = array();
-        } else {
-            $this->user_options['excluded_words'] = explode("\n", $this->user_options['excluded_words']);
-            $this->user_options['excluded_words'] = array_map('trim', $this->user_options['excluded_words']);
-        }
+        $this->set_user_options();
 
         $has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
         $this->has_recaptcha_v2 = $has_recaptcha && $this->options['contact__settings']['recaptcha_type'] == 'v2';
@@ -134,6 +150,36 @@ class wpucontactforms {
                 'form_scripts'
             ));
         }
+    }
+
+    public function set_user_options() {
+        $this->user_options = get_option('wpucontactforms_options');
+        if (!is_array($this->user_options)) {
+            $this->user_options = array();
+        }
+
+        /* Excluded Words */
+        if (!isset($this->user_options['excluded_words'])) {
+            $this->user_options['excluded_words'] = array();
+        } else {
+            $this->user_options['excluded_words'] = explode("\n", $this->user_options['excluded_words']);
+            $this->user_options['excluded_words'] = array_map('trim', $this->user_options['excluded_words']);
+        }
+
+        /* Recaptcha */
+        if (isset($this->user_options['recaptcha_sitekey']) && $this->user_options['recaptcha_sitekey']) {
+            $this->options['contact__settings']['recaptcha_sitekey'] = $this->user_options['recaptcha_sitekey'];
+        }
+        if (isset($this->user_options['recaptcha_privatekey']) && $this->user_options['recaptcha_privatekey']) {
+            $this->options['contact__settings']['recaptcha_privatekey'] = $this->user_options['recaptcha_privatekey'];
+        }
+        if (isset($this->user_options['recaptcha_type']) && $this->user_options['recaptcha_type']) {
+            $this->options['contact__settings']['recaptcha_type'] = $this->user_options['recaptcha_type'];
+        }
+        if (isset($this->user_options['recaptcha_enabled']) && $this->user_options['recaptcha_enabled']) {
+            $this->options['contact__settings']['recaptcha_enabled'] = true;
+        }
+
     }
 
     public function set_humantest_classname($form_id) {

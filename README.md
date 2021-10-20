@@ -42,6 +42,7 @@ function wputest__wpucontactforms_default_options($options) {
     );
     $fields['contact_message'] = array(
         'label' => __('Message', 'wpucontactforms'),
+        'check_excluded_words' => true, # Use excluded words in the settings page
         'type' => 'textarea',
         'required' => 1
     );
@@ -141,6 +142,7 @@ function wpucontactforms_submit_contactform__myawesomeform($formObject) {
 * **autofill** : (string) User meta ID to autocomplete if user is logged in. user_email works too.
 * **datas** : (array) 1dim array setting datas for select.
 * **required** : (bool) Field is required.
+* **check_excluded_words** : (bool) Field will be checked for excluded words.
 * **html_before** : (string) HTML before LI box.
 * **html_after** : (string) HTML after LI box.
 * **html_before_checkbox** : (string) HTML before a checkbox input.

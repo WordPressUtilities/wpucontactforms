@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 1.8.2
+Version: 1.9.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '1.8.2';
+    private $plugin_version = '1.9.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -501,6 +501,7 @@ class wpucontactforms {
             $is_multiple = true;
         }
 
+        $label_after_input = isset($field['label_after_input']) && $field['label_after_input'];
         $input_multiple = ($field['type'] == 'file' && $is_multiple);
 
         $field_id_name = '';
@@ -545,6 +546,9 @@ class wpucontactforms {
 
         // Placeholder
         $placeholder = __('Select a value', 'wpucontactforms');
+        if (empty($field['placeholder']) && $label_after_input) {
+            $field['placeholder'] = $field['label'];
+        }
         if (!empty($field['placeholder'])) {
             $field_id_name .= ' placeholder="' . esc_attr($field['placeholder']) . '"';
             $placeholder = $field['placeholder'];
@@ -581,8 +585,12 @@ class wpucontactforms {
         if (isset($field['label_display'])) {
             $label_content = $field['label_display'] . $label_extra;
         }
+        $label_content_html = '';
         if (!empty($label_content)) {
-            $content .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $label_content . '</label>';
+            $label_content_html .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $label_content . '</label>';
+        }
+        if ($label_content_html && !$label_after_input) {
+            $content .= $label_content_html;
         }
 
         $content .= $field['html_before_input'];
@@ -657,17 +665,35 @@ class wpucontactforms {
             $content .= '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'textarea':
-            $content .= '<textarea cols="30" rows="10" ' . $field_id_name . '>' . $field['value'] . '</textarea>';
+            $nb_cols = isset($field['textarea_nb_cols']) ? $field['textarea_nb_cols'] : 30;
+            $nb_rows = isset($field['textarea_nb_rows']) ? $field['textarea_nb_rows'] : 10;
+
+            $textarea_cols_rows_html = '';
+            if ($nb_cols) {
+                $field_id_name .= ' cols="' . $nb_cols . '"';
+            }
+            if ($nb_rows) {
+                $field_id_name .= ' rows="' . $nb_rows . '"';
+            }
+
+            $content .= '<textarea ' . $field_id_name . '>' . $field['value'] . '</textarea>';
             break;
         }
 
         $content .= $field['html_after_input'];
+
+        if ($label_content_html && $label_after_input) {
+            $content .= $label_content_html;
+        }
 
         $box_class_name = esc_attr($this->options['contact__settings']['box_class']);
         $box_class = $box_class_name;
         $box_class .= ' ' . $box_class_name . '--' . $id;
         if ($field['box_class']) {
             $box_class .= ' ' . esc_attr($field['box_class']);
+        }
+        if ($label_after_input) {
+            $box_class .= ' box--labelafterinput';
         }
 
         $conditions = '';
@@ -1136,7 +1162,8 @@ class wpucontactforms {
         if ($attachments) {
             echo '<ul>';
             foreach ($attachments as $attachment) {
-                echo '<li>- <a download href="' . wp_get_attachment_url($attachment->ID) . '">' . $attachment->post_title . ' (' . $attachment->post_mime_type . ')</a></li>';
+                $url = wp_get_attachment_url($attachment->ID);
+                echo '<li>- <a download="' . basename($url) . '" href="' . $url . '">' . $attachment->post_title . ' (' . $attachment->post_mime_type . ')</a></li>';
             }
             echo '</ul>';
 

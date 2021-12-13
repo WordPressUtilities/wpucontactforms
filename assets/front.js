@@ -450,6 +450,11 @@ function set_wpucontactforms_form($wrapper) {
 
     /* Events -------------------------- */
 
+    /* Quick event watch */
+    $wrapper.on('change', 'input[data-checkbox-list="1"]', function(e) {
+        e.target.parentNode.setAttribute('data-checked', e.target.checked ? '1' : '0');
+    });
+
     /* Field validation */
     if (wpucontactforms_obj.enable_custom_validation == '1') {
         $wrapper.on('change blur', '[name]', function() {

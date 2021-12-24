@@ -158,7 +158,7 @@ function set_wpucontactforms_form($wrapper) {
 
     function check_form_error($form) {
         var _hasError = false;
-        $form.find('[data-boxtype]').each(function() {
+        $form.find('[data-wpucontactforms-group="1"][data-visible="1"] [data-boxtype]').each(function() {
             var $box = jQuery(this);
             if (!check_field_error($box)) {
                 return;
@@ -464,6 +464,29 @@ function set_wpucontactforms_form($wrapper) {
 
     /* Form submit */
     $wrapper.on('submit', 'form', submit_form);
+
+    /* Intermediate submit */
+    /* Previous button */
+    $wrapper.on('click', '[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="previous"]', function(e) {
+        e.preventDefault();
+        var $currentGroup = $wrapper.find('[data-wpucontactforms-group="1"][data-visible="1"]');
+        if ($currentGroup.prev('[data-wpucontactforms-group="1"]').length) {
+            $currentGroup.attr('data-visible', '0');
+            $currentGroup.prev('[data-wpucontactforms-group="1"]').attr('data-visible', '1');
+        }
+    });
+    /* Next button */
+    $wrapper.on('click', '[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="next"]', function() {
+        var _hasError = check_form_error($wrapper.find('form'));
+        if (_hasError) {
+            return;
+        }
+        var $currentGroup = $wrapper.find('[data-wpucontactforms-group="1"][data-visible="1"]');
+        if ($currentGroup.next('[data-wpucontactforms-group="1"]').length) {
+            $currentGroup.attr('data-visible', '0');
+            $currentGroup.next('[data-wpucontactforms-group="1"]').attr('data-visible', '1');
+        }
+    });
 
     /* Special actions before AJAX send */
     $wrapper.on('wpucontactforms_before_ajax', function() {

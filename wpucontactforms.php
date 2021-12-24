@@ -304,6 +304,7 @@ class wpucontactforms {
             'recaptcha_privatekey' => false,
             'submit_class' => 'cssc-button cssc-button--default',
             'submit_label' => __('Submit', 'wpucontactforms'),
+            'submit_intermediate_label' => __('Continue', 'wpucontactforms'),
             'submit_type' => 'button',
             'contact_fields' => array(
                 'contact_name' => array(
@@ -396,10 +397,14 @@ class wpucontactforms {
 
         $form_autofill = false;
         $content_form = '';
-        $content_fields = '';
+        $content_fields = array();
         $this->contact_fields = apply_filters('wpucontactforms_contact_fields_before_display', $this->contact_fields);
         foreach ($this->contact_fields as $field) {
-            $content_fields .= $this->field_content($field);
+            if (!isset($field['fieldset'])) {
+                $field['fieldset'] = 'default';
+            }
+
+            $content_fields[$field['fieldset']] .= $this->field_content($field);
             if (isset($field['autofill'])) {
                 $form_autofill = true;
             }
@@ -409,13 +414,63 @@ class wpucontactforms {
 
         $form_tag = $is_preview_mode ? 'div' : 'form';
 
-        // Display contact form
+        /* Open form */
         $content_form .= '<' . $form_tag . ' class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ';
         $content_form .= ' ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '');
         $content_form .= ' ' . ($this->options['contact__settings']['autocomplete'] ? 'autocomplete="' . esc_attr($this->options['contact__settings']['autocomplete']) . '"' : '');
         $content_form .= ' data-autofill="' . ($form_autofill ? '1' : '0') . '">';
+
+        /* Group start */
         $content_form .= '<' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';
-        $content_form .= $content_fields;
+
+        $first_group = array_key_first($content_fields);
+        $last_group = array_key_last($content_fields);
+        foreach ($content_fields as $fieldset_id => $fieldset_values) {
+            $content_form .= '<fieldset class="wpucontactforms-fieldset" data-wpucontactforms-group="1" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
+            $content_form .= $fieldset_values;
+
+            /* Final form control */
+            if ($fieldset_id === $last_group) {
+                $content_form .= $this->page_content__extra_fields($form_id, $is_preview_mode);
+                $content_form .= $this->page_content__get_submit_box($form_id, $is_preview_mode);
+            }
+            /* Intermediate form control */
+            else {
+                $content_form .= $this->page_content__get_submit_box_intermediate($form_id, $is_preview_mode);
+            }
+            $content_form .= '</fieldset>';
+        }
+
+        $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+
+        /* Close form */
+        $content_form .= '</' . $form_tag . '>';
+
+        if ($this->is_successful && !$this->options['contact__settings']['display_form_after_submit']) {
+            $content_form = '';
+        }
+
+        if ($hide_wrapper !== true) {
+            echo $this->options['contact__settings']['content_before_wrapper_open'];
+            echo '<div class="wpucontactforms-form-wrapper">';
+            echo $this->options['contact__settings']['content_after_wrapper_open'];
+        }
+        echo $this->content_contact;
+        if (!$this->is_successful || ($this->is_successful && $this->options['contact__display_form_after_success'])) {
+            echo $this->options['contact__settings']['content_before_content_form'];
+            echo $content_form;
+            echo $this->options['contact__settings']['content_after_content_form'];
+        }
+        if ($hide_wrapper !== true) {
+            echo $this->options['contact__settings']['content_before_wrapper_close'];
+            echo '</div>';
+            echo $this->options['contact__settings']['content_after_wrapper_close'];
+        }
+    }
+
+    public function page_content__extra_fields($form_id, $is_preview_mode) {
+
+        $content_form = '';
 
         /* Quick honeypot */
         if (!$is_preview_mode) {
@@ -436,6 +491,27 @@ class wpucontactforms {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-v3" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
+
+        return $content_form;
+    }
+
+    public function page_content__get_submit_box_intermediate($form_id, $is_preview_mode) {
+
+        $content_form = '';
+
+        /* Box success && hidden fields */
+        $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
+        $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_before', '');
+        $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_label'] . '</span></button>';
+        $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_after', '');
+        $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+
+        return $content_form;
+    }
+
+    public function page_content__get_submit_box($form_id, $is_preview_mode) {
+
+        $content_form = '';
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
@@ -459,28 +535,7 @@ class wpucontactforms {
         $content_form .= apply_filters('wpucontactforms_fields_submit_inner_after', '');
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
-        $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
-        $content_form .= '</' . $form_tag . '>';
-        if ($this->is_successful && !$this->options['contact__settings']['display_form_after_submit']) {
-            $content_form = '';
-        }
-
-        if ($hide_wrapper !== true) {
-            echo $this->options['contact__settings']['content_before_wrapper_open'];
-            echo '<div class="wpucontactforms-form-wrapper">';
-            echo $this->options['contact__settings']['content_after_wrapper_open'];
-        }
-        echo $this->content_contact;
-        if (!$this->is_successful || ($this->is_successful && $this->options['contact__display_form_after_success'])) {
-            echo $this->options['contact__settings']['content_before_content_form'];
-            echo $content_form;
-            echo $this->options['contact__settings']['content_after_content_form'];
-        }
-        if ($hide_wrapper !== true) {
-            echo $this->options['contact__settings']['content_before_wrapper_close'];
-            echo '</div>';
-            echo $this->options['contact__settings']['content_after_wrapper_close'];
-        }
+        return $content_form;
     }
 
     public function field_content($field) {

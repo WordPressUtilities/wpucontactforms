@@ -37,3 +37,11 @@
 .wpucontactforms-form-wrapper [data-required="true"] > label:not(.label-checkbox):after {
     content: '*';
 }
+
+/* ----------------------------------------------------------
+  Groups
+---------------------------------------------------------- */
+
+[data-wpucontactforms-group="1"][data-visible="0"] {
+    display: none;
+}

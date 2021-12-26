@@ -466,15 +466,26 @@ function set_wpucontactforms_form($wrapper) {
     $wrapper.on('submit', 'form', submit_form);
 
     /* Intermediate submit */
+
+    function switch_fieldset($currentGroup, $newGroup) {
+        if (!$newGroup.length) {
+            return;
+        }
+        $wrapper.trigger('wpucontactforms_going_next_fieldset');
+        $currentGroup.attr('data-visible', '0');
+        $currentGroup.trigger('wpucontactforms_fieldset_hiding');
+        $newGroup.attr('data-visible', '1');
+        $newGroup.trigger('wpucontactforms_fieldset_showing');
+    }
+
     /* Previous button */
     $wrapper.on('click', '[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="previous"]', function(e) {
         e.preventDefault();
         var $currentGroup = $wrapper.find('[data-wpucontactforms-group="1"][data-visible="1"]');
-        if ($currentGroup.prev('[data-wpucontactforms-group="1"]').length) {
-            $currentGroup.attr('data-visible', '0');
-            $currentGroup.prev('[data-wpucontactforms-group="1"]').attr('data-visible', '1');
-        }
+        var $newGroup = $currentGroup.prev('[data-wpucontactforms-group="1"]');
+        switch_fieldset($currentGroup, $newGroup);
     });
+
     /* Next button */
     $wrapper.on('click', '[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="next"]', function() {
         var _hasError = check_form_error($wrapper.find('form'));
@@ -482,10 +493,8 @@ function set_wpucontactforms_form($wrapper) {
             return;
         }
         var $currentGroup = $wrapper.find('[data-wpucontactforms-group="1"][data-visible="1"]');
-        if ($currentGroup.next('[data-wpucontactforms-group="1"]').length) {
-            $currentGroup.attr('data-visible', '0');
-            $currentGroup.next('[data-wpucontactforms-group="1"]').attr('data-visible', '1');
-        }
+        var $newGroup = $currentGroup.next('[data-wpucontactforms-group="1"]');
+        switch_fieldset($currentGroup, $newGroup);
     });
 
     /* Special actions before AJAX send */

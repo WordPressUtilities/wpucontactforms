@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.0.0
+Version: 2.0.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.0.0';
+    private $plugin_version = '2.0.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -305,8 +305,8 @@ class wpucontactforms {
             'recaptcha_privatekey' => false,
             'submit_class' => 'cssc-button cssc-button--default',
             'submit_label' => __('Submit', 'wpucontactforms'),
-            'submit_intermediate_prev_class' => 'cssc-button cssc-button--default',
-            'submit_intermediate_class' => 'cssc-button cssc-button--default',
+            'submit_intermediate_prev_class' => '',
+            'submit_intermediate_class' => '',
             'submit_intermediate_prev_label' => __('Previous', 'wpucontactforms'),
             'submit_intermediate_label' => __('Continue', 'wpucontactforms'),
             'submit_type' => 'button',
@@ -336,9 +336,16 @@ class wpucontactforms {
 
         $this->options['contact__settings'] = array_merge($contact__settings, $this->options['contact__settings']);
 
+        // Testing missing settings
+        foreach($this->options['contact__settings'] as $id => $value){
+            if(($id == 'submit_intermediate_prev_class' || $id == 'submit_intermediate_class') && !$value){
+                $this->options['contact__settings'][$id] = $this->options['contact__settings']['submit_class'];
+            }
+        }
+
         $this->contact_fields = apply_filters('wpucontactforms_fields', $this->options['contact__settings']['contact_fields'], $this->options);
 
-        // Testing missing settings
+        // Testing missing field settings
         foreach ($this->contact_fields as $id => $field) {
 
             // Merge with default field.
@@ -407,7 +414,9 @@ class wpucontactforms {
             if (!isset($field['fieldset'])) {
                 $field['fieldset'] = 'default';
             }
-
+            if(!isset($content_fields[$field['fieldset']])){
+                $content_fields[$field['fieldset']] = '';
+            }
             $content_fields[$field['fieldset']] .= $this->field_content($field);
             if (isset($field['autofill'])) {
                 $form_autofill = true;

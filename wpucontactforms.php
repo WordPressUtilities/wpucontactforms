@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.0.1
+Version: 2.1.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.0.1';
+    private $plugin_version = '2.1.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -337,8 +337,8 @@ class wpucontactforms {
         $this->options['contact__settings'] = array_merge($contact__settings, $this->options['contact__settings']);
 
         // Testing missing settings
-        foreach($this->options['contact__settings'] as $id => $value){
-            if(($id == 'submit_intermediate_prev_class' || $id == 'submit_intermediate_class') && !$value){
+        foreach ($this->options['contact__settings'] as $id => $value) {
+            if (($id == 'submit_intermediate_prev_class' || $id == 'submit_intermediate_class') && !$value) {
                 $this->options['contact__settings'][$id] = $this->options['contact__settings']['submit_class'];
             }
         }
@@ -414,7 +414,7 @@ class wpucontactforms {
             if (!isset($field['fieldset'])) {
                 $field['fieldset'] = 'default';
             }
-            if(!isset($content_fields[$field['fieldset']])){
+            if (!isset($content_fields[$field['fieldset']])) {
                 $content_fields[$field['fieldset']] = '';
             }
             $content_fields[$field['fieldset']] .= $this->field_content($field);
@@ -587,6 +587,9 @@ class wpucontactforms {
             $field_id_name .= ' name="' . $id . '[]"';
         } else {
             $field_id_name .= ' name="' . $id . '"';
+        }
+        if ($is_multiple && $field['type'] == 'select') {
+            $field_id_name .= ' multiple';
         }
 
         $field_id_name .= '  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
@@ -964,7 +967,7 @@ class wpucontactforms {
                     $this->msg_errors[] = sprintf(__('The field "%s" is not correct', 'wpucontactforms'), $field['label']);
                 } else {
 
-                    if ($field['type'] == 'select' || $field['type'] == 'radio') {
+                    if (($field['type'] == 'select' && !$is_multiple) || $field['type'] == 'radio') {
                         $contact_fields[$id]['value_select'] = $tmp_value;
                         if (isset($field['datas'][$tmp_value])) {
                             $tmp_value = $field['datas'][$tmp_value];
@@ -1088,7 +1091,14 @@ class wpucontactforms {
         switch ($field['validation']) {
         case 'radio':
         case 'select':
-            return array_key_exists($tmp_value, $field['datas']);
+            if (!is_array($tmp_value) || !isset($field['multiple']) || !$field['multiple']) {
+                return array_key_exists($tmp_value, $field['datas']);
+            }
+            foreach ($tmp_value as $tmp_value_item) {
+                if (!array_key_exists($tmp_value_item, $field['datas'])) {
+                    return false;
+                }
+            }
             break;
         case 'checkbox':
             return in_array($tmp_value, $zero_one);
@@ -1284,7 +1294,8 @@ function wpucontactform__set_html_field_content($field, $wrap_html = true) {
         $field_content = nl2br($field_content);
     }
 
-    if ($field['type'] == 'checkbox-list' && is_array($field['value'])) {
+    $is_select_multiple = ($field['type'] == 'select' && isset($field['multiple']) && $field['multiple']);
+    if (($field['type'] == 'checkbox-list' || $is_select_multiple) && is_array($field['value'])) {
         $field_parts = array();
 
         foreach ($field['value'] as $val_item) {

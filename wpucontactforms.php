@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.1.0
+Version: 2.2.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,12 +13,14 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.1.0';
+    private $plugin_version = '2.2.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
     private $has_recaptcha_v3 = false;
     private $user_options = false;
+    public $contact_fields = array();
+    public $contact_steps = array();
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -236,6 +238,8 @@ class wpucontactforms {
         $this->default_field = array(
             'box_class' => '',
             'classname' => '',
+            'html_box_start' => '',
+            'html_box_end' => '',
             'html_after' => '',
             'html_after_input' => '',
             'html_before' => '',
@@ -310,6 +314,7 @@ class wpucontactforms {
             'submit_intermediate_prev_label' => __('Previous', 'wpucontactforms'),
             'submit_intermediate_label' => __('Continue', 'wpucontactforms'),
             'submit_type' => 'button',
+            'contact_steps' => array(),
             'contact_fields' => array(
                 'contact_name' => array(
                     'label' => __('Name', 'wpucontactforms'),
@@ -343,6 +348,7 @@ class wpucontactforms {
             }
         }
 
+        $this->contact_steps = apply_filters('wpucontactforms_steps', $this->options['contact__settings']['contact_steps'], $this->options);
         $this->contact_fields = apply_filters('wpucontactforms_fields', $this->options['contact__settings']['contact_fields'], $this->options);
 
         // Testing missing field settings
@@ -417,9 +423,17 @@ class wpucontactforms {
             if (!isset($content_fields[$field['fieldset']])) {
                 $content_fields[$field['fieldset']] = '';
             }
+            if (!isset($this->contact_steps[$field['fieldset']])) {
+                $this->contact_steps[$field['fieldset']] = array();
+            }
             $content_fields[$field['fieldset']] .= $this->field_content($field);
             if (isset($field['autofill'])) {
                 $form_autofill = true;
+            }
+        }
+        foreach ($this->contact_steps as $step_id => $step) {
+            if (!isset($step['title'])) {
+                $this->contact_steps[$step_id]['title'] = '';
             }
         }
 
@@ -440,6 +454,12 @@ class wpucontactforms {
         $last_group = array_key_last($content_fields);
         foreach ($content_fields as $fieldset_id => $fieldset_values) {
             $content_form .= '<fieldset class="wpucontactforms-fieldset" data-wpucontactforms-group="1" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
+            if (isset($this->contact_steps[$fieldset_id]['html_before']) && $this->contact_steps[$fieldset_id]['html_before']) {
+                $content_form .= $this->contact_steps[$fieldset_id]['html_before'];
+            }
+            if (isset($this->contact_steps[$fieldset_id]['title']) && $this->contact_steps[$fieldset_id]['title']) {
+                $content_form .= '<div class="legend wpucontactforms-fieldset__title">' . $this->contact_steps[$fieldset_id]['title'] . '</div>';
+            }
             $content_form .= $fieldset_values;
 
             /* Final form control */
@@ -450,6 +470,10 @@ class wpucontactforms {
             /* Intermediate form control */
             else {
                 $content_form .= $this->page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $fieldset_id === $first_group);
+            }
+
+            if (isset($this->contact_steps[$fieldset_id]['html_after']) && $this->contact_steps[$fieldset_id]['html_after']) {
+                $content_form .= $this->contact_steps[$fieldset_id]['html_after'];
             }
             $content_form .= '</fieldset>';
         }
@@ -516,7 +540,7 @@ class wpucontactforms {
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_intermediate_class'] . '">';
         $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_before', '');
         if (!$is_first_group) {
-            $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_class'] . '" data-type="previous" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_prev_label'] . '</span></button>';
+            $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_prev_class'] . '" data-type="previous" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_prev_label'] . '</span></button>';
         }
         $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_class'] . '" data-type="next" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_label'] . '</span></button>';
         $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_after', '');
@@ -544,7 +568,7 @@ class wpucontactforms {
             }
         }
         if (!$is_first_group) {
-            $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_class'] . '" data-type="previous" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_prev_label'] . '</span></button>';
+            $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_prev_class'] . '" data-type="previous" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_prev_label'] . '</span></button>';
         }
         if ($this->options['contact__settings']['submit_type'] == 'button') {
             $content_form .= '<button class="' . $this->options['contact__settings']['submit_class'] . '" type="submit"><span>' . $this->options['contact__settings']['submit_label'] . '</span></button>';
@@ -565,6 +589,9 @@ class wpucontactforms {
         }
 
         $content = '';
+
+        $content .= $field['html_before_input'];
+
         $id = $field['id'];
         if ($is_preview_mode) {
             $id = 'preview_wpucontactforms__' . $id;
@@ -664,7 +691,7 @@ class wpucontactforms {
         }
         $label_content_html = '';
         if (!empty($label_content)) {
-            $label_content_html .= '<label id="label-' . $id . '" for="' . $id_html . '">' . $label_content . '</label>';
+            $label_content_html .= '<label class="wpucontactform-itemlabel" id="label-' . $id . '" for="' . $id_html . '">' . $label_content . '</label>';
         }
         if ($label_content_html && !$label_after_input) {
             $content .= $label_content_html;
@@ -833,7 +860,9 @@ class wpucontactforms {
         ' data-required="' . ($field['required'] ? 'true' : 'false') . '"' .
         ' data-boxid="' . esc_attr($field['id']) . '"' .
         ' class="' . trim($box_class) . '">' .
+        $field['html_box_start'] .
         $content .
+        $field['html_box_end'] .
         '</' . $this->options['contact__settings']['box_tagname'] . '>' .
             $field['html_after'];
     }

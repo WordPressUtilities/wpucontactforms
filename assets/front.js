@@ -319,14 +319,24 @@ function set_wpucontactforms_form($wrapper) {
                     _tmpValNum,
                     _isSupCond,
                     _isInfCond,
+                    _isInListCond,
+                    _isNotInListCond,
                     _isNegativeCond;
 
                 for (var _id in conditions_array) {
                     _isNegativeCond = conditions_array[_id].substr(0, 4) == 'not:';
+                    _isInListCond = conditions_array[_id].substr(0, 3) == 'in:';
+                    _isNotInListCond = conditions_array[_id].substr(0, 6) == 'notin:';
                     _isSupCond = conditions_array[_id].substr(0, 1) == '>';
                     _isInfCond = conditions_array[_id].substr(0, 1) == '<';
                     if (_isNegativeCond) {
                         conditions_array[_id] = conditions_array[_id].substr(4);
+                    }
+                    if (_isInListCond) {
+                        conditions_array[_id] = conditions_array[_id].substr(3).split(',');
+                    }
+                    if (_isNotInListCond) {
+                        conditions_array[_id] = conditions_array[_id].substr(6).split(',');
                     }
                     if (_isSupCond || _isInfCond) {
                         conditions_array[_id] = parseInt(conditions_array[_id].substr(1), 10);
@@ -365,7 +375,7 @@ function set_wpucontactforms_form($wrapper) {
                     }
 
                     /* Checkbox */
-                    if (_isCheckbox) {
+                    if (_isCheckbox && !_isInListCond && !_isNotInListCond) {
                         if (_tmp_item.prop('checked') && conditions_array[_id] != 'checked') {
                             _return_condition = false;
                         }
@@ -375,13 +385,31 @@ function set_wpucontactforms_form($wrapper) {
                     }
 
                     /* Radio */
-                    if (_isRadio) {
+                    if (_isRadio && !_isInListCond && !_isNotInListCond) {
                         if (_isNegativeCond) {
                             _return_condition = !_tmp_item.get(0).checked;
                         }
                         else {
                             _return_condition = _tmp_item.get(0).checked;
                         }
+                    }
+
+                    if (_isInListCond) {
+                        _return_condition = false;
+                        _tmp_item.each(function(a, el) {
+                            if (conditions_array[_id].indexOf(el.value) > -1 && el.checked) {
+                                _return_condition = true;
+                            }
+                        })
+                    }
+
+                    if (_isNotInListCond) {
+                        _return_condition = true;
+                        _tmp_item.each(function(a, el) {
+                            if (conditions_array[_id].indexOf(el.value) > -1 && el.checked) {
+                                _return_condition = false;
+                            }
+                        })
                     }
                 }
                 return _return_condition;

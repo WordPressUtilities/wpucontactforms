@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.3.0
+Version: 2.3.1
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.3.0';
+    private $plugin_version = '2.3.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -469,7 +469,7 @@ class wpucontactforms {
             }
             /* Intermediate form control */
             else {
-                $content_form .= $this->page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $fieldset_id === $first_group);
+                $content_form .= $this->page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $fieldset_id === $first_group, $fieldset_id);
             }
 
             if (isset($this->contact_steps[$fieldset_id]['html_after']) && $this->contact_steps[$fieldset_id]['html_after']) {
@@ -532,18 +532,18 @@ class wpucontactforms {
         return $content_form;
     }
 
-    public function page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $is_first_group) {
+    public function page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $is_first_group, $fieldset_id) {
 
         $content_form = '';
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_intermediate_class'] . '">';
-        $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_before', '');
+        $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_before', '', $form_id, $fieldset_id);
         if (!$is_first_group) {
             $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_prev_class'] . '" data-type="previous" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_prev_label'] . '</span></button>';
         }
         $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_class'] . '" data-type="next" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_label'] . '</span></button>';
-        $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_after', '');
+        $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_after', '', $form_id, $fieldset_id);
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         return $content_form;

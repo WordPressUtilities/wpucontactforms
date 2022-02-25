@@ -43,5 +43,12 @@
 ---------------------------------------------------------- */
 
 [data-wpucontactforms-group="1"][data-visible="0"] {
-    display: none;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: -100vw;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0.01;
 }

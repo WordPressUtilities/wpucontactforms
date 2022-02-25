@@ -156,9 +156,14 @@ function set_wpucontactforms_form($wrapper) {
         return _hasError;
     }
 
-    function check_form_error($form) {
+    function check_form_error($form, only_visible) {
         var _hasError = false;
-        $form.find('[data-wpucontactforms-group="1"][data-visible="1"] [data-boxtype]').each(function() {
+        only_visible = only_visible || false;
+        var _boxes_selector = '[data-wpucontactforms-group="1"][data-visible="1"] [data-boxtype]';
+        if (!only_visible) {
+            _boxes_selector = '[data-wpucontactforms-group="1"] [data-boxtype]';
+        }
+        $form.find(_boxes_selector).each(function() {
             var $box = jQuery(this);
             if (!check_field_error($box)) {
                 return;
@@ -176,8 +181,18 @@ function set_wpucontactforms_form($wrapper) {
     }
 
     function submit_form(e) {
+        var $form = jQuery(e.target);
         e.preventDefault();
-        if (wpucontactforms_obj.enable_custom_validation == '1' && check_form_error(jQuery(e.target))) {
+
+        /* Go to next */
+        var $nextButton = $form.find('[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="next"]');
+        if($nextButton.length){
+            $nextButton.trigger('click');
+            return;
+        }
+
+        /* Check errors */
+        if (wpucontactforms_obj.enable_custom_validation == '1' && check_form_error($form)) {
             return false;
         }
         if (has_recaptcha_v2 && !grecaptcha.getResponse()) {
@@ -516,7 +531,7 @@ function set_wpucontactforms_form($wrapper) {
 
     /* Next button */
     $wrapper.on('click', '[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="next"]', function() {
-        var _hasError = check_form_error($wrapper.find('form'));
+        var _hasError = check_form_error($wrapper.find('form'), true);
         if (_hasError) {
             return;
         }

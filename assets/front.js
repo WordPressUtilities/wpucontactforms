@@ -99,7 +99,9 @@ function set_wpucontactforms_form($wrapper) {
             _required = $box.attr('data-required') == 'true',
             $error = $box.find('[data-error-invalid]'),
             $field = $box.find('[name="' + _id + '"]').eq(0),
+            $fieldMult = $box.find('[name="' + _id + '[]"]').eq(0),
             _field = $field.get(0),
+            _fieldMult = $fieldMult.get(0),
             simple_fields = ['text', 'textarea', 'email', 'url', 'select', 'number', 'tel', 'file', 'checkbox'],
             multiple_fields = ['radio', 'checkbox-list'];
 
@@ -153,6 +155,12 @@ function set_wpucontactforms_form($wrapper) {
             }
         }
 
+        if (_fieldMult && _required && !_hasError && !_fieldMult.value) {
+            _hasError = true;
+            $box.attr('data-has-error', 1);
+            $error.get(0).textContent += $error.attr('data-error-empty');
+        }
+
         return _hasError;
     }
 
@@ -186,7 +194,7 @@ function set_wpucontactforms_form($wrapper) {
 
         /* Go to next */
         var $nextButton = $form.find('[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="next"]');
-        if($nextButton.length){
+        if ($nextButton.length) {
             $nextButton.trigger('click');
             return;
         }

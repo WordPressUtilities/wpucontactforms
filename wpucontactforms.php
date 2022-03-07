@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.3.3
+Version: 2.3.4
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.3.3';
+    private $plugin_version = '2.3.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -555,7 +555,7 @@ class wpucontactforms {
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
-        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '');
+        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '', $form_id);
         $hidden_fields = apply_filters('wpucontactforms_hidden_fields', array(
             'form_id' => $form_id,
             'control_stripslashes' => '&quot;',
@@ -575,7 +575,7 @@ class wpucontactforms {
         } else {
             $content_form .= '<input class="' . $this->options['contact__settings']['submit_class'] . '" type="submit" value="' . esc_attr($this->options['contact__settings']['submit_label']) . '">';
         }
-        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_after', '');
+        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_after', '', $form_id);
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         return $content_form;

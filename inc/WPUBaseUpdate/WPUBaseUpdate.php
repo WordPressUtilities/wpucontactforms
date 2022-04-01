@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Update
 Description: A class to handle plugin update from github
-Version: 0.4.2
+Version: 0.4.3
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -17,6 +17,7 @@ class WPUBaseUpdate {
     public $current_version;
     private $github_username;
     private $github_project;
+    private $github_path;
     private $transient_name;
     private $transient_expiration;
     private $plugin_id;

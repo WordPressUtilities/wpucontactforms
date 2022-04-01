@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.3.4
+Version: 2.3.5
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.3.4';
+    private $plugin_version = '2.3.5';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -301,6 +301,8 @@ class wpucontactforms {
             'group_submit_intermediate_class' => 'box--submit box--submit-intermediate',
             'group_tagname' => 'div',
             'input_class' => 'input-text',
+            'label_checkbox_inner__classname' => 'label_checkbox',
+            'label_radio_inner__classname' => 'label_radio',
             'label_text_required' => '<em>*</em>',
             'max_file_size' => wp_max_upload_size(),
             'recaptcha_type' => 'v2',
@@ -743,7 +745,7 @@ class wpucontactforms {
                 } else {
                     $content .= ' ';
                 }
-                $content .= '<span>' . $val . '</span></label>';
+                $content .= '<span class="' . $this->options['contact__settings']['label_radio_inner__classname'] . '">' . $val . '</span></label>';
             }
             break;
         case 'file':
@@ -759,7 +761,7 @@ class wpucontactforms {
             if ($field['input_inside_label']) {
                 $content .= $checkbox_content . ' ';
             }
-            $content .= '<span>' . $label_content . '</span></label>';
+            $content .= '<span class="' . $this->options['contact__settings']['label_checkbox_inner__classname'] . '">' . $label_content . '</span></label>';
             break;
         case 'text':
         case 'tel':

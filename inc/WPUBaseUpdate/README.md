@@ -6,8 +6,11 @@ Update your Github WordPress plugin from the plugins page admin.
 ## Insert in the INIT hook
 
 ```php
-$this->settings_update = new \wpupopin\WPUBaseUpdate(
+include dirname( __FILE__ ) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
+$this->settings_update = new \PLUGINID\WPUBaseUpdate(
     'WordPressUtilities',
-    'wpupopin',
+    'PLUGINID',
     $this->plugin_version);
 ```
+
+Please ensure that this code is available before when !is_admin() ( for API purposes )

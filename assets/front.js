@@ -529,6 +529,14 @@ function set_wpucontactforms_form($wrapper) {
         $newGroup.trigger('wpucontactforms_fieldset_showing');
     }
 
+    /* Handle steps */
+    $wrapper.on('click', '[data-form-step-goto]', function(e) {
+        e.preventDefault();
+        var $currentGroup = $wrapper.find('[data-wpucontactforms-group="1"][data-visible="1"]');
+        var $newGroup = $wrapper.find('[data-wpucontactforms-group="1"][data-wpucontactforms-group-id="' + jQuery(this).attr('data-form-step-goto') + '"]');
+        switch_fieldset($currentGroup, $newGroup);
+    });
+
     /* Previous button */
     $wrapper.on('click', '[data-wpucontactforms-group="1"][data-visible="1"] button[data-type="previous"]', function(e) {
         e.preventDefault();

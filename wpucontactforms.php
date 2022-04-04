@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.3.5
+Version: 2.3.6
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.3.5';
+    private $plugin_version = '2.3.6';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -454,8 +454,9 @@ class wpucontactforms {
 
         $first_group = array_key_first($content_fields);
         $last_group = array_key_last($content_fields);
+        $fieldset_i = 0;
         foreach ($content_fields as $fieldset_id => $fieldset_values) {
-            $content_form .= '<fieldset class="wpucontactforms-fieldset" data-wpucontactforms-group="1" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
+            $content_form .= '<fieldset class="wpucontactforms-fieldset" data-wpucontactforms-group="1" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
             if (isset($this->contact_steps[$fieldset_id]['html_before']) && $this->contact_steps[$fieldset_id]['html_before']) {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_before'];
             }
@@ -478,6 +479,7 @@ class wpucontactforms {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_after'];
             }
             $content_form .= '</fieldset>';
+            $fieldset_i++;
         }
 
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';

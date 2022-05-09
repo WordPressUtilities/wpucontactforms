@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.3.7
+Version: 2.3.8
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.3.7';
+    private $plugin_version = '2.3.8';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -286,6 +286,7 @@ class wpucontactforms {
             'box_tagname' => 'div',
             'fieldgroup_class' => 'twoboxes',
             'fieldgroup_tagname' => 'div',
+            'fieldset_tagname' => 'fieldset',
             'content_before_wrapper_open' => '',
             'content_after_wrapper_open' => '',
             'content_before_content_form' => '',
@@ -439,6 +440,8 @@ class wpucontactforms {
             }
         }
 
+        $fieldset_tagname = $this->options['contact__settings']['fieldset_tagname'];
+
         $is_preview_mode = $this->is_preview_form();
 
         $form_tag = $is_preview_mode ? 'div' : 'form';
@@ -456,7 +459,7 @@ class wpucontactforms {
         $last_group = array_key_last($content_fields);
         $fieldset_i = 0;
         foreach ($content_fields as $fieldset_id => $fieldset_values) {
-            $content_form .= '<fieldset class="wpucontactforms-fieldset" data-wpucontactforms-group="1" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
+            $content_form .= '<' . $fieldset_tagname . ' class="wpucontactforms-fieldset" data-wpucontactforms-group="1" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
             if (isset($this->contact_steps[$fieldset_id]['html_before']) && $this->contact_steps[$fieldset_id]['html_before']) {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_before'];
             }
@@ -478,7 +481,7 @@ class wpucontactforms {
             if (isset($this->contact_steps[$fieldset_id]['html_after']) && $this->contact_steps[$fieldset_id]['html_after']) {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_after'];
             }
-            $content_form .= '</fieldset>';
+            $content_form .= '</' . $fieldset_tagname . '>';
             $fieldset_i++;
         }
 

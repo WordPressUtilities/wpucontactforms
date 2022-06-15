@@ -52,3 +52,27 @@
     overflow: hidden;
     opacity: 0.01;
 }
+
+/* ----------------------------------------------------------
+  Fake upload
+---------------------------------------------------------- */
+
+.fake-upload-wrapper {
+    z-index: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.fake-upload-cover {
+    pointer-events: none;
+}
+
+.fake-upload-wrapper input[type="file"] {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 10vh;
+    opacity: 0.01;
+    cursor: pointer;
+}

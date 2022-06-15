@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.4.0
+Version: 2.5.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.4.0';
+    private $plugin_version = '2.5.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -754,7 +754,11 @@ class wpucontactforms {
             }
             break;
         case 'file':
-            $content .= '<input ' . ($input_multiple ? 'multiple' : '') . ' type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' ' . $field_val . ' />';
+            $input_file = '<input ' . ($input_multiple ? 'multiple' : '') . ' type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' ' . $field_val . ' />';
+            if (isset($field['fake_upload'])) {
+                $input_file = '<div class="fake-upload-wrapper">' . $input_file . '<div class="fake-upload-cover" data-placeholder="' . esc_attr($placeholder) . '">' . $placeholder . '</div></div>';
+            }
+            $content .= $input_file;
             break;
         case 'checkbox':
             $content = '';

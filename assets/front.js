@@ -42,6 +42,19 @@ function set_wpucontactforms_form($wrapper) {
     var recaptcha_item_v2 = document.querySelector('.g-recaptcha');
     var has_recaptcha_v2 = !!recaptcha_item_v2;
 
+    $form.on('change', '.fake-upload-wrapper input[type="file"]', function(e) {
+        var $parent = jQuery(this).closest('.fake-upload-wrapper'),
+            $cover = $parent.find('[data-placeholder]');
+        if (this.value) {
+            $parent.attr('data-has-value','1');
+            $cover.text(this.value.replace(/\\/g, '/').split('/').reverse()[0]);
+        }
+        else {
+            $parent.attr('data-has-value','0');
+            $cover.text($cover.attr('data-placeholder'));
+        }
+    });
+
     /* Async loading for recaptcha */
     if (has_recaptcha_v2) {
         /* Init recaptcha */

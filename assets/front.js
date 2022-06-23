@@ -144,7 +144,8 @@ function set_wpucontactforms_form($wrapper) {
 
             /* Custom error messages for some specific fields */
             if (_field.validationMessage && !_field.validity.valueMissing) {
-                if (simple_fields.indexOf('number') > -1) {
+                if (_type == 'number') {
+                    console.log(_type);
                     _hasError = true;
                     $box.attr('data-has-error', 1);
                     $error.get(0).textContent = _field.validationMessage;

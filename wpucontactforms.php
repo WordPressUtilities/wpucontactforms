@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.5.0
+Version: 2.6.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.5.0';
+    private $plugin_version = '2.6.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -21,6 +21,7 @@ class wpucontactforms {
     private $user_options = false;
     public $contact_fields = array();
     public $contact_steps = array();
+    private $phone_pattern = '^(?:0|\(?\+33\)?\s?|0033\s?)[1-79](?:[\.\-\s]?\d\d){4}$';
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -665,6 +666,11 @@ class wpucontactforms {
             $placeholder = $field['placeholder'];
         }
 
+        // Default pattern for tel
+        if ($field['type'] == 'tel' && (!isset($field['validation_pattern']) || empty($field['validation_pattern']))) {
+            $field['validation_pattern'] = $this->phone_pattern;
+        }
+
         // Validation
         if (isset($field['validation_pattern']) && !empty($field['validation_pattern'])) {
             $field_id_name .= ' pattern="' . $field['validation_pattern'] . '"';
@@ -1159,6 +1165,9 @@ class wpucontactforms {
             break;
         case 'email':
             return filter_var($tmp_value, FILTER_VALIDATE_EMAIL) !== false;
+            break;
+        case 'tel':
+            return preg_match('/' . $this->phone_pattern . '/', $tmp_value);
             break;
         case 'url':
             return filter_var($tmp_value, FILTER_VALIDATE_URL) !== false;

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.6.1
+Version: 2.6.2
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.6.1';
+    private $plugin_version = '2.6.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -847,7 +847,15 @@ class wpucontactforms {
 
         if (isset($this->options['contact__settings']['enable_custom_validation']) && $this->options['contact__settings']['enable_custom_validation'] && !$is_preview_mode) {
 
-            $error_invalid = apply_filters('wpucontactforms__error_invalid_txt', __('This field is invalid', 'wpucontactforms'));
+            $error_invalid = __('This field is invalid', 'wpucontactforms');
+            if ($field['type'] == 'email') {
+                $error_invalid = __('This is not a valid e-mail address', 'veryup');
+            }
+            if ($field['type'] == 'tel') {
+                $error_invalid = __('This is not a valid phone number', 'veryup');
+            }
+
+            $error_invalid = apply_filters('wpucontactforms__error_invalid_txt', $error_invalid);
             if (isset($field['error_invalid'])) {
                 $error_invalid = $field['error_invalid'];
             }

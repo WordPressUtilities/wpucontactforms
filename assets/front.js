@@ -26,6 +26,11 @@ function wpucontactforms_recaptcha_callback() {
   Set Contact form
 ---------------------------------------------------------- */
 
+/* Use suggested value */
+function wpucontactforms_apply_suggested_value(val) {
+    console.log(this, val);
+}
+
 /* Enable form when recaptcha has loaded */
 function wpucontactforms_callback_recaptcha() {
     jQuery('.wpucontactforms-form-wrapper').find('form').each(function() {
@@ -46,13 +51,24 @@ function set_wpucontactforms_form($wrapper) {
         var $parent = jQuery(this).closest('.fake-upload-wrapper'),
             $cover = $parent.find('[data-placeholder]');
         if (this.value) {
-            $parent.attr('data-has-value','1');
+            $parent.attr('data-has-value', '1');
             $cover.text(this.value.replace(/\\/g, '/').split('/').reverse()[0]);
         }
         else {
-            $parent.attr('data-has-value','0');
+            $parent.attr('data-has-value', '0');
             $cover.text($cover.attr('data-placeholder'));
         }
+    });
+
+    $form.on('click', '[data-error-suggest][data-new-value]', function(e) {
+        e.preventDefault();
+        var _val = this.getAttribute('data-new-value');
+        if (!_val) {
+            return;
+        }
+        var $input = jQuery(this).closest('[data-boxtype]').find('[name][aria-labelledby]');
+        $input.val(_val);
+        $input.trigger('change');
     });
 
     /* Async loading for recaptcha */
@@ -105,6 +121,14 @@ function set_wpucontactforms_form($wrapper) {
         $form.attr('novalidate', 'novalidate');
     }
 
+    var field_suggestions = [{
+        'type': ['email'],
+        'regexp': /gmailcom/,
+        'fix': function(val) {
+            return val.replace('gmailcom', 'gmail.com');
+        }
+    }];
+
     function check_field_error($box) {
         var _hasError = false,
             _type = $box.attr('data-boxtype'),
@@ -121,6 +145,7 @@ function set_wpucontactforms_form($wrapper) {
         /* Start without error */
         $box.attr('data-has-error', 0);
         $box.attr('data-field-ok', 0);
+        $error.get(0).removeAttribute('data-new-value');
         $error.get(0).textContent = '';
 
         /* Validate simple fields */
@@ -145,7 +170,6 @@ function set_wpucontactforms_form($wrapper) {
             /* Custom error messages for some specific fields */
             if (_field.validationMessage && !_field.validity.valueMissing) {
                 if (_type == 'number') {
-                    console.log(_type);
                     _hasError = true;
                     $box.attr('data-has-error', 1);
                     $error.get(0).textContent = _field.validationMessage;
@@ -173,6 +197,25 @@ function set_wpucontactforms_form($wrapper) {
             _hasError = true;
             $box.attr('data-has-error', 1);
             $error.get(0).textContent += $error.attr('data-error-empty');
+        }
+
+        /* Try suggestions */
+        var _newValue = _field.value;
+        for (var i = 0, len = field_suggestions.length; i < len; i++) {
+            /* Test type */
+            if (field_suggestions[i].type.indexOf(_type) < 0) {
+                continue;
+            }
+            /* Test detection */
+            if (!_field.value.match(field_suggestions[i].regexp)) {
+                continue;
+            }
+            /* Suggest new value */
+            _newValue = field_suggestions[i].fix(_newValue);
+            _hasError = true;
+            $box.attr('data-has-error', 1);
+            $error.get(0).setAttribute('data-new-value', _newValue);
+            $error.get(0).textContent += $error.attr('data-error-suggest').replace('%s', _newValue);
         }
 
         return _hasError;

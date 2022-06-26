@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.6.2
+Version: 2.7.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.6.2';
+    private $plugin_version = '2.7.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -859,6 +859,10 @@ class wpucontactforms {
             if (isset($field['error_invalid'])) {
                 $error_invalid = $field['error_invalid'];
             }
+            $error_suggest = apply_filters('wpucontactforms__error_suggest_txt', __('Did you mean: %s ?', 'wpucontactforms'));
+            if (isset($field['error_suggest'])) {
+                $error_suggest = $field['error_suggest'];
+            }
             $error_choose = apply_filters('wpucontactforms__error_choose_txt', __('A value should be selected', 'wpucontactforms'));
             if (isset($field['error_choose'])) {
                 $error_choose = $field['error_choose'];
@@ -870,6 +874,7 @@ class wpucontactforms {
 
             $content .= '<div' .
             ' data-error-invalid="' . esc_attr($error_invalid) . '"' .
+            ' data-error-suggest="' . esc_attr($error_suggest) . '"' .
             ' data-error-choose="' . esc_attr($error_choose) . '"' .
             ' data-error-empty="' . esc_attr($error_empty) . '"' .
                 ' class="error" aria-live="polite"></div>';

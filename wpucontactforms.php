@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.7.0
+Version: 2.8.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.7.0';
+    private $plugin_version = '2.8.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -950,7 +950,22 @@ class wpucontactforms {
             }
         }
 
-        $this->contact_fields = $this->extract_value_from_post($_POST, $this->contact_fields);
+        $this->post_contact_send_action($_POST);
+    }
+
+    function post_contact_send_action($post_array) {
+
+        if (!isset($post_array['form_id']) || $post_array['form_id'] != $this->options['id']) {
+            return;
+        }
+
+        if (!isset($this->msg_errors) || !is_array($this->msg_errors)) {
+            $this->msg_errors = array();
+        }
+
+        do_action('wpucontactforms_beforesubmit_contactform_manual', $this);
+
+        $this->contact_fields = $this->extract_value_from_post($post_array, $this->contact_fields);
 
         if (isset($this->contact_fields['contact_message'])) {
             $contact_message = apply_filters('wpucontactforms_message', $this->contact_fields['contact_message']['value']);

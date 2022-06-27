@@ -26,11 +26,6 @@ function wpucontactforms_recaptcha_callback() {
   Set Contact form
 ---------------------------------------------------------- */
 
-/* Use suggested value */
-function wpucontactforms_apply_suggested_value(val) {
-    console.log(this, val);
-}
-
 /* Enable form when recaptcha has loaded */
 function wpucontactforms_callback_recaptcha() {
     jQuery('.wpucontactforms-form-wrapper').find('form').each(function() {
@@ -200,22 +195,24 @@ function set_wpucontactforms_form($wrapper) {
         }
 
         /* Try suggestions */
-        var _newValue = _field.value;
-        for (var i = 0, len = field_suggestions.length; i < len; i++) {
-            /* Test type */
-            if (field_suggestions[i].type.indexOf(_type) < 0) {
-                continue;
+        if (_field) {
+            var _newValue = _field.value;
+            for (var i = 0, len = field_suggestions.length; i < len; i++) {
+                /* Test type */
+                if (field_suggestions[i].type.indexOf(_type) < 0) {
+                    continue;
+                }
+                /* Test detection */
+                if (!_field.value.match(field_suggestions[i].regexp)) {
+                    continue;
+                }
+                /* Suggest new value */
+                _newValue = field_suggestions[i].fix(_newValue);
+                _hasError = true;
+                $box.attr('data-has-error', 1);
+                $error.get(0).setAttribute('data-new-value', _newValue);
+                $error.get(0).textContent += $error.attr('data-error-suggest').replace('%s', _newValue);
             }
-            /* Test detection */
-            if (!_field.value.match(field_suggestions[i].regexp)) {
-                continue;
-            }
-            /* Suggest new value */
-            _newValue = field_suggestions[i].fix(_newValue);
-            _hasError = true;
-            $box.attr('data-has-error', 1);
-            $error.get(0).setAttribute('data-new-value', _newValue);
-            $error.get(0).textContent += $error.attr('data-error-suggest').replace('%s', _newValue);
         }
 
         return _hasError;

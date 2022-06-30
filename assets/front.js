@@ -116,13 +116,18 @@ function set_wpucontactforms_form($wrapper) {
         $form.attr('novalidate', 'novalidate');
     }
 
-    var field_suggestions = [{
-        'type': ['email'],
-        'regexp': /gmailcom/,
-        'fix': function(val) {
-            return val.replace('gmailcom', 'gmail.com');
-        }
-    }];
+    var _domains = ['aol.com', 'comcast.net', 'free.fr', 'gmail.com', 'gmx.de', 'googlemail.com', 'hotmail.co.uk', 'hotmail.com', 'hotmail.fr', 'hotmail.it', 'libero.it', 'live.co.uk', 'live.com', 'live.fr', 'mail.ru', 'msn.com', 'orange.fr', 'outlook.com', 'rediffmail.com', 'sbcglobal.net', 'sfr.fr', 'uol.com.br', 'verizon.net', 'wanadoo.fr', 'web.de', 'yahoo.co.in', 'yahoo.co.uk', 'yahoo.com', 'yahoo.com.br', 'yahoo.es', 'yahoo.fr', 'yandex.ru', 'ymail.com'];
+    var field_suggestions = [];
+    _domains.forEach(function(_domain) {
+        var _domain_no_dots = _domain.replace(/\./g, '');
+        field_suggestions.push({
+            'type': ['email'],
+            'regexp': new RegExp('@' + _domain_no_dots + '$', 'g'),
+            'fix': function(val) {
+                return val.replace(_domain_no_dots, _domain);
+            }
+        });
+    });
 
     function check_field_error($box) {
         var _hasError = false,

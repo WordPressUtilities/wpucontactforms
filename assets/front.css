@@ -85,3 +85,22 @@
     opacity: 0.01;
     cursor: pointer;
 }
+
+/* ----------------------------------------------------------
+  Datepicker
+---------------------------------------------------------- */
+
+.wpucontactforms-datepicker {
+    padding: 0.5em;
+    border-radius: 0.25em;
+    background-color: #FFF;
+}
+
+.wpucontactforms-datepicker .ui-datepicker-next,
+.wpucontactforms-datepicker .ui-datepicker-prev {
+    cursor: pointer;
+}
+
+.wpucontactforms-datepicker td[data-handler="selectDay"] {
+    padding: 0 0.1em;
+}

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.8.2
+Version: 2.9.0
 Description: Contact forms
 Author: Darklg
 Author URI: http://darklg.me/
@@ -13,7 +13,7 @@ License URI: http://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.8.2';
+    private $plugin_version = '2.9.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -198,6 +198,15 @@ class wpucontactforms {
             return;
         }
         wp_enqueue_script('jquery-form');
+
+        if (is_array($this->contact_fields)) {
+            foreach ($this->contact_fields as $field) {
+                if (isset($field['type']) && $field['type'] == 'datepicker') {
+                    wp_enqueue_script('jquery-ui-datepicker');
+                }
+            }
+        }
+
         wp_enqueue_script('wpucontactforms-front', plugins_url('assets/front.js', __FILE__), array(
             'jquery'
         ), $this->plugin_version, true);
@@ -784,6 +793,13 @@ class wpucontactforms {
         case 'number':
         case 'email':
             $content .= '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . $field_val . ' />';
+            break;
+        case 'datepicker':
+            $datepicker_args = isset($field['datepicker_args']) ? $field['datepicker_args'] : $datepicker_args;
+            if (is_array($datepicker_args)) {
+                $datepicker_args = json_encode($datepicker_args);
+            }
+            $content .= '<input data-wpucontactforms-datepicker="' . esc_attr($datepicker_args) . '" type="text" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'textarea':
             $nb_cols = isset($field['textarea_nb_cols']) ? $field['textarea_nb_cols'] : 30;

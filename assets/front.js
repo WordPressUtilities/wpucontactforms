@@ -108,6 +108,17 @@ function set_wpucontactforms_form($wrapper) {
         }
     }
 
+    /* Datepicker */
+    $form.find('input[data-wpucontactforms-datepicker]').each(function(i, el) {
+        var $item = jQuery(el),
+            _args = JSON.parse($item.attr('data-wpucontactforms-datepicker'));
+
+        _args.beforeShow = function(input, inst) {
+            inst.dpDiv.addClass('wpucontactforms-datepicker');
+        };
+        $item.datepicker(_args);
+    })
+
     $form.attr('data-wpucontactformset', '1');
     $form.attr('data-recaptchavalid', '0');
 

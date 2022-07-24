@@ -42,17 +42,38 @@ function set_wpucontactforms_form($wrapper) {
     var recaptcha_item_v2 = document.querySelector('.g-recaptcha');
     var has_recaptcha_v2 = !!recaptcha_item_v2;
 
-    $form.on('change', '.fake-upload-wrapper input[type="file"]', function(e) {
-        var $parent = jQuery(this).closest('.fake-upload-wrapper'),
-            $cover = $parent.find('[data-placeholder]');
-        if (this.value) {
-            $parent.attr('data-has-value', '1');
-            $cover.text(this.value.replace(/\\/g, '/').split('/').reverse()[0]);
-        }
-        else {
-            $parent.attr('data-has-value', '0');
-            $cover.text($cover.attr('data-placeholder'));
-        }
+    $form.find('.fake-upload-wrapper').each(function(i, el) {
+
+        /* Handle dragndrop */
+        var _timer,
+            $wrap = jQuery(el);
+        $wrap.on('dragover', function(e) {
+            var dt = e.originalEvent.dataTransfer;
+            if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
+                $wrap.attr('data-is-dragging', '1');
+                window.clearTimeout(_timer);
+            }
+        });
+        $wrap.on('dragleave', function() {
+            _timer = window.setTimeout(function() {
+                $wrap.attr('data-is-dragging', '0');
+            }, 25);
+        });
+
+        $wrap.on('change', 'input[type="file"]', function(e) {
+            var $cover = $wrap.find('[data-placeholder]');
+            $wrap.attr('data-is-dragging', '0');
+
+            if (this.value) {
+                $wrap.attr('data-has-value', '1');
+                $cover.text(this.value.replace(/\\/g, '/').split('/').reverse()[0]);
+            }
+            else {
+                $wrap.attr('data-has-value', '0');
+                $cover.text($cover.attr('data-placeholder'));
+            }
+        });
+
     });
 
     $form.on('click', '[data-error-suggest][data-new-value]', function(e) {

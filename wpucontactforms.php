@@ -3,17 +3,17 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.10.0
+Version: 2.10.1
 Description: Contact forms
 Author: Darklg
-Author URI: http://darklg.me/
+Author URI: https://darklg.me/
 License: MIT License
-License URI: http://opensource.org/licenses/MIT
+License URI: https://opensource.org/licenses/MIT
 */
 
 class wpucontactforms {
 
-    private $plugin_version = '2.10.0';
+    private $plugin_version = '2.10.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -1030,6 +1030,7 @@ class wpucontactforms {
                 } else {
                     $tmp_value = trim(htmlentities(strip_tags($post[$id])));
                 }
+                $contact_fields[$id]['posted_value'] = $tmp_value;
             }
 
             if ($field['type'] == 'file' && isset($_FILES[$id])) {

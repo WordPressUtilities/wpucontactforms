@@ -1,6 +1,6 @@
 <?php
 
-/* WPUContactForms v 1.2.1 */
+/* WPUContactForms v 2.10.3 */
 
 /* ----------------------------------------------------------
   Check file
@@ -28,7 +28,7 @@ if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[^\.]*\.[^\.]*$/', $file_name) && strpos(
 
 define('WP_USE_THEMES', false);
 define('FROM_EXTERNAL_FILE', false);
-define('WP_ADMIN', true);
+define('WP_ADMIN', false);
 
 /* Load WordPress */
 chdir(dirname(__FILE__));

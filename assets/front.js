@@ -149,6 +149,7 @@ function set_wpucontactforms_form($wrapper) {
     }
 
     var _domains = ['aol.com', 'comcast.net', 'free.fr', 'gmail.com', 'gmx.de', 'googlemail.com', 'hotmail.co.uk', 'hotmail.com', 'hotmail.fr', 'hotmail.it', 'libero.it', 'live.co.uk', 'live.com', 'live.fr', 'mail.ru', 'msn.com', 'orange.fr', 'outlook.com', 'rediffmail.com', 'sbcglobal.net', 'sfr.fr', 'uol.com.br', 'verizon.net', 'wanadoo.fr', 'web.de', 'yahoo.co.in', 'yahoo.co.uk', 'yahoo.com', 'yahoo.com.br', 'yahoo.es', 'yahoo.fr', 'yandex.ru', 'ymail.com'];
+    var _disposable_domains = ['cool.fr.nf', 'courriel.fr.nf', 'example.com', 'getnada.com', 'hide.biz.st', 'jetable.fr.nf', 'moncourrier.fr.nf', 'monemail.fr.nf', 'monmail.fr.nf', 'mymail.infos.st', 'yopmail.com', 'yopmail.fr', 'yopmail.net'];
     var field_suggestions = [];
     _domains.forEach(function(_domain) {
         var _domain_no_dots = _domain.replace(/\./g, '');
@@ -168,6 +169,7 @@ function set_wpucontactforms_form($wrapper) {
             _required = $box.attr('data-required') == 'true',
             $error = $box.find('[data-error-invalid]'),
             $field = $box.find('[name="' + _id + '"]').eq(0),
+            $form = $box.closest('form'),
             $fieldMult = $box.find('[name="' + _id + '[]"]').eq(0),
             _field = $field.get(0),
             _fieldMult = $fieldMult.get(0),
@@ -212,6 +214,21 @@ function set_wpucontactforms_form($wrapper) {
                 $box.attr('data-field-ok', 1);
             }
         }
+
+        /* Emails */
+        (function() {
+            if ($form.attr('data-disallow-temp-email') != '1' || _isInvalid || _type != 'email' || !_field) {
+                return;
+            }
+            for (var i = 0, len = _disposable_domains.length; i < len; i++) {
+                if (_field.value.indexOf('@' + _disposable_domains[i]) !== -1) {
+                    _hasError = true;
+                    $box.attr('data-has-error', 1);
+                    $error.get(0).textContent += $error.attr('data-error-invalid');
+                    return false;
+                }
+            }
+        }());
 
         /* Multiple fields */
         if (multiple_fields.indexOf(_type) > -1 && _required) {

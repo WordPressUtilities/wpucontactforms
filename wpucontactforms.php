@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.10.3
+Version: 2.11.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,7 +13,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.10.3';
+    private $plugin_version = '2.11.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -22,6 +22,21 @@ class wpucontactforms {
     public $contact_fields = array();
     public $contact_steps = array();
     private $phone_pattern = '^(?:0|\(?\+33\)?\s?|0033\s?)[1-79](?:[\.\-\s]?\d\d){4}$';
+    private $disposable_domains = array(
+        'cool.fr.nf',
+        'courriel.fr.nf',
+        'example.com',
+        'getnada.com',
+        'hide.biz.st',
+        'jetable.fr.nf',
+        'moncourrier.fr.nf',
+        'monemail.fr.nf',
+        'monmail.fr.nf',
+        'mymail.infos.st',
+        'yopmail.com',
+        'yopmail.fr',
+        'yopmail.net',
+    );
 
     public function __construct($options = array()) {
         global $wpucontactforms_forms;
@@ -305,6 +320,7 @@ class wpucontactforms {
             'content_after_wrapper_close' => '',
             'content_before_recaptcha' => '',
             'content_after_recaptcha' => '',
+            'disallow_temp_email' => true,
             'display_form_after_submit' => true,
             'enable_custom_validation' => false,
             'group_class' => 'cssc-form cssc-form--default float-form',
@@ -460,6 +476,7 @@ class wpucontactforms {
         $content_form .= '<' . $form_tag . ' class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ';
         $content_form .= ' ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '');
         $content_form .= ' ' . ($this->options['contact__settings']['autocomplete'] ? 'autocomplete="' . esc_attr($this->options['contact__settings']['autocomplete']) . '"' : '');
+        $content_form .= ' data-disallow-temp-email="' . ($this->options['contact__settings']['disallow_temp_email'] ? '1' : '0') . '"';
         $content_form .= ' data-autofill="' . ($form_autofill ? '1' : '0') . '">';
 
         /* Group start */
@@ -1210,6 +1227,13 @@ class wpucontactforms {
             return (is_numeric($tmp_value) && $tmp_value >= $field['min'] && $tmp_value <= $field['max']);
             break;
         case 'email':
+            if ($this->options['contact__settings']['disallow_temp_email']) {
+                foreach ($this->disposable_domains as $domain) {
+                    if (strpos($tmp_value, '@' . $domain) !== false) {
+                        return false;
+                    }
+                }
+            }
             return filter_var($tmp_value, FILTER_VALIDATE_EMAIL) !== false;
             break;
         case 'tel':

@@ -41,6 +41,7 @@ function set_wpucontactforms_form($wrapper) {
     }
     var recaptcha_item_v2 = document.querySelector('.g-recaptcha');
     var has_recaptcha_v2 = !!recaptcha_item_v2;
+    var _disposable_domains = JSON.parse(atob(wpucontactforms_obj.disposable_domains));
 
     $form.find('.fake-upload-wrapper').each(function(i, el) {
 
@@ -149,7 +150,6 @@ function set_wpucontactforms_form($wrapper) {
     }
 
     var _domains = ['aol.com', 'comcast.net', 'free.fr', 'gmail.com', 'gmx.de', 'googlemail.com', 'hotmail.co.uk', 'hotmail.com', 'hotmail.fr', 'hotmail.it', 'libero.it', 'live.co.uk', 'live.com', 'live.fr', 'mail.ru', 'msn.com', 'orange.fr', 'outlook.com', 'rediffmail.com', 'sbcglobal.net', 'sfr.fr', 'uol.com.br', 'verizon.net', 'wanadoo.fr', 'web.de', 'yahoo.co.in', 'yahoo.co.uk', 'yahoo.com', 'yahoo.com.br', 'yahoo.es', 'yahoo.fr', 'yandex.ru', 'ymail.com'];
-    var _disposable_domains = ['cool.fr.nf', 'courriel.fr.nf', 'example.com', 'getnada.com', 'hide.biz.st', 'jetable.fr.nf', 'moncourrier.fr.nf', 'monemail.fr.nf', 'monmail.fr.nf', 'mymail.infos.st', 'yopmail.com', 'yopmail.fr', 'yopmail.net'];
     var field_suggestions = [];
     _domains.forEach(function(_domain) {
         var _domain_no_dots = _domain.replace(/\./g, '');

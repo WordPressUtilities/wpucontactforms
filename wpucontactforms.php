@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.11.0
+Version: 2.11.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,7 +13,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.11.0';
+    private $plugin_version = '2.11.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -35,7 +35,7 @@ class wpucontactforms {
         'mymail.infos.st',
         'yopmail.com',
         'yopmail.fr',
-        'yopmail.net',
+        'yopmail.net'
     );
 
     public function __construct($options = array()) {
@@ -233,6 +233,7 @@ class wpucontactforms {
         // Pass Ajax Url to script.js
         wp_localize_script('wpucontactforms-front', 'wpucontactforms_obj', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
+            'disposable_domains' => base64_encode(json_encode($this->disposable_domains)),
             'enable_custom_validation' => $this->options['contact__settings']['enable_custom_validation']
         ));
     }
@@ -257,6 +258,7 @@ class wpucontactforms {
 
     public function set_options($options) {
 
+        $this->disposable_domains = apply_filters('wpucontactforms_disposable_domains', $this->disposable_domains);
         $this->is_successful = false;
         $this->has_upload = false;
         $this->content_contact = '';

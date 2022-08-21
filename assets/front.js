@@ -248,6 +248,12 @@ function set_wpucontactforms_form($wrapper) {
             $error.get(0).textContent += $error.attr('data-error-empty');
         }
 
+        if (_type == 'file' && _field.files[0] && _field.files[0].size >= parseInt($form.attr('data-max-file-size'))) {
+            _hasError = true;
+            $box.attr('data-has-error', 1);
+            $error.get(0).textContent += $error.attr('data-error-file-heavy').replace('%s', Math.round(_field.files[0].size / 1000 / 100) / 10);
+        }
+
         /* Try suggestions */
         if (_field) {
             var _newValue = _field.value;

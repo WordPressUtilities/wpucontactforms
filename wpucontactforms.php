@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.11.1
+Version: 2.12.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,7 +13,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.11.1';
+    private $plugin_version = '2.12.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -476,7 +476,7 @@ class wpucontactforms {
 
         /* Open form */
         $content_form .= '<' . $form_tag . ' class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ';
-        $content_form .= ' ' . ($this->has_upload ? 'enctype="multipart/form-data"' : '');
+        $content_form .= ' ' . ($this->has_upload ? 'enctype="multipart/form-data" data-max-file-size="' . $this->options['contact__settings']['max_file_size'] . '"' : '');
         $content_form .= ' ' . ($this->options['contact__settings']['autocomplete'] ? 'autocomplete="' . esc_attr($this->options['contact__settings']['autocomplete']) . '"' : '');
         $content_form .= ' data-disallow-temp-email="' . ($this->options['contact__settings']['disallow_temp_email'] ? '1' : '0') . '"';
         $content_form .= ' data-autofill="' . ($form_autofill ? '1' : '0') . '">';
@@ -906,13 +906,22 @@ class wpucontactforms {
             if (isset($field['error_empty'])) {
                 $error_empty = $field['error_empty'];
             }
+            $error_file_heavy = apply_filters('wpucontactforms__error_file_heavy_txt', __('This file is too heavy (%sMb)', 'wpucontactforms'));
+            if (isset($field['error_file_heavy'])) {
+                $error_file_heavy = $field['error_file_heavy'];
+            }
 
-            $content .= '<div' .
-            ' data-error-invalid="' . esc_attr($error_invalid) . '"' .
-            ' data-error-suggest="' . esc_attr($error_suggest) . '"' .
-            ' data-error-choose="' . esc_attr($error_choose) . '"' .
-            ' data-error-empty="' . esc_attr($error_empty) . '"' .
-                ' class="error" aria-live="polite"></div>';
+            $content .= '<div';
+            $content .= ' data-error-invalid="' . esc_attr($error_invalid) . '"';
+            if ($field['type'] == 'email') {
+                $content .= ' data-error-suggest="' . esc_attr($error_suggest) . '"';
+            }
+            if ($field['type'] == 'file') {
+                $content .= ' data-error-file-heavy="' . esc_attr($error_file_heavy) . '"';
+            }
+            $content .= ' data-error-choose="' . esc_attr($error_choose) . '"';
+            $content .= ' data-error-empty="' . esc_attr($error_empty) . '"';
+            $content .= ' class="error" aria-live="polite"></div>';
         }
 
         if (isset($field['help']) && $field['help']) {

@@ -248,11 +248,23 @@ function set_wpucontactforms_form($wrapper) {
             $error.get(0).textContent += $error.attr('data-error-empty');
         }
 
-        if (_type == 'file' && _field.files[0] && _field.files[0].size >= parseInt($form.attr('data-max-file-size'))) {
-            _hasError = true;
-            $box.attr('data-has-error', 1);
-            $error.get(0).textContent += $error.attr('data-error-file-heavy').replace('%s', Math.round(_field.files[0].size / 1000 / 100) / 10);
-        }
+        (function() {
+            var _fieldFile = _fieldMult ? _fieldMult : _field;
+            if (_type != 'file' || !_fieldFile) {
+                return;
+            }
+            var _errorParts = [];
+            for (var i = 0; i < _fieldFile.files.length; i++) {
+                if (_fieldFile.files[i] && _fieldFile.files[i].size >= parseInt($form.attr('data-max-file-size'))) {
+                    _hasError = true;
+                    $box.attr('data-has-error', 1);
+                    _errorParts.push($error.attr('data-error-file-heavy').replace('%s', Math.round(_fieldFile.files[i].size / 1000 / 100) / 10));
+                }
+            }
+            if (_errorParts.length) {
+                $error.get(0).textContent += _errorParts.join(', ');
+            }
+        }());
 
         /* Try suggestions */
         if (_field) {

@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.12.2
+Version: 2.13.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,7 +13,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.12.2';
+    private $plugin_version = '2.13.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -70,7 +70,7 @@ class wpucontactforms {
         ), 10, 1);
         add_action('wpucontactforms_content', array(&$this,
             'page_content'
-        ), 10, 2);
+        ), 10, 3);
         add_action('wp_ajax_wpucontactforms_autofill', array(&$this,
             'ajax_action_autofill'
         ));
@@ -437,10 +437,14 @@ class wpucontactforms {
 
     }
 
-    public function page_content($hide_wrapper = false, $form_id = false) {
+    public function page_content($hide_wrapper = false, $form_id = false, $args = array()) {
 
         if (!$form_id || $form_id != $this->options['id']) {
             return '';
+        }
+
+        if (!is_array($args)) {
+            $args = array();
         }
 
         $form_autofill = false;
@@ -500,7 +504,7 @@ class wpucontactforms {
             /* Final form control */
             if ($fieldset_id === $last_group) {
                 $content_form .= $this->page_content__extra_fields($form_id, $is_preview_mode);
-                $content_form .= $this->page_content__get_submit_box($form_id, $is_preview_mode, $fieldset_id === $first_group);
+                $content_form .= $this->page_content__get_submit_box($form_id, $is_preview_mode, $fieldset_id === $first_group, $args);
             }
             /* Intermediate form control */
             else {
@@ -585,7 +589,13 @@ class wpucontactforms {
         return $content_form;
     }
 
-    public function page_content__get_submit_box($form_id, $is_preview_mode, $is_first_group) {
+    public function page_content__get_submit_box($form_id, $is_preview_mode, $is_first_group, $args = array()) {
+        if (!is_array($args)) {
+            $args = array();
+        }
+        if (!isset($args['extra_hidden_fields']) || !is_array($args['extra_hidden_fields'])) {
+            $args['extra_hidden_fields'] = array();
+        }
 
         $content_form = '';
 
@@ -598,6 +608,7 @@ class wpucontactforms {
             'wpucontactforms_send' => '1',
             'action' => 'wpucontactforms'
         ), $this->options);
+        $hidden_fields = array_merge($hidden_fields, $args['extra_hidden_fields']);
         if (!$is_preview_mode) {
             foreach ($hidden_fields as $name => $value) {
                 $content_form .= '<input type="hidden" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" />';

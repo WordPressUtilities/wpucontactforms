@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.13.0
+Version: 2.13.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,7 +13,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.13.0';
+    private $plugin_version = '2.13.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -450,7 +450,7 @@ class wpucontactforms {
         $form_autofill = false;
         $content_form = '';
         $content_fields = array();
-        $this->contact_fields = apply_filters('wpucontactforms_contact_fields_before_display', $this->contact_fields, $this->options);
+        $this->contact_fields = apply_filters('wpucontactforms_contact_fields_before_display', $this->contact_fields, $this->options, $args);
         foreach ($this->contact_fields as $field) {
             if (!isset($field['fieldset'])) {
                 $field['fieldset'] = 'default';
@@ -1045,6 +1045,7 @@ class wpucontactforms {
 
         // Setting success message
         $this->content_contact .= $this->options['contact__success'];
+        $this->content_contact = apply_filters('wpucontactforms_submit_contactform_content_contact', $this->content_contact, $this, $post_array);
 
         // Trigger success action
         do_action('wpucontactforms_submit_contactform', $this);
@@ -1054,6 +1055,7 @@ class wpucontactforms {
     }
 
     public function extract_value_from_post($post, $contact_fields) {
+        $contact_fields = apply_filters('wpucontactforms_fields_values_before_post_comparison', $contact_fields, $post);
         foreach ($contact_fields as $id => $field) {
             $is_multiple = isset($field['multiple']) && $field['multiple'];
             if ($field['type'] == 'checkbox-list') {

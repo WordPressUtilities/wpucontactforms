@@ -1,5 +1,5 @@
 /*jslint browser:true*/
-/* globals jQuery,ajaxurl,grecaptcha */
+/* globals jQuery,ajaxurl,ga,grecaptcha,wpucontactforms_obj */
 
 jQuery(document).ready(function() {
     'use strict';
@@ -22,16 +22,47 @@ function wpucontactforms_recaptcha_callback() {
     jQuery('[data-recaptchavalid]').attr('data-recaptchavalid', '1').trigger('wpucontactforms_valid_recaptcha');
 }
 
-/* ----------------------------------------------------------
-  Set Contact form
----------------------------------------------------------- */
-
 /* Enable form when recaptcha has loaded */
 function wpucontactforms_callback_recaptcha() {
+    'use strict';
     jQuery('.wpucontactforms-form-wrapper').find('form').each(function() {
         jQuery(this).find(':input').removeAttr('readonly');
     });
 }
+
+function wpucontactforms_load_recaptcha_v2() {
+    'use strict';
+    if (typeof grecaptcha == 'object') {
+        return;
+    }
+
+    /* Load recaptcha */
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = 'https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha';
+    var x = document.getElementsByTagName('script')[0];
+    x.parentNode.insertBefore(s, x);
+}
+
+function wpucontactforms_load_recaptcha_v3(recaptcha_sitekey) {
+    'use strict';
+    if (typeof grecaptcha == 'object') {
+        return;
+    }
+
+    /* Load recaptcha */
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = 'https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha&render=' + recaptcha_sitekey;
+    var x = document.getElementsByTagName('script')[0];
+    x.parentNode.insertBefore(s, x);
+}
+
+/* ----------------------------------------------------------
+  Set Contact form
+---------------------------------------------------------- */
 
 function set_wpucontactforms_form($wrapper) {
     'use strict';
@@ -61,7 +92,7 @@ function set_wpucontactforms_form($wrapper) {
             }, 25);
         });
 
-        $wrap.on('change', 'input[type="file"]', function(e) {
+        $wrap.on('change', 'input[type="file"]', function() {
             var $cover = $wrap.find('[data-placeholder]');
             $wrap.attr('data-is-dragging', '0');
 
@@ -95,14 +126,7 @@ function set_wpucontactforms_form($wrapper) {
             /* Disable form until recaptcha has loaded */
             $form.find(':input').attr('readonly', 'true');
             /* Load recaptcha */
-            (function() {
-                var s = document.createElement('script');
-                s.type = 'text/javascript';
-                s.async = true;
-                s.src = 'https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha';
-                var x = document.getElementsByTagName('script')[0];
-                x.parentNode.insertBefore(s, x);
-            })();
+            wpucontactforms_load_recaptcha_v2();
         }
         /* Init recaptcha */
         else {
@@ -119,14 +143,7 @@ function set_wpucontactforms_form($wrapper) {
             /* Disable form until recaptcha has loaded */
             $form.find(':input').attr('readonly', 'true');
             /* Load recaptcha */
-            (function() {
-                var s = document.createElement('script');
-                s.type = 'text/javascript';
-                s.async = true;
-                s.src = 'https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha&render=' + recaptcha_sitekey;
-                var x = document.getElementsByTagName('script')[0];
-                x.parentNode.insertBefore(s, x);
-            })();
+            wpucontactforms_load_recaptcha_v3(recaptcha_sitekey);
         }
     }
 
@@ -139,7 +156,7 @@ function set_wpucontactforms_form($wrapper) {
             inst.dpDiv.addClass('wpucontactforms-datepicker');
         };
         $item.datepicker(_args);
-    })
+    });
 
     $form.attr('data-wpucontactformset', '1');
     $form.attr('data-recaptchavalid', '0');
@@ -434,7 +451,7 @@ function set_wpucontactforms_form($wrapper) {
         }
 
         load_conditions();
-        $wrapper.on('wpucontactforms_after_ajax', function(e) {
+        $wrapper.on('wpucontactforms_after_ajax', function() {
             load_conditions();
         });
 
@@ -549,7 +566,7 @@ function set_wpucontactforms_form($wrapper) {
                             if (conditions_array[_id].indexOf(el.value) > -1 && el.checked) {
                                 _return_condition = true;
                             }
-                        })
+                        });
                     }
 
                     if (_isNotInListCond) {
@@ -558,7 +575,7 @@ function set_wpucontactforms_form($wrapper) {
                             if (conditions_array[_id].indexOf(el.value) > -1 && el.checked) {
                                 _return_condition = false;
                             }
-                        })
+                        });
                     }
                 }
                 return _return_condition;
@@ -618,7 +635,7 @@ function set_wpucontactforms_form($wrapper) {
 
         set_fields_by_condition();
         $wrapper.on('change blur', '[name]', debounce(set_fields_by_condition, 300));
-        $wrapper.on('wpucontactforms_after_ajax', function(e) {
+        $wrapper.on('wpucontactforms_after_ajax', function() {
             set_fields_by_condition();
         });
         $wrapper.on('keyup', '[name]', debounce(set_fields_by_condition, 300));

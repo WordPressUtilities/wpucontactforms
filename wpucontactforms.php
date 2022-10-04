@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.13.2
+Version: 2.14.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,11 +13,12 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.13.2';
+    private $plugin_version = '2.14.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
     private $has_recaptcha_v3 = false;
+    private $has_recaptcha_turnstile = false;
     private $user_options = false;
     public $contact_fields = array();
     public $contact_steps = array();
@@ -95,7 +96,7 @@ class wpucontactforms {
                     'name' => __('Content Settings', 'wpucontactforms')
                 ),
                 'recaptcha' => array(
-                    'name' => __('Recaptcha', 'wpucontactforms')
+                    'name' => __('Captcha', 'wpucontactforms')
                 )
             )
         );
@@ -116,8 +117,10 @@ class wpucontactforms {
                 'type' => 'select',
                 'section' => 'recaptcha',
                 'datas' => array(
-                    'v2' => 'v2',
-                    'v3' => 'v3'
+                    'v2' => 'Google Recaptcha - v2',
+                    'v3' => 'Google Recaptcha - v3',
+                    'turnstile' => 'Cloudflare - Turnstile',
+                    'hcaptcha' => 'hCaptcha'
                 )
             ),
             'recaptcha_sitekey' => array(
@@ -155,6 +158,8 @@ class wpucontactforms {
         $has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
         $this->has_recaptcha_v2 = $has_recaptcha && $this->options['contact__settings']['recaptcha_type'] == 'v2';
         $this->has_recaptcha_v3 = $has_recaptcha && $this->options['contact__settings']['recaptcha_type'] == 'v3';
+        $this->has_recaptcha_turnstile = $has_recaptcha && $this->options['contact__settings']['recaptcha_type'] == 'turnstile';
+        $this->has_recaptcha_hcaptcha = $has_recaptcha && $this->options['contact__settings']['recaptcha_type'] == 'hcaptcha';
         if ($this->options['contact__settings']['ajax_enabled']) {
             add_action('wp_ajax_wpucontactforms', array(&$this,
                 'ajax_action'
@@ -568,6 +573,14 @@ class wpucontactforms {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-v3" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
+        if (!$is_preview_mode && $this->has_recaptcha_turnstile) {
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-turnstile" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
+            $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        }
+        if (!$is_preview_mode && $this->has_recaptcha_hcaptcha) {
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-hcaptcha" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
+            $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
+        }
 
         return $content_form;
     }
@@ -979,8 +992,22 @@ class wpucontactforms {
         }
 
         // Recaptcha
-        if ($this->has_recaptcha_v2 || $this->has_recaptcha_v3) {
-            if (!isset($_POST["g-recaptcha-response"])) {
+        if ($this->has_recaptcha_v2 || $this->has_recaptcha_v3 || $this->has_recaptcha_turnstile || $this->has_recaptcha_hcaptcha) {
+
+            $response_field = 'g-recaptcha-response';
+            $callback_url = 'https://www.google.com/recaptcha/api/siteverify';
+
+            if($this->has_recaptcha_turnstile){
+                $response_field = 'cf-turnstile-response';
+                $callback_url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+            }
+
+            if($this->has_recaptcha_hcaptcha){
+                $response_field = 'h-captcha-response';
+                $callback_url = 'https://hcaptcha.com/siteverify';
+            }
+
+            if (!isset($_POST[$response_field])) {
                 $this->msg_errors[] = __('The captcha is invalid', 'wpucontactforms');
             } else {
                 $recaptcha_args = apply_filters('wpucontactforms__recaptcha_args', array(
@@ -992,11 +1019,11 @@ class wpucontactforms {
                     'headers' => array(),
                     'body' => array(
                         'secret' => $this->options['contact__settings']['recaptcha_privatekey'],
-                        'response' => $_POST["g-recaptcha-response"]
+                        'response' => $_POST[$response_field]
                     ),
                     'cookies' => array()
                 ));
-                $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', $recaptcha_args);
+                $response = wp_remote_post($callback_url, $recaptcha_args);
                 $body_response = wp_remote_retrieve_body($response);
                 $body_response_json = json_decode($body_response);
                 if (!is_object($body_response_json) || !isset($body_response_json->success) || !$body_response_json->success) {

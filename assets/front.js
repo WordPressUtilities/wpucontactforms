@@ -35,14 +35,7 @@ function wpucontactforms_load_recaptcha_v2() {
     if (typeof grecaptcha == 'object') {
         return;
     }
-
-    /* Load recaptcha */
-    var s = document.createElement('script');
-    s.type = 'text/javascript';
-    s.async = true;
-    s.src = 'https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha';
-    var x = document.getElementsByTagName('script')[0];
-    x.parentNode.insertBefore(s, x);
+    wpucontactforms_load_js('https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha');
 }
 
 function wpucontactforms_load_recaptcha_v3(recaptcha_sitekey) {
@@ -50,14 +43,66 @@ function wpucontactforms_load_recaptcha_v3(recaptcha_sitekey) {
     if (typeof grecaptcha == 'object') {
         return;
     }
+    wpucontactforms_load_js('https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha&render=' + recaptcha_sitekey);
+}
 
-    /* Load recaptcha */
-    var s = document.createElement('script');
-    s.type = 'text/javascript';
-    s.async = true;
-    s.src = 'https://www.google.com/recaptcha/api.js?onload=wpucontactforms_callback_recaptcha&render=' + recaptcha_sitekey;
-    var x = document.getElementsByTagName('script')[0];
-    x.parentNode.insertBefore(s, x);
+/* Turnstile
+-------------------------- */
+
+function wpucontactforms_load_recaptcha_turnstile() {
+    'use strict';
+    if (typeof turnstile == 'object') {
+        return;
+    }
+    wpucontactforms_load_js('https://challenges.cloudflare.com/turnstile/v0/api.js?onload=wpucontactforms_callback_recaptcha_turnstile');
+}
+
+function wpucontactforms_callback_recaptcha_turnstile() {
+    'use strict';
+    wpucontactforms_refresh_recaptcha_turnstile();
+    wpucontactforms_callback_recaptcha();
+}
+
+function wpucontactforms_refresh_recaptcha_turnstile() {
+    'use strict';
+    Array.prototype.forEach.call(document.querySelectorAll('.box-recaptcha-turnstile[data-sitekey]'), function(el, i) {
+        if (el.classList.contains('cf-turnstile')) {
+            return;
+        }
+        turnstile.render(el, {
+            sitekey: el.getAttribute('data-sitekey')
+        });
+    });
+}
+
+/* hCaptcha
+-------------------------- */
+
+function wpucontactforms_load_recaptcha_hcaptcha() {
+    'use strict';
+    if (typeof hcaptcha == 'object') {
+        return;
+    }
+    wpucontactforms_load_js('https://js.hcaptcha.com/1/api.js?onload=wpucontactforms_callback_recaptcha_hcaptcha');
+}
+
+function wpucontactforms_callback_recaptcha_hcaptcha() {
+    'use strict';
+    wpucontactforms_refresh_recaptcha_hcaptcha();
+    wpucontactforms_callback_recaptcha();
+}
+
+function wpucontactforms_refresh_recaptcha_hcaptcha() {
+    'use strict';
+    Array.prototype.forEach.call(document.querySelectorAll('.box-recaptcha-hcaptcha[data-sitekey]'), function(el, i) {
+        if (el.classList.contains('has-hcaptcha-enabled')) {
+            return;
+        }
+        el.classList.add('has-hcaptcha-enabled');
+        hcaptcha.render(el, {
+            sitekey: el.getAttribute('data-sitekey')
+        });
+    });
 }
 
 /* ----------------------------------------------------------
@@ -70,8 +115,19 @@ function set_wpucontactforms_form($wrapper) {
     if ($form.attr('data-wpucontactformset') == '1') {
         return;
     }
+
+    /* Recaptcha */
     var recaptcha_item_v2 = document.querySelector('.g-recaptcha');
     var has_recaptcha_v2 = !!recaptcha_item_v2;
+
+    /* Turnstile */
+    var recaptcha_item_turnstile = document.querySelector('.box-recaptcha-turnstile');
+    var has_recaptcha_turnstile = !!recaptcha_item_turnstile;
+
+    /* hcaptcha */
+    var recaptcha_item_hcaptcha = document.querySelector('.box-recaptcha-hcaptcha');
+    var has_recaptcha_hcaptcha = !!recaptcha_item_hcaptcha;
+
     var _disposable_domains = JSON.parse(atob(wpucontactforms_obj.disposable_domains));
 
     $form.find('.fake-upload-wrapper').each(function(i, el) {
@@ -131,6 +187,34 @@ function set_wpucontactforms_form($wrapper) {
         /* Init recaptcha */
         else {
             grecaptcha.render(recaptcha_item_v2);
+        }
+    }
+
+    if (has_recaptcha_turnstile) {
+        /* Init recaptcha */
+        if (typeof turnstile !== 'object') {
+            /* Disable form until recaptcha has loaded */
+            $form.find(':input').attr('readonly', 'true');
+            /* Load recaptcha */
+            wpucontactforms_load_recaptcha_turnstile();
+        }
+        /* Init recaptcha */
+        else {
+            wpucontactforms_refresh_recaptcha_turnstile();
+        }
+    }
+
+    if (has_recaptcha_hcaptcha) {
+        /* Init recaptcha */
+        if (typeof hcaptcha !== 'object') {
+            /* Disable form until recaptcha has loaded */
+            $form.find(':input').attr('readonly', 'true');
+            /* Load recaptcha */
+            wpucontactforms_load_recaptcha_hcaptcha();
+        }
+        /* Init recaptcha */
+        else {
+            wpucontactforms_refresh_recaptcha_hcaptcha();
         }
     }
 
@@ -388,10 +472,14 @@ function set_wpucontactforms_form($wrapper) {
             $form.addClass('form--has-success');
             $wrapper.trigger('wpucontactforms_after_success');
         }
-        if (has_recaptcha_v2) {
-            if (recaptcha_item_v2) {
-                grecaptcha.render(recaptcha_item_v2);
-            }
+        if (has_recaptcha_v2 && recaptcha_item_v2) {
+            grecaptcha.render(recaptcha_item_v2);
+        }
+        if (has_recaptcha_turnstile) {
+            wpucontactforms_refresh_recaptcha_turnstile();
+        }
+        if (has_recaptcha_hcaptcha) {
+            wpucontactforms_refresh_recaptcha_hcaptcha();
         }
     }
 
@@ -737,4 +825,17 @@ function set_wpucontactforms_form($wrapper) {
             }, delay);
         };
     }
+}
+
+/* ----------------------------------------------------------
+  Helpers
+---------------------------------------------------------- */
+
+function wpucontactforms_load_js(js_url) {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = js_url;
+    var x = document.getElementsByTagName('script')[0];
+    x.parentNode.insertBefore(s, x);
 }

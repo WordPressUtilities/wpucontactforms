@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.14.0
+Version: 2.14.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,7 +13,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.14.0';
+    private $plugin_version = '2.14.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -619,7 +619,8 @@ class wpucontactforms {
             'form_id' => $form_id,
             'control_stripslashes' => '&quot;',
             'wpucontactforms_send' => '1',
-            'action' => 'wpucontactforms'
+            'action' => 'wpucontactforms',
+            'extra_hidden_fields' => implode(',', array_keys($args['extra_hidden_fields']))
         ), $this->options);
         $hidden_fields = array_merge($hidden_fields, $args['extra_hidden_fields']);
         if (!$is_preview_mode) {
@@ -997,12 +998,12 @@ class wpucontactforms {
             $response_field = 'g-recaptcha-response';
             $callback_url = 'https://www.google.com/recaptcha/api/siteverify';
 
-            if($this->has_recaptcha_turnstile){
+            if ($this->has_recaptcha_turnstile) {
                 $response_field = 'cf-turnstile-response';
                 $callback_url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
             }
 
-            if($this->has_recaptcha_hcaptcha){
+            if ($this->has_recaptcha_hcaptcha) {
                 $response_field = 'h-captcha-response';
                 $callback_url = 'https://hcaptcha.com/siteverify';
             }
@@ -1324,8 +1325,24 @@ class wpucontactforms {
         if (!isset($_POST['form_id']) || $_POST['form_id'] != $this->options['id']) {
             return;
         }
+        $args = array(
+            'extra_hidden_fields' => array()
+        );
+        if (isset($_POST['extra_hidden_fields'])) {
+            $hidden_fields = explode(',', $_POST['extra_hidden_fields']);
+            foreach ($hidden_fields as $field_id) {
+                $field_id_clear = esc_html($field_id);
+                /* If an hidden field ID is invalid, refuse POST request */
+                if ($field_id_clear != $field_id) {
+                    return false;
+                }
+                if (isset($_POST[$field_id_clear])) {
+                    $args['extra_hidden_fields'][$field_id_clear] = esc_html($_POST[$field_id_clear]);
+                }
+            }
+        }
         $this->post_contact();
-        $this->page_content(true, $this->options['id']);
+        $this->page_content(true, $this->options['id'], $args);
         die;
     }
 

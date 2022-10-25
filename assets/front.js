@@ -66,9 +66,10 @@ function wpucontactforms_callback_recaptcha_turnstile() {
 function wpucontactforms_refresh_recaptcha_turnstile() {
     'use strict';
     Array.prototype.forEach.call(document.querySelectorAll('.box-recaptcha-turnstile[data-sitekey]'), function(el, i) {
-        if (el.classList.contains('cf-turnstile')) {
+        if (el.classList.contains('cf-turnstile') || el.classList.contains('has-turnstile-enabled')) {
             return;
         }
+        el.classList.add('has-turnstile-enabled');
         turnstile.render(el, {
             sitekey: el.getAttribute('data-sitekey')
         });
@@ -832,10 +833,15 @@ function set_wpucontactforms_form($wrapper) {
 ---------------------------------------------------------- */
 
 function wpucontactforms_load_js(js_url) {
+    var script_id = js_url.replace(/[\W_]+/g, "");
+    if (document.querySelector('[data-script="' + script_id + '"]')) {
+        return false;
+    }
     var s = document.createElement('script');
     s.type = 'text/javascript';
     s.async = true;
     s.src = js_url;
     var x = document.getElementsByTagName('script')[0];
+    x.setAttribute('data-script', script_id);
     x.parentNode.insertBefore(s, x);
 }

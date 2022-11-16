@@ -3,7 +3,8 @@
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 2.14.4
+Update URI: https://github.com/WordPressUtilities/wpucontactforms
+Version: 3.0.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '2.14.4';
+    private $plugin_version = '3.0.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -319,6 +320,8 @@ class wpucontactforms {
             'fieldgroup_class' => 'twoboxes',
             'fieldgroup_tagname' => 'div',
             'fieldset_tagname' => 'fieldset',
+            'fieldset_classname' => 'wpucontactforms-fieldset',
+            'form_classname' => 'wpucontactforms__form',
             'content_before_wrapper_open' => '',
             'content_after_wrapper_open' => '',
             'content_before_content_form' => '',
@@ -329,6 +332,7 @@ class wpucontactforms {
             'content_after_recaptcha' => '',
             'disallow_temp_email' => true,
             'display_form_after_submit' => true,
+            'extra_disposable_domains' => array(),
             'enable_custom_validation' => false,
             'group_class' => 'cssc-form cssc-form--default float-form',
             'group_submit_class' => 'box--submit',
@@ -455,6 +459,7 @@ class wpucontactforms {
         $form_autofill = false;
         $content_form = '';
         $content_fields = array();
+        $this->options = apply_filters('wpucontactforms_options_before_display', $this->options, $args);
         $filtered_contact_fields = apply_filters('wpucontactforms_contact_fields_before_display', $this->contact_fields, $this->options, $args);
         foreach ($filtered_contact_fields as $field) {
             if (!isset($field['fieldset'])) {
@@ -478,16 +483,19 @@ class wpucontactforms {
         }
 
         $fieldset_tagname = $this->options['contact__settings']['fieldset_tagname'];
+        $fieldset_classname = $this->options['contact__settings']['fieldset_classname'];
+        $form_classname = $this->options['contact__settings']['form_classname'];
 
         $is_preview_mode = $this->is_preview_form();
 
         $form_tag = $is_preview_mode ? 'div' : 'form';
 
         /* Open form */
-        $content_form .= '<' . $form_tag . ' class="wpucontactforms__form" action="" aria-atomic="true" aria-live="assertive" method="post" ';
+        $content_form .= '<' . $form_tag . ' class="' . $form_classname . '" action="" aria-atomic="true" aria-live="assertive" method="post" ';
         $content_form .= ' ' . ($this->has_upload ? 'enctype="multipart/form-data" data-max-file-size="' . $this->options['contact__settings']['max_file_size'] . '"' : '');
         $content_form .= ' ' . ($this->options['contact__settings']['autocomplete'] ? 'autocomplete="' . esc_attr($this->options['contact__settings']['autocomplete']) . '"' : '');
         $content_form .= ' data-disallow-temp-email="' . ($this->options['contact__settings']['disallow_temp_email'] ? '1' : '0') . '"';
+        $content_form .= ' data-disposable-domains="' . base64_encode(json_encode($this->options['contact__settings']['extra_disposable_domains'])) . '"';
         $content_form .= ' data-autofill="' . ($form_autofill ? '1' : '0') . '">';
 
         /* Group start */
@@ -497,7 +505,7 @@ class wpucontactforms {
         $last_group = array_key_last($content_fields);
         $fieldset_i = 0;
         foreach ($content_fields as $fieldset_id => $fieldset_values) {
-            $content_form .= '<' . $fieldset_tagname . ' class="wpucontactforms-fieldset" data-wpucontactforms-group="1" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
+            $content_form .= '<' . $fieldset_tagname . ' class="' . $fieldset_classname . '" data-wpucontactforms-group="1" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
             if (isset($this->contact_steps[$fieldset_id]['html_before']) && $this->contact_steps[$fieldset_id]['html_before']) {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_before'];
             }
@@ -612,11 +620,15 @@ class wpucontactforms {
 
         $content_form = '';
 
+        $page_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $page_url = htmlspecialchars($page_url, ENT_QUOTES, 'UTF-8');
+
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
         $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '', $form_id);
         $hidden_fields = apply_filters('wpucontactforms_hidden_fields', array(
             'form_id' => $form_id,
+            'page_url' => base64_encode($page_url),
             'control_stripslashes' => '&quot;',
             'wpucontactforms_send' => '1',
             'action' => 'wpucontactforms',
@@ -680,7 +692,7 @@ class wpucontactforms {
             $field_id_name .= ' multiple';
         }
 
-        if(!$is_preview_mode){
+        if (!$is_preview_mode) {
             $field_id_name .= '  aria-required="' . ($field['required'] ? 'true' : 'false') . '" ';
         }
 
@@ -1063,6 +1075,19 @@ class wpucontactforms {
                 $this->contact_fields['contact_message']['value'] = $contact_message;
             }
         }
+
+        // Extract source page
+        if (!isset($post_array['page_url'])) {
+            $this->msg_errors[] = __('Invalid source', 'wpucontactforms');
+        }
+        $page_url = base64_decode($post_array['page_url']);
+        if (!empty($page_url) && filter_var($page_url, FILTER_VALIDATE_URL) === false) {
+            $this->msg_errors[] = __('Invalid source', 'wpucontactforms');
+        }
+        $this->form_submitted_page_url = $page_url;
+
+        // Extract anonimized user IP
+        $this->form_submitted_ip = $this->get_user_ip();
 
         // Add custom error messages.
         $this->msg_errors = apply_filters('wpucontactforms_submit_contactform_msg_errors', $this->msg_errors, $this);
@@ -1470,11 +1495,53 @@ class wpucontactforms {
         return $is_preview_mode;
     }
 
+    /* Thanks to https://stackoverflow.com/a/13646735/975337 */
+    function get_user_ip() {
+        if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
+            $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+            $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+        }
+        $client = @$_SERVER['HTTP_CLIENT_IP'];
+        $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+        $remote = $_SERVER['REMOTE_ADDR'];
+
+        if (filter_var($client, FILTER_VALIDATE_IP)) {
+            $ip = $client;
+        } elseif (filter_var($forward, FILTER_VALIDATE_IP)) {
+            $ip = $forward;
+        } else {
+            $ip = $remote;
+        }
+        return $this->anonymize_ip($ip);
+    }
+
+    /* Thanks to https://gist.github.com/svrnm/3a124d2af18a6726f66e */
+    function anonymize_ip($ip) {
+        if ($ip = @inet_pton($ip)) {
+            return inet_ntop(substr($ip, 0, strlen($ip) / 2) . str_repeat(chr(0), strlen($ip) / 2));
+        }
+        return '0.0.0.0';
+    }
 }
 
 /* ----------------------------------------------------------
   Helpers
 ---------------------------------------------------------- */
+
+function wpucontactform__set_html_extra_content($form) {
+    $html = '';
+
+    if ($form->form_submitted_page_url) {
+        $html .= 'URL: ' . esc_html($form->form_submitted_page_url) . '<br />';
+    }
+    if ($form->form_submitted_ip) {
+        $html .= 'IP: ' . esc_html($form->form_submitted_ip) . '<br />';
+    }
+    if ($html) {
+        $html .= '<hr />';
+    }
+    return $html;
+}
 
 function wpucontactform__set_html_field_content($field, $wrap_html = true) {
     $field_content = $field['value'];
@@ -1571,6 +1638,8 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
         $form_contact_fields = $form->contact_fields;
     }
 
+    $headers = array();
+
     /* Subject */
     $from_name = '';
     if (isset($form_contact_fields['contact_firstname'])) {
@@ -1579,6 +1648,9 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
     if (isset($form_contact_fields['contact_name'])) {
         $from_name .= ' ' . $form_contact_fields['contact_name']['value'];
         $from_name = trim($from_name);
+    }
+    if (isset($form_contact_fields['contact_email'])) {
+        $headers[] = 'Reply-To: ' . $from_name . ' <' . $form_contact_fields['contact_email']['value'] . '>';
     }
     $sendmail_subject = __('New message', 'wpucontactforms');
     if ($from_name) {
@@ -1609,12 +1681,15 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
     if (!isset($more['attachments'])) {
         $more['attachments'] = array();
     }
+    if (!isset($more['headers'])) {
+        $more['headers'] = $headers;
+    }
 
     /* Send content */
     if (function_exists('wputh_sendmail')) {
         wputh_sendmail($target_email, $sendmail_subject, $mail_content, $more);
     } else {
-        wp_mail($target_email, $sendmail_subject, $mail_content, '', $more['attachments']);
+        wp_mail($target_email, $sendmail_subject, $mail_content, $headers, $more['attachments']);
     }
 }
 
@@ -1655,6 +1730,8 @@ function wpucontactforms_submit_contactform__sendmail($form) {
         // Emptying values
         $mail_content .= '<hr />' . wpucontactform__set_html_field_content($field);
     }
+
+    $mail_content .= wpucontactform__set_html_extra_content($form);
 
     $mail_content = apply_filters('wpucontactforms_submit_contactform__sendmail__mail_content', $mail_content, $form);
 
@@ -1780,6 +1857,8 @@ function wpucontactforms_submit_contactform__savepost($form) {
         $default_post_title = sprintf(__('New message from %s', 'wpucontactforms'), $from_name);
     }
 
+    $post_content .= wpucontactform__set_html_extra_content($form);
+
     $post_content = apply_filters('wpucontactforms_submit_contactform__savepost__post_content', $post_content, $form);
 
     // Create post
@@ -1802,6 +1881,13 @@ function wpucontactforms_submit_contactform__savepost($form) {
     // Add metas
     foreach ($post_metas as $id => $value) {
         update_post_meta($post_id, $id, $value);
+    }
+
+    if ($form->form_submitted_page_url) {
+        update_post_meta($post_id, 'form_url_referrer', $form->form_submitted_page_url);
+    }
+    if ($form->form_submitted_ip) {
+        update_post_meta($post_id, 'form_submitted_ip', $form->form_submitted_ip);
     }
 
     // Add term

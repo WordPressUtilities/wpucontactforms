@@ -130,6 +130,12 @@ function set_wpucontactforms_form($wrapper) {
     var has_recaptcha_hcaptcha = !!recaptcha_item_hcaptcha;
 
     var _disposable_domains = JSON.parse(atob(wpucontactforms_obj.disposable_domains));
+    if($form.attr('data-disposable-domains')){
+        var extra_disposable_domains = JSON.parse(atob($form.attr('data-disposable-domains')));
+        if(typeof extra_disposable_domains == 'object'){
+            _disposable_domains = _disposable_domains.concat(extra_disposable_domains);
+        }
+    }
 
     $form.find('.fake-upload-wrapper').each(function(i, el) {
 

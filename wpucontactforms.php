@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.0.0
+Version: 3.0.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.0.0';
+    private $plugin_version = '3.0.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -623,12 +623,15 @@ class wpucontactforms {
         $page_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
         $page_url = htmlspecialchars($page_url, ENT_QUOTES, 'UTF-8');
 
+        $page_title = htmlspecialchars(wp_title(' | ', false), ENT_QUOTES, 'UTF-8');
+
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
         $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '', $form_id);
         $hidden_fields = apply_filters('wpucontactforms_hidden_fields', array(
             'form_id' => $form_id,
             'page_url' => base64_encode($page_url),
+            'page_title' => base64_encode($page_title),
             'control_stripslashes' => '&quot;',
             'wpucontactforms_send' => '1',
             'action' => 'wpucontactforms',
@@ -1077,17 +1080,22 @@ class wpucontactforms {
         }
 
         // Extract source page
-        if (!isset($post_array['page_url'])) {
+        if (!isset($post_array['page_url'], $post_array['page_title'])) {
             $this->msg_errors[] = __('Invalid source', 'wpucontactforms');
+            $post_array['page_url'] = '';
+            $post_array['page_title'] = '';
         }
         $page_url = base64_decode($post_array['page_url']);
-        if (!empty($page_url) && filter_var($page_url, FILTER_VALIDATE_URL) === false) {
+        $page_title = base64_decode($post_array['page_title']);
+        if (empty($page_url) || filter_var($page_url, FILTER_VALIDATE_URL) === false) {
             $this->msg_errors[] = __('Invalid source', 'wpucontactforms');
         }
         $this->form_submitted_page_url = $page_url;
+        $this->form_submitted_page_title = $page_title;
 
         // Extract anonimized user IP
         $this->form_submitted_ip = $this->get_user_ip();
+        $this->form_submitted_hashed_ip = md5(site_url() . $this->get_user_ip());
 
         // Add custom error messages.
         $this->msg_errors = apply_filters('wpucontactforms_submit_contactform_msg_errors', $this->msg_errors, $this);
@@ -1496,7 +1504,7 @@ class wpucontactforms {
     }
 
     /* Thanks to https://stackoverflow.com/a/13646735/975337 */
-    function get_user_ip() {
+    function get_user_ip($anonymized = true) {
         if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
             $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
             $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
@@ -1511,6 +1519,9 @@ class wpucontactforms {
             $ip = $forward;
         } else {
             $ip = $remote;
+        }
+        if (!$anonymized) {
+            return $ip;
         }
         return $this->anonymize_ip($ip);
     }
@@ -1532,13 +1543,16 @@ function wpucontactform__set_html_extra_content($form) {
     $html = '';
 
     if ($form->form_submitted_page_url) {
-        $html .= 'URL: ' . esc_html($form->form_submitted_page_url) . '<br />';
+        $html .= '<strong>' . __('URL:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_page_url) . '<br />';
+    }
+    if ($form->form_submitted_page_title) {
+        $html .= '<strong>' . __('Page title:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_page_title) . '<br />';
     }
     if ($form->form_submitted_ip) {
-        $html .= 'IP: ' . esc_html($form->form_submitted_ip) . '<br />';
+        $html .= '<strong>' . __('IP:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_ip) . '<br />';
     }
-    if ($html) {
-        $html .= '<hr />';
+    if ($form->form_submitted_hashed_ip) {
+        $html .= '<strong>' . __('Hashed IP:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_hashed_ip) . '<br />';
     }
     return $html;
 }
@@ -1709,6 +1723,8 @@ function wpucontactforms_submit_contactform__sendmail($form) {
         'attachments' => array()
     );
 
+    $mail_content .= '<hr />';
+
     // Target Email
     foreach ($form->contact_fields as $id => $field) {
         if ($field['type'] == 'html') {
@@ -1728,7 +1744,7 @@ function wpucontactforms_submit_contactform__sendmail($form) {
         }
 
         // Emptying values
-        $mail_content .= '<hr />' . wpucontactform__set_html_field_content($field);
+        $mail_content .= wpucontactform__set_html_field_content($field) . '<hr />';
     }
 
     $mail_content .= wpucontactform__set_html_extra_content($form);
@@ -1886,8 +1902,14 @@ function wpucontactforms_submit_contactform__savepost($form) {
     if ($form->form_submitted_page_url) {
         update_post_meta($post_id, 'form_url_referrer', $form->form_submitted_page_url);
     }
+    if ($form->form_submitted_page_title) {
+        update_post_meta($post_id, 'form_title_referrer', $form->form_submitted_page_title);
+    }
     if ($form->form_submitted_ip) {
         update_post_meta($post_id, 'form_submitted_ip', $form->form_submitted_ip);
+    }
+    if ($form->form_submitted_hashed_ip) {
+        update_post_meta($post_id, 'form_submitted_hashed_ip', $form->form_submitted_hashed_ip);
     }
 
     // Add term

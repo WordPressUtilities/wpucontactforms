@@ -1,6 +1,6 @@
 <?php
 
-/* WPUContactForms v 2.10.3 */
+/* WPUContactForms v 3.1.0 */
 
 /* ----------------------------------------------------------
   Check file
@@ -18,7 +18,7 @@ if (!file_exists($file)) {
 }
 
 /* Basic upload model OR avoid / */
-if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[^\.]*\.[^\.]*$/', $file_name) && strpos($file_name, "/") !== false) {
+if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[^\.\/]{1}([a-zA-Z0-9_\-\s\.]*)$/', $file_name) && strpos($file_name, "/") !== false) {
     return;
 }
 

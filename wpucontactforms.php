@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.1.1
+Version: 3.1.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.1.1';
+    private $plugin_version = '3.1.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -1511,8 +1511,8 @@ class wpucontactforms {
             $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
             $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
         }
-        $client = @$_SERVER['HTTP_CLIENT_IP'];
-        $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+        $client = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : '';
+        $forward = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : '';
         $remote = $_SERVER['REMOTE_ADDR'];
 
         if (filter_var($client, FILTER_VALIDATE_IP)) {
@@ -1685,10 +1685,21 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
 
     /* Get email */
     $target_email = get_option('wpu_opt_email');
+    $admin_email = get_option('admin_email');
     if (!is_email($target_email)) {
-        $target_email = get_option('admin_email');
+        $target_email = $admin_email;
     }
     $target_email = apply_filters('wpucontactforms_email', $target_email, $form_options, $form_contact_fields);
+
+    /* Clean target email */
+    if (is_array($target_email)) {
+        $target_email = implode(';', $target_email);
+    }
+    $target_email = str_replace(array(';', ' ', ','), ';', $target_email);
+    $target_email = array_filter(explode(';', $target_email));
+    if (!$target_email) {
+        $target_email = $admin_email;
+    }
 
     /* More */
     if (!is_array($more)) {

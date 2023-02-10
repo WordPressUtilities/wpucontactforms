@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.1.3
+Version: 3.1.4
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.1.3';
+    private $plugin_version = '3.1.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -57,11 +57,11 @@ class wpucontactforms {
 
         if ($this->first_init) {
 
-$lang_dir = dirname(plugin_basename(__FILE__)) . '/lang/';
-if (!load_plugin_textdomain('wpucontactforms', false, $lang_dir)) {
-    load_muplugin_textdomain('wpucontactforms', $lang_dir);
-}
-$this->plugin_description = __('PLUGIN DESCRIPTION', 'wpucontactforms');
+            $lang_dir = dirname(plugin_basename(__FILE__)) . '/lang/';
+            if (!load_plugin_textdomain('wpucontactforms', false, $lang_dir)) {
+                load_muplugin_textdomain('wpucontactforms', $lang_dir);
+            }
+            $this->plugin_description = __('PLUGIN DESCRIPTION', 'wpucontactforms');
         }
 
         $this->set_humantest_classname($options['id']);
@@ -625,10 +625,25 @@ $this->plugin_description = __('PLUGIN DESCRIPTION', 'wpucontactforms');
 
         $content_form = '';
 
+        /* Extract page URL */
         $page_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        if (isset($args['tmp__page_url'])) {
+            $tmp_page_url = base64_decode($args['tmp__page_url']);
+            if (filter_var($tmp_page_url, FILTER_VALIDATE_URL) !== false) {
+                $page_url = $tmp_page_url;
+            }
+        }
         $page_url = htmlspecialchars($page_url, ENT_QUOTES, 'UTF-8');
 
-        $page_title = htmlspecialchars(wp_title(' | ', false), ENT_QUOTES, 'UTF-8');
+        /* Extract page title */
+        $page_title = wp_title(' | ', false);
+        if (isset($args['tmp__page_title'])) {
+            $tmp_page_title = base64_decode($args['tmp__page_title']);
+            if ($tmp_page_title) {
+                $page_title = $tmp_page_title;
+            }
+        }
+        $page_title = htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8');
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
@@ -1100,7 +1115,7 @@ $this->plugin_description = __('PLUGIN DESCRIPTION', 'wpucontactforms');
         $this->form_submitted_page_url = $page_url;
         $this->form_submitted_page_title = $page_title;
 
-        // Extract anonimized user IP
+        // Extract anonymized user IP
         $this->form_submitted_ip = $this->get_user_ip();
         $this->form_submitted_hashed_ip = md5(site_url() . $this->get_user_ip());
 
@@ -1370,6 +1385,12 @@ $this->plugin_description = __('PLUGIN DESCRIPTION', 'wpucontactforms');
         $args = array(
             'extra_hidden_fields' => array()
         );
+        if (isset($_POST['page_title'])) {
+            $args['tmp__page_title'] = $_POST['page_title'];
+        }
+        if (isset($_POST['page_url'])) {
+            $args['tmp__page_url'] = $_POST['page_url'];
+        }
         if (isset($_POST['extra_hidden_fields'])) {
             $hidden_fields = explode(',', $_POST['extra_hidden_fields']);
             foreach ($hidden_fields as $field_id) {

@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.1.4
+Version: 3.2.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.1.4';
+    private $plugin_version = '3.2.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -61,7 +61,7 @@ class wpucontactforms {
             if (!load_plugin_textdomain('wpucontactforms', false, $lang_dir)) {
                 load_muplugin_textdomain('wpucontactforms', $lang_dir);
             }
-            $this->plugin_description = __('PLUGIN DESCRIPTION', 'wpucontactforms');
+            $this->plugin_description = __('Contact forms', 'wpucontactforms');
         }
 
         $this->set_humantest_classname($options['id']);
@@ -139,6 +139,27 @@ class wpucontactforms {
             )
         );
 
+        $admin_pages = array(
+            'export' => array(
+                'section' => 'edit.php?post_type=' . wpucontactforms_savepost__get_post_type(),
+                'menu_name' => 'Base plugin',
+                'name' => 'Main page',
+                'settings_link' => false,
+                'function_content' => array(&$this,
+                    'page_content__export'
+                ),
+                'function_action' => array(&$this,
+                    'page_action__export'
+                )
+            )
+        );
+
+        $pages_options = array(
+            'id' => 'wpucontactforms',
+            'level' => 'manage_options',
+            'basename' => plugin_basename(__FILE__)
+        );
+
         if ($this->first_init) {
             /* Add submenus */
             add_action('admin_menu', array(&$this, 'create_admin_form_submenus'));
@@ -157,6 +178,11 @@ class wpucontactforms {
                 include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
                 new \wpucontactforms\WPUBaseSettings($this->settings_details, $this->settings);
             }
+
+            // Init admin page
+            include dirname(__FILE__) . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
+            $this->adminpages = new \wpucontactforms\WPUBaseAdminPage();
+            $this->adminpages->init($pages_options, $admin_pages);
         }
 
         $this->set_user_options();
@@ -1454,6 +1480,111 @@ class wpucontactforms {
             }
         }
         echo json_encode($response);
+        die;
+    }
+
+    /* Export */
+    function page_content__export() {
+        $terms = get_terms(array(
+            'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
+            'hide_empty' => false
+        ));
+
+        if (!empty($terms) && !is_wp_error($terms)) {
+            echo '<p>';
+            echo '<label for="wpucontactforms_export_term">' . __('Choose a form:', 'wpucontactforms') . '</label><br />';
+            echo '<select id="wpucontactforms_export_term" name="term">';
+            echo '<option>' . __('All forms', 'wpucontactforms') . '</option>';
+            foreach ($terms as $term) {
+                echo '<option value="' . esc_attr($term->slug) . '">';
+                echo esc_html($term->name);
+                if ($term->count) {
+                    echo ' (' . $term->count . ')';
+                }
+                echo '</option>';
+            }
+            echo '</select>';
+            echo '</p>';
+        }
+        submit_button(__('Export', 'wpucontactforms'));
+    }
+
+    function page_action__export() {
+        $term = '';
+        if (isset($_POST['term']) && term_exists($_POST['term'], wpucontactforms_savepost__get_taxonomy())) {
+            $term = $_POST['term'];
+        }
+
+        $data = array();
+
+        $args = array(
+            'posts_per_page' => -1,
+            'post_type' => wpucontactforms_savepost__get_post_type()
+        );
+        if ($term) {
+            $args['tax_query'] = array(
+                array(
+                    'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
+                    'field' => 'slug',
+                    'terms' => $term
+                )
+            );
+        }
+
+        $posts = get_posts($args);
+        foreach ($posts as $p) {
+            $meta = array_map('implode', get_post_meta($p->ID, '', false));
+            $item = array(
+                'name' => $p->post_title,
+                'date' => $p->post_date
+            );
+            $item = array_merge($item, $meta);
+            $data[] = $item;
+        }
+
+        $this->export_array_to_csv($data, $term ? $term : 'all-forms');
+    }
+
+    /* ----------------------------------------------------------
+      Utilities : Export array to CSV
+    ---------------------------------------------------------- */
+
+    public function export_array_to_csv($data, $name) {
+        if (!isset($data[0])) {
+            return;
+        }
+
+        /* Extract all available keys */
+        $all_keys = array();
+        foreach ($data as $item) {
+            $all_keys = array_merge($all_keys, array_keys($item));
+        }
+        $all_keys = array_unique($all_keys);
+        asort($all_keys);
+
+        foreach ($data as $item_key => $item) {
+            /* Ensure all rows have the same keys */
+            foreach ($all_keys as $k) {
+                if (!isset($item[$k])) {
+                    $data[$item_key][$k] = '';
+                }
+            }
+            /* Ensure same sorting of all keys */
+            ksort($data[$item_key]);
+        }
+
+        /* Correct headers */
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename=export-' . $name . '-' . date_i18n('Ymd-His') . '.csv');
+        header('Pragma: no-cache');
+
+        /* Build and send CSV */
+        $output = fopen("php://output", 'w');
+        fputcsv($output, $all_keys);
+        foreach ($data as $item) {
+            fputcsv($output, $item);
+        }
+        fclose($output);
         die;
     }
 

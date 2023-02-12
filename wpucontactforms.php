@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.2.0
+Version: 3.2.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,11 +14,12 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.2.0';
+    private $plugin_version = '3.2.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
     private $has_recaptcha_v3 = false;
+    private $has_recaptcha_hcaptcha = false;
     private $has_recaptcha_turnstile = false;
     private $user_options = false;
     public $contact_fields = array();
@@ -142,8 +143,8 @@ class wpucontactforms {
         $admin_pages = array(
             'export' => array(
                 'section' => 'edit.php?post_type=' . wpucontactforms_savepost__get_post_type(),
-                'menu_name' => 'Base plugin',
-                'name' => 'Main page',
+                'menu_name' => __('Export', 'wpucontactforms'),
+                'name' => __('Export', 'wpucontactforms'),
                 'settings_link' => false,
                 'function_content' => array(&$this,
                     'page_content__export'
@@ -156,7 +157,7 @@ class wpucontactforms {
 
         $pages_options = array(
             'id' => 'wpucontactforms',
-            'level' => 'manage_options',
+            'level' => 'edit_pages',
             'basename' => plugin_basename(__FILE__)
         );
 
@@ -279,7 +280,7 @@ class wpucontactforms {
         global $submenu;
         $forms = get_terms(array(
             'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
-            'hide_empty' => false
+            'hide_empty' => true
         ));
         /* Display form submenus only if needed */
         if (!$forms || count($forms) < 2) {
@@ -1487,7 +1488,7 @@ class wpucontactforms {
     function page_content__export() {
         $terms = get_terms(array(
             'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
-            'hide_empty' => false
+            'hide_empty' => true
         ));
 
         if (!empty($terms) && !is_wp_error($terms)) {
@@ -1496,8 +1497,7 @@ class wpucontactforms {
             echo '<select id="wpucontactforms_export_term" name="term">';
             echo '<option>' . __('All forms', 'wpucontactforms') . '</option>';
             foreach ($terms as $term) {
-                echo '<option value="' . esc_attr($term->slug) . '">';
-                echo esc_html($term->name);
+                echo '<option value="' . esc_attr($term->slug) . '">' . esc_html($term->name);
                 if ($term->count) {
                     echo ' (' . $term->count . ')';
                 }
@@ -1533,12 +1533,18 @@ class wpucontactforms {
 
         $posts = get_posts($args);
         foreach ($posts as $p) {
-            $meta = array_map('implode', get_post_meta($p->ID, '', false));
             $item = array(
                 'name' => $p->post_title,
                 'date' => $p->post_date
             );
-            $item = array_merge($item, $meta);
+            $meta = get_post_meta($p->ID, '', false);
+            foreach ($meta as $meta_k => $meta_item) {
+                /* Remove private metas */
+                if ($meta_k[0] == '_') {
+                    continue;
+                }
+                $item[$meta_k] = implode($meta_item);
+            }
             $data[] = $item;
         }
 
@@ -1546,13 +1552,10 @@ class wpucontactforms {
     }
 
     /* ----------------------------------------------------------
-      Utilities : Export array to CSV
+      Utilities : Export
     ---------------------------------------------------------- */
 
-    public function export_array_to_csv($data, $name) {
-        if (!isset($data[0])) {
-            return;
-        }
+    function export_array_clean($data) {
 
         /* Extract all available keys */
         $all_keys = array();
@@ -1560,7 +1563,6 @@ class wpucontactforms {
             $all_keys = array_merge($all_keys, array_keys($item));
         }
         $all_keys = array_unique($all_keys);
-        asort($all_keys);
 
         foreach ($data as $item_key => $item) {
             /* Ensure all rows have the same keys */
@@ -1573,10 +1575,25 @@ class wpucontactforms {
             ksort($data[$item_key]);
         }
 
+        return $data;
+    }
+
+    /* Array to CSV
+    -------------------------- */
+
+    public function export_array_to_csv($data, $name) {
+        if (!isset($data[0])) {
+            return;
+        }
+
+        $data = $this->export_array_clean($data);
+
         /* Correct headers */
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=export-' . $name . '-' . date_i18n('Ymd-His') . '.csv');
         header('Pragma: no-cache');
+
+        $all_keys = array_keys($data[0]);
 
         /* Build and send CSV */
         $output = fopen("php://output", 'w');
@@ -1587,6 +1604,10 @@ class wpucontactforms {
         fclose($output);
         die;
     }
+
+    /* ----------------------------------------------------------
+      Utilities
+    ---------------------------------------------------------- */
 
     /** Ensure $_FILES global is always a correct array */
     public function convert_files_global_multiple($file = array()) {

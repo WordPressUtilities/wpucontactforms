@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.2.1
+Version: 3.2.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.2.1';
+    private $plugin_version = '3.2.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -22,6 +22,16 @@ class wpucontactforms {
     private $has_recaptcha_hcaptcha = false;
     private $has_recaptcha_turnstile = false;
     private $user_options = false;
+    private $settings_details;
+    private $settings;
+    private $default_field;
+    private $options;
+    public $content_contact;
+    public $has_upload;
+    public $is_successful;
+    public $adminpages;
+    public $plugin_description;
+    public $settings_update;
     public $contact_fields = array();
     public $contact_steps = array();
     private $phone_pattern = '^(?:0|\(?\+33\)?\s?|0033\s?)[1-79](?:[\.\-\s]?\d\d){4}$';

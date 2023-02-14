@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.2.2
+Version: 3.2.3
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.2.2';
+    private $plugin_version = '3.2.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     private $has_recaptcha_v2 = false;
@@ -839,6 +839,18 @@ class wpucontactforms {
 
         $content .= $field['html_before_input'];
 
+        if (isset($field['datalist']) && is_array($field['datalist'])) {
+            $datalist_id = 'datalist_' . $id_html;
+            $field_id_name .= ' list="' . $datalist_id . '"';
+            $content .= '<datalist id="' . $datalist_id . '">';
+            foreach ($field['datalist'] as $val) {
+                if ($val) {
+                    $content .= '<option value="' . esc_attr($val) . '">';
+                }
+            }
+            $content .= '</datalist>';
+        }
+
         switch ($field['type']) {
         case 'select':
             $content .= '<select  ' . $field_id_name . '>';
@@ -847,7 +859,6 @@ class wpucontactforms {
             foreach ($field['datas'] as $key => $val) {
                 /* Optgroup : load value and ignore opt line */
                 if (is_array($val) && isset($val['optgroup'])) {
-                    $opt_displayed_value = $val['optgroup'];
                     /* Close if an optgroup was opened */
                     if ($has_optgroup) {
                         $content .= '</optgroup>';

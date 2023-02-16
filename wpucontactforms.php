@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.2.3
+Version: 3.2.4
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,18 +14,18 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.2.3';
+    private $plugin_version = '3.2.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
-    private $has_recaptcha_v2 = false;
-    private $has_recaptcha_v3 = false;
-    private $has_recaptcha_hcaptcha = false;
-    private $has_recaptcha_turnstile = false;
-    private $user_options = false;
-    private $settings_details;
-    private $settings;
-    private $default_field;
-    private $options;
+    public $has_recaptcha_v2 = false;
+    public $has_recaptcha_v3 = false;
+    public $has_recaptcha_hcaptcha = false;
+    public $has_recaptcha_turnstile = false;
+    public $user_options = false;
+    public $settings_details;
+    public $settings;
+    public $default_field;
+    public $options;
     public $content_contact;
     public $has_upload;
     public $is_successful;
@@ -34,8 +34,8 @@ class wpucontactforms {
     public $settings_update;
     public $contact_fields = array();
     public $contact_steps = array();
-    private $phone_pattern = '^(?:0|\(?\+33\)?\s?|0033\s?)[1-79](?:[\.\-\s]?\d\d){4}$';
-    private $disposable_domains = array(
+    public $phone_pattern = '^(?:0|\(?\+33\)?\s?|0033\s?)[1-79](?:[\.\-\s]?\d\d){4}$';
+    public $disposable_domains = array(
         'cool.fr.nf',
         'courriel.fr.nf',
         'example.com',

@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.2.5
+Version: 3.3.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.2.5';
+    private $plugin_version = '3.3.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -62,7 +62,7 @@ class wpucontactforms {
         if (!is_array($wpucontactforms_forms)) {
             $wpucontactforms_forms = array();
         }
-        if (in_array($options['id'], $wpucontactforms_forms)) {
+        if (array_key_exists($options['id'], $wpucontactforms_forms)) {
             return;
         }
 
@@ -77,7 +77,7 @@ class wpucontactforms {
 
         $this->set_humantest_classname($options['id']);
 
-        $wpucontactforms_forms[] = $options['id'];
+        $wpucontactforms_forms[$options['id']] = array();
 
         $this->set_options($options);
         if (isset($this->options['contact__settings']['admin_form']) && $this->options['contact__settings']['admin_form'] && !is_admin()) {
@@ -217,6 +217,8 @@ class wpucontactforms {
                 'form_scripts'
             ));
         }
+
+        $wpucontactforms_forms[$options['id']]['fields'] = $this->contact_fields;
     }
 
     public function set_user_options() {
@@ -1539,6 +1541,8 @@ class wpucontactforms {
             $term = $_POST['term'];
         }
 
+        global $wpucontactforms_forms;
+
         $data = array();
 
         $args = array(
@@ -1561,13 +1565,23 @@ class wpucontactforms {
                 'name' => $p->post_title,
                 'date' => $p->post_date
             );
-            $meta = get_post_meta($p->ID, '', false);
+            $meta = get_post_meta($p->ID, '', true);
             foreach ($meta as $meta_k => $meta_item) {
                 /* Remove private metas */
                 if ($meta_k[0] == '_') {
                     continue;
                 }
-                $item[$meta_k] = implode($meta_item);
+                $meta_value = implode($meta_item);
+                if (is_array($wpucontactforms_forms)) {
+                    foreach ($wpucontactforms_forms as $form_id => $form_fields) {
+                        if (isset($form_fields['fields'][$meta_k])) {
+                            $field_item = $form_fields['fields'][$meta_k];
+                            $field_item['value'] = $meta_item;
+                            $meta_value = wpucontactform__set_html_field_content($field_item, false);
+                        }
+                    }
+                }
+                $item[$meta_k] = $meta_value;
             }
             $data[] = $item;
         }
@@ -1764,8 +1778,14 @@ function wpucontactform__set_html_extra_content($form) {
 function wpucontactform__set_html_field_content($field, $wrap_html = true) {
     $field_content = $field['value'];
 
+    $implode_sep = ($wrap_html ? '<br />' : ', ');
+
+    if (is_array($field_content)) {
+        $field_content = implode($field_content);
+    }
+
     /* Better presentation for text */
-    if ($field['type'] == 'textarea') {
+    if ($wrap_html && $field['type'] == 'textarea') {
         $field_content = nl2br($field_content);
     }
 
@@ -1776,10 +1796,15 @@ function wpucontactform__set_html_field_content($field, $wrap_html = true) {
         foreach ($field['value'] as $val_item) {
             if (isset($field['datas'][$val_item])) {
                 $field_parts[] = $field['datas'][$val_item];
+            } else {
+                $val_item_uns = unserialize($val_item);
+                if ($val_item_uns) {
+                    $val_item = implode(', ', $val_item_uns);
+                }
+                $field_parts[] = strip_tags($val_item);
             }
         }
         $field_content = implode(', ', $field_parts);
-
     }
 
     $wpucontactforms__upload_protection_disabled = apply_filters('wpucontactforms__upload_protection_disabled', false);
@@ -1787,14 +1812,22 @@ function wpucontactform__set_html_field_content($field, $wrap_html = true) {
     if ($field['type'] == 'file' && is_array($field['value'])) {
         $field_content_parts = array();
         foreach ($field['value'] as $field_value) {
-            if (wp_attachment_is_image($field_value) && $wpucontactforms__upload_protection_disabled) {
-                $field_content_parts[] = wp_get_attachment_image($field_value);
+            $field_value_uns = unserialize($field_value);
+            if ($field_value_uns && is_array($field_value_uns) && count($field_value_uns) == 1) {
+                $field_value = implode($field_value_uns);
+            }
+            if ($wrap_html) {
+                if (wp_attachment_is_image($field_value) && $wpucontactforms__upload_protection_disabled) {
+                    $field_content_parts[] = wp_get_attachment_image($field_value);
+                } else {
+                    $field_content_parts[] = __('See attached file(s)', 'wpucontactforms');
+                    $field_content_parts[] = '<a href="' . wp_get_attachment_url($field_value) . '">' . __('Or click here', 'wpucontactforms') . '</a>';
+                }
             } else {
-                $field_content_parts[] = __('See attached file(s)', 'wpucontactforms');
-                $field_content_parts[] = '<a href="' . wp_get_attachment_url($field_value) . '">' . __('Or click here', 'wpucontactforms') . '</a>';
+                $field_content_parts[] = wp_get_attachment_url($field_value);
             }
         }
-        $field_content = implode('<br />', $field_content_parts);
+        $field_content = implode($implode_sep, $field_content_parts);
     }
 
     // Return layout

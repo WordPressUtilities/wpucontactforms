@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.3.0
+Version: 3.3.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.3.0';
+    private $plugin_version = '3.3.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1758,18 +1758,18 @@ class wpucontactforms {
 ---------------------------------------------------------- */
 
 function wpucontactform__set_html_extra_content($form) {
-    $html = '';
+    $html = "\n";
 
-    if ($form->form_submitted_page_url) {
+    if ($form->form_submitted_page_url && apply_filters('wpucontactform__set_html_extra_content__form_submitted_page_url', true)) {
         $html .= '<strong>' . __('URL:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_page_url) . '<br />';
     }
-    if ($form->form_submitted_page_title) {
+    if ($form->form_submitted_page_title && apply_filters('wpucontactform__set_html_extra_content__form_submitted_page_title', true)) {
         $html .= '<strong>' . __('Page title:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_page_title) . '<br />';
     }
-    if ($form->form_submitted_ip) {
+    if ($form->form_submitted_ip && apply_filters('wpucontactform__set_html_extra_content__form_submitted_ip', true)) {
         $html .= '<strong>' . __('IP:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_ip) . '<br />';
     }
-    if ($form->form_submitted_hashed_ip) {
+    if ($form->form_submitted_hashed_ip && apply_filters('wpucontactform__set_html_extra_content__form_submitted_hashed_ip', true)) {
         $html .= '<strong>' . __('Hashed IP:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_hashed_ip) . '<br />';
     }
     return $html;

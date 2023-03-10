@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.3.1
+Version: 3.3.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.3.1';
+    private $plugin_version = '3.3.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1916,7 +1916,7 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
     }
 
     $sendmail_subject = strip_tags(html_entity_decode($sendmail_subject));
-    $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', $sendmail_subject, $form);
+    $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', $sendmail_subject, $form, $from_name);
 
     /* Get email */
     $target_email = get_option('wpu_opt_email');
@@ -1948,7 +1948,7 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
     }
 
     /* Send content */
-    if (function_exists('wputh_sendmail')) {
+    if (function_exists('wputh_sendmail') && apply_filters('wpucontactforms_submit_contactform__sendmail__use_wputh_sendmail', true)) {
         wputh_sendmail($target_email, $sendmail_subject, $mail_content, $more);
     } else {
         wp_mail($target_email, $sendmail_subject, $mail_content, $headers, $more['attachments']);

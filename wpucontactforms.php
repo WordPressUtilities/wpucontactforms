@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.3.2
+Version: 3.4.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.3.2';
+    private $plugin_version = '3.4.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1878,6 +1878,21 @@ function wpucontactforms_message___maxlinks($message) {
 }
 
 /* ----------------------------------------------------------
+  Helper name
+---------------------------------------------------------- */
+
+function wpucontactforms_get_from_name($form_contact_fields){
+    $from_name = '';
+    if (isset($form_contact_fields['contact_firstname'])) {
+        $from_name = $form_contact_fields['contact_firstname']['value'];
+    }
+    if (isset($form_contact_fields['contact_name'])) {
+        $from_name .= ' ' . $form_contact_fields['contact_name']['value'];
+    }
+    return trim(strip_tags(html_entity_decode($from_name)));
+}
+
+/* ----------------------------------------------------------
   Success actions
 ---------------------------------------------------------- */
 
@@ -1892,14 +1907,7 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
     $headers = array();
 
     /* Subject */
-    $from_name = '';
-    if (isset($form_contact_fields['contact_firstname'])) {
-        $from_name = $form_contact_fields['contact_firstname']['value'];
-    }
-    if (isset($form_contact_fields['contact_name'])) {
-        $from_name .= ' ' . $form_contact_fields['contact_name']['value'];
-        $from_name = trim($from_name);
-    }
+    $from_name = wpucontactforms_get_from_name($form_contact_fields);
     if (isset($form_contact_fields['contact_email'])) {
         $headers[] = 'Reply-To: ' . $from_name . ' <' . $form_contact_fields['contact_email']['value'] . '>';
     }
@@ -1951,7 +1959,16 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
     if (function_exists('wputh_sendmail') && apply_filters('wpucontactforms_submit_contactform__sendmail__use_wputh_sendmail', true)) {
         wputh_sendmail($target_email, $sendmail_subject, $mail_content, $more);
     } else {
-        wp_mail($target_email, $sendmail_subject, $mail_content, $headers, $more['attachments']);
+        $headers[] = 'Content-Type: text/html';
+
+        ob_start();
+        include dirname(__FILE__) . '/tools/mail-header.php';
+        $mail_content_header = ob_get_clean();
+        ob_start();
+        include dirname(__FILE__) . '/tools/mail-footer.php';
+        $mail_content_footer = ob_get_clean();
+
+        wp_mail($target_email, $sendmail_subject, $mail_content_header . $mail_content . $mail_content_footer, $headers, $more['attachments']);
     }
 }
 
@@ -2113,15 +2130,7 @@ function wpucontactforms_submit_contactform__savepost($form) {
     }
 
     $default_post_title = __('New message', 'wpucontactforms');
-    $from_name = '';
-    if (isset($form->contact_fields['contact_firstname'])) {
-        $from_name = $form->contact_fields['contact_firstname']['value'];
-    }
-    if (isset($form->contact_fields['contact_name'])) {
-        $from_name .= ' ' . $form->contact_fields['contact_name']['value'];
-    }
-    $from_name = trim($from_name);
-    $from_name = strip_tags(html_entity_decode($from_name));
+    $from_name = wpucontactforms_get_from_name($form->contact_fields);
     if (!empty($from_name)) {
         $default_post_title = sprintf(__('New message from %s', 'wpucontactforms'), $from_name);
     }

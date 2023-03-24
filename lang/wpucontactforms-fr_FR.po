@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2023-02-19 20:10+0100\n"
+"POT-Creation-Date: 2023-03-24 22:38+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -26,12 +26,12 @@ msgid "Settings"
 msgstr "Réglages"
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:164
-#: .././wpucontactforms.php:334 .././wpucontactforms.php:1244
+#: .././wpucontactforms.php:361 .././wpucontactforms.php:1272
 msgid "No"
 msgstr "Non"
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:164
-#: .././wpucontactforms.php:335 .././wpucontactforms.php:1244
+#: .././wpucontactforms.php:362 .././wpucontactforms.php:1272
 msgid "Yes"
 msgstr "Oui"
 
@@ -51,223 +51,231 @@ msgstr "Langue"
 msgid "Save"
 msgstr "Sauvegarder"
 
-#: .././wpucontactforms.php:75
+#: .././wpucontactforms.php:74
 msgid "Contact forms"
 msgstr "Formulaires de contact"
 
-#: .././wpucontactforms.php:113
+#: .././wpucontactforms.php:112
 msgid "Content Settings"
 msgstr "Paramètres de contenu"
 
-#: .././wpucontactforms.php:116
+#: .././wpucontactforms.php:115
 msgid "Captcha"
 msgstr "Captcha"
 
-#: .././wpucontactforms.php:122
+#: .././wpucontactforms.php:121
 msgid "Excluded Words"
 msgstr "Mots exclus"
 
-#: .././wpucontactforms.php:123
+#: .././wpucontactforms.php:122
 msgid "One word or expression per line."
 msgstr "Un mot ou une expression par ligne."
 
-#: .././wpucontactforms.php:127
+#: .././wpucontactforms.php:126
 msgid "Enable"
 msgstr "Activer"
 
-#: .././wpucontactforms.php:128
+#: .././wpucontactforms.php:127
 msgid "Recaptcha will be enabled on all forms"
 msgstr "Recaptcha sera activé sur tous les formulaires"
 
-#: .././wpucontactforms.php:133
+#: .././wpucontactforms.php:132
 msgid "Type"
 msgstr "Type"
 
-#: .././wpucontactforms.php:144
+#: .././wpucontactforms.php:143
 msgid "Site key"
 msgstr "Clé du site"
 
-#: .././wpucontactforms.php:148
+#: .././wpucontactforms.php:147
 msgid "Private key"
 msgstr "Clé privée"
 
-#: .././wpucontactforms.php:156 .././wpucontactforms.php:157
-#: .././wpucontactforms.php:1533
+#: .././wpucontactforms.php:155 .././wpucontactforms.php:156
+#: .././wpucontactforms.php:1572
 msgid "Export"
 msgstr "Exporter"
 
-#: .././wpucontactforms.php:339
+#: .././wpucontactforms.php:366
 msgid "Thank you for your message!"
 msgstr "Merci pour votre message !"
 
-#: .././wpucontactforms.php:393
+#: .././wpucontactforms.php:420
 msgid "Submit"
 msgstr "Envoyer"
 
-#: .././wpucontactforms.php:396
+#: .././wpucontactforms.php:423
 msgid "Previous"
 msgstr "Précédent"
 
-#: .././wpucontactforms.php:397
+#: .././wpucontactforms.php:424
 msgid "Continue"
 msgstr "Continuer"
 
-#: .././wpucontactforms.php:402
+#: .././wpucontactforms.php:429
 msgid "Name"
 msgstr "Nom"
 
-#: .././wpucontactforms.php:406
+#: .././wpucontactforms.php:433
 msgid "Email"
 msgstr "E-mail"
 
-#: .././wpucontactforms.php:411 .././wpucontactforms.php:2025
+#: .././wpucontactforms.php:438 .././wpucontactforms.php:2137
 msgid "Message"
 msgstr "Message"
 
-#: .././wpucontactforms.php:610
+#: .././wpucontactforms.php:637
 msgid "If you are human, leave this empty"
 msgstr "Si vous êtes humain, laissez ce champ vide"
 
-#: .././wpucontactforms.php:787
+#: .././wpucontactforms.php:814
 msgid "Select a value"
 msgstr "Sélectionnez une valeur"
 
-#: .././wpucontactforms.php:995
+#: .././wpucontactforms.php:1023
 msgid "This field is invalid"
 msgstr "Ce champ est invalide"
 
-#: .././wpucontactforms.php:997
+#: .././wpucontactforms.php:1025
 msgid "This is not a valid e-mail address"
 msgstr "Il ne s’agit pas d’une adresse e-mail valide"
 
-#: .././wpucontactforms.php:1000
+#: .././wpucontactforms.php:1028
 msgid "This is not a valid phone number"
 msgstr "Il ne s’agit pas d’un numéro de téléphone valide"
 
-#: .././wpucontactforms.php:1007
+#: .././wpucontactforms.php:1035
 #, php-format
 msgid "Did you mean: %s ?"
 msgstr "Vouliez-vous dire : %s ?"
 
-#: .././wpucontactforms.php:1011
+#: .././wpucontactforms.php:1039
 msgid "A value should be selected"
 msgstr "Une valeur doit être sélectionnée"
 
-#: .././wpucontactforms.php:1015
+#: .././wpucontactforms.php:1043
 msgid "This field should not be empty"
 msgstr "Ce champ ne devrait pas être vide"
 
-#: .././wpucontactforms.php:1019
+#: .././wpucontactforms.php:1047
 #, php-format
 msgid "This file is too heavy (%sMb)"
 msgstr "Ce fichier est trop lourd (%sMb)"
 
-#: .././wpucontactforms.php:1097 .././wpucontactforms.php:1116
+#: .././wpucontactforms.php:1125 .././wpucontactforms.php:1144
 msgid "The captcha is invalid"
 msgstr "Le captcha n’est pas valide"
 
-#: .././wpucontactforms.php:1154 .././wpucontactforms.php:1161
+#: .././wpucontactforms.php:1182 .././wpucontactforms.php:1189
 msgid "Invalid source"
 msgstr "Source invalide"
 
-#: .././wpucontactforms.php:1174
+#: .././wpucontactforms.php:1202
 msgid "Error:"
 msgstr "Erreur :"
 
-#: .././wpucontactforms.php:1233
+#: .././wpucontactforms.php:1261
 #, php-format
 msgid "The field \"%s\" is not correct"
 msgstr "Le champ \"%s\" n'est pas correct"
 
-#: .././wpucontactforms.php:1259
+#: .././wpucontactforms.php:1287
 #, php-format
 msgid "The field \"%s\" is required"
 msgstr "Le champ \"%s\" est obligatoire"
 
-#: .././wpucontactforms.php:1490
+#: .././wpucontactforms.php:1518
 msgid "Select an order"
 msgstr "Sélectionner une commande"
 
-#: .././wpucontactforms.php:1493
+#: .././wpucontactforms.php:1521
 #, php-format
 msgid "# %s"
 msgstr "N° %s"
 
-#: .././wpucontactforms.php:1497
+#: .././wpucontactforms.php:1525
 msgid "No order available"
 msgstr "Aucune commande disponible"
 
-#: .././wpucontactforms.php:1517
+#: .././wpucontactforms.php:1545
 msgid "Choose a form:"
 msgstr "Choisissez un formulaire :"
 
-#: .././wpucontactforms.php:1519
+#: .././wpucontactforms.php:1547
 msgid "All forms"
 msgstr "Tous les formulaires"
 
-#: .././wpucontactforms.php:1530
+#: .././wpucontactforms.php:1558
 msgid "No messages to export yet."
 msgstr "Aucun message à exporter pour le moment."
 
-#: .././wpucontactforms.php:1658
+#: .././wpucontactforms.php:1563
+msgid "From"
+msgstr "Du"
+
+#: .././wpucontactforms.php:1568
+msgid "To"
+msgstr "Au"
+
+#: .././wpucontactforms.php:1734
 msgid "Attachments"
 msgstr "Pièces jointes"
 
-#: .././wpucontactforms.php:1682
+#: .././wpucontactforms.php:1758
 msgid "No attachments available"
 msgstr "Aucune pièce jointe disponible"
 
-#: .././wpucontactforms.php:1750
+#: .././wpucontactforms.php:1826
 msgid "URL:"
 msgstr "URL :"
 
-#: .././wpucontactforms.php:1753
+#: .././wpucontactforms.php:1829
 msgid "Page title:"
 msgstr "Titre de la page :"
 
-#: .././wpucontactforms.php:1756
+#: .././wpucontactforms.php:1832
 msgid "IP:"
 msgstr "IP :"
 
-#: .././wpucontactforms.php:1759
+#: .././wpucontactforms.php:1835
 msgid "Hashed IP:"
 msgstr "IP hachée :"
 
-#: .././wpucontactforms.php:1793
+#: .././wpucontactforms.php:1885
 msgid "See attached file(s)"
 msgstr "Voir le(s) fichier(s) joint(s)"
 
-#: .././wpucontactforms.php:1794
+#: .././wpucontactforms.php:1886
 msgid "Or click here"
 msgstr "Ou cliquez ici"
 
-#: .././wpucontactforms.php:1841
+#: .././wpucontactforms.php:1936
 #, php-format
 msgid "No more than %s links, please"
 msgstr "Pas plus de %s liens, s'il vous plaît"
 
-#: .././wpucontactforms.php:1873 .././wpucontactforms.php:2082
+#: .././wpucontactforms.php:1976 .././wpucontactforms.php:2194
 msgid "New message"
 msgstr "Nouveau message"
 
-#: .././wpucontactforms.php:1875 .././wpucontactforms.php:2093
+#: .././wpucontactforms.php:1978 .././wpucontactforms.php:2197
 #, php-format
 msgid "New message from %s"
 msgstr "Nouveau message de %s"
 
-#: .././wpucontactforms.php:1935
+#: .././wpucontactforms.php:2047
 msgid "Message from your contact form"
 msgstr "Message depuis votre formulaire de contact"
 
-#: .././wpucontactforms.php:2009
+#: .././wpucontactforms.php:2121
 msgid "Forms"
 msgstr "Formulaires"
 
-#: .././wpucontactforms.php:2024
+#: .././wpucontactforms.php:2136
 msgid "Messages"
 msgstr "Messages"
 
-#: .././wpucontactforms.php:2177
+#: .././wpucontactforms.php:2283
 msgid "Re-send this email"
 msgstr "Ré-envoyer l’email"
 

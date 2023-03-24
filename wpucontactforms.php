@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.4.2
+Version: 3.5.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.4.2';
+    private $plugin_version = '3.5.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -67,7 +67,6 @@ class wpucontactforms {
         }
 
         if ($this->first_init) {
-
             $lang_dir = dirname(plugin_basename(__FILE__)) . '/lang/';
             if (!load_plugin_textdomain('wpucontactforms', false, $lang_dir)) {
                 load_muplugin_textdomain('wpucontactforms', $lang_dir);
@@ -268,24 +267,50 @@ class wpucontactforms {
             foreach ($this->contact_fields as $field) {
                 if (isset($field['type']) && $field['type'] == 'datepicker') {
                     wp_enqueue_script('jquery-ui-datepicker');
+                    continue;
                 }
             }
         }
 
-        wp_enqueue_script('wpucontactforms-front', plugins_url('assets/front.js', __FILE__), array(
-            'jquery'
-        ), $this->plugin_version, true);
         wp_enqueue_style('wpucontactforms-frontcss', plugins_url('assets/front.css', __FILE__), array(), $this->plugin_version, 'all');
         if (is_admin()) {
             wp_enqueue_style('wpucontactforms-admincss', plugins_url('assets/admin.css', __FILE__), array(), $this->plugin_version, 'all');
+            if (isset($_GET['page']) && $_GET['page'] == 'wpucontactforms-export') {
+                wp_enqueue_script('wpucontactforms-adminjs', plugins_url('assets/admin.js', __FILE__), array(
+                    'jquery'
+                ), $this->plugin_version, true);
+                wp_localize_script('wpucontactforms-adminjs', 'wpucontactforms_adminobj', $this->get_admin_data());
+                wp_enqueue_script('jquery-ui-datepicker');
+                wp_enqueue_style('wpucontactforms-admin-jqueryui', plugins_url('assets/jquery-ui/jquery-ui-1.9.2.custom.min.css', __FILE__), array(), $this->plugin_version, 'all');
+            }
+        } else {
+            wp_enqueue_script('wpucontactforms-front', plugins_url('assets/front.js', __FILE__), array(
+                'jquery'
+            ), $this->plugin_version, true);
+            wp_localize_script('wpucontactforms-front', 'wpucontactforms_obj', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'disposable_domains' => base64_encode(json_encode($this->disposable_domains)),
+                'enable_custom_validation' => $this->options['contact__settings']['enable_custom_validation']
+            ));
+        }
+    }
+
+    function get_admin_data() {
+        $data = array(
+            'oldest_message' => '2000-01-01',
+            'today' => date('Y-m-d')
+        );
+        $oldest_message = get_posts(array(
+            'orderby' => 'date',
+            'order' => 'ASC',
+            'limit' => 1,
+            'post_type' => wpucontactforms_savepost__get_post_type()
+        ));
+        if (is_array($oldest_message) && isset($oldest_message[0])) {
+            $data['oldest_message'] = date('Y-m-d', strtotime($oldest_message[0]->post_date));
         }
 
-        // Pass Ajax Url to script.js
-        wp_localize_script('wpucontactforms-front', 'wpucontactforms_obj', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'disposable_domains' => base64_encode(json_encode($this->disposable_domains)),
-            'enable_custom_validation' => $this->options['contact__settings']['enable_custom_validation']
-        ));
+        return $data;
     }
 
     public function create_admin_form_submenus() {
@@ -1533,6 +1558,17 @@ class wpucontactforms {
             echo __('No messages to export yet.', 'wpucontactforms');
             return;
         }
+
+        echo '<p>';
+        echo '<label for="wpucontactforms_export_from">' . __('From', 'wpucontactforms') . '</label><br />';
+        echo '<input type="text" name="wpucontactforms_export_from" id="wpucontactforms_export_from" />';
+        echo '</p>';
+
+        echo '<p>';
+        echo '<label for="wpucontactforms_export_to">' . __('To', 'wpucontactforms') . '</label><br />';
+        echo '<input type="text" name="wpucontactforms_export_to" id="wpucontactforms_export_to" />';
+        echo '</p>';
+
         submit_button(__('Export', 'wpucontactforms'));
     }
 
@@ -1550,6 +1586,8 @@ class wpucontactforms {
             'posts_per_page' => -1,
             'post_type' => wpucontactforms_savepost__get_post_type()
         );
+
+        /* TAX */
         if ($term) {
             $args['tax_query'] = array(
                 array(
@@ -1559,7 +1597,30 @@ class wpucontactforms {
                 )
             );
         }
+        /* DATE */
+        $date_fields = array(
+            'wpucontactforms_export_from' => 'after',
+            'wpucontactforms_export_to' => 'before'
+        );
+        foreach ($date_fields as $post_id => $date_type) {
+            if (!isset($_POST[$post_id]) || !preg_match('/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $_POST[$post_id])) {
+                continue;
+            }
+            if (!isset($args['date_query'])) {
+                $args['date_query'] = array(
+                    'inclusive' => true
+                );
+            }
+            $date_parts = explode('-', $_POST[$post_id]);
+            $args['date_query'][$date_type] = array(
+                'year' => intval($date_parts[0], 10),
+                'month' => intval($date_parts[1], 10),
+                'day' => intval($date_parts[2], 10)
 
+            );
+        }
+
+        /* EXPORT */
         $posts = get_posts($args);
         foreach ($posts as $p) {
             $item = array(
@@ -1882,7 +1943,7 @@ function wpucontactforms_message___maxlinks($message) {
   Helper name
 ---------------------------------------------------------- */
 
-function wpucontactforms_get_from_name($form_contact_fields){
+function wpucontactforms_get_from_name($form_contact_fields) {
     $from_name = '';
     if (isset($form_contact_fields['contact_firstname'])) {
         $from_name = $form_contact_fields['contact_firstname']['value'];

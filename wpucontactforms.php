@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.5.0
+Version: 3.5.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.5.0';
+    private $plugin_version = '3.5.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1573,9 +1573,13 @@ class wpucontactforms {
     }
 
     function page_action__export() {
+
+        $file_name = 'all-forms';
+
         $term = '';
         if (isset($_POST['term']) && term_exists($_POST['term'], wpucontactforms_savepost__get_taxonomy())) {
             $term = $_POST['term'];
+            $file_name = $term;
         }
 
         global $wpucontactforms_forms;
@@ -1603,7 +1607,7 @@ class wpucontactforms {
             'wpucontactforms_export_to' => 'before'
         );
         foreach ($date_fields as $post_id => $date_type) {
-            if (!isset($_POST[$post_id]) || !preg_match('/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/', $_POST[$post_id])) {
+            if (!isset($_POST[$post_id]) || !$this->is_date_valid($_POST[$post_id])) {
                 continue;
             }
             if (!isset($args['date_query'])) {
@@ -1612,11 +1616,11 @@ class wpucontactforms {
                 );
             }
             $date_parts = explode('-', $_POST[$post_id]);
+            $file_name .= '-' . $date_type . str_replace('-', '', $_POST[$post_id]);
             $args['date_query'][$date_type] = array(
                 'year' => intval($date_parts[0], 10),
                 'month' => intval($date_parts[1], 10),
                 'day' => intval($date_parts[2], 10)
-
             );
         }
 
@@ -1647,8 +1651,7 @@ class wpucontactforms {
             }
             $data[] = $item;
         }
-
-        $this->export_array_to_csv($data, $term ? $term : 'all-forms');
+        $this->export_array_to_csv($data, $file_name);
     }
 
     /* ----------------------------------------------------------
@@ -1732,6 +1735,11 @@ class wpucontactforms {
 
     public function register_meta_boxes() {
         add_meta_box('wpucontactforms-meta-boxes', __('Attachments', 'wpucontactforms'), array(&$this, 'callback_meta_box'), wpucontactforms_savepost__get_post_type());
+    }
+
+    public function is_date_valid($date, $format = 'Y-m-d') {
+        $dt = DateTime::createFromFormat($format, $date);
+        return $dt && $dt->format($format) === $date;
     }
 
     /**

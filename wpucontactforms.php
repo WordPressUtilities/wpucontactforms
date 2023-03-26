@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.5.1
+Version: 3.5.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.5.1';
+    private $plugin_version = '3.5.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1569,6 +1569,14 @@ class wpucontactforms {
         echo '<input type="text" name="wpucontactforms_export_to" id="wpucontactforms_export_to" />';
         echo '</p>';
 
+        echo '<p>';
+        echo '<label for="wpucontactforms_export_format">' . __('Format', 'wpucontactforms') . '</label><br />';
+        echo '<select id="wpucontactforms_export_format" name="wpucontactforms_export_format">';
+        echo '<option value="csv">CSV</option>';
+        echo '<option value="json">JSON</option>';
+        echo '</select>';
+        echo '</p>';
+
         submit_button(__('Export', 'wpucontactforms'));
     }
 
@@ -1651,7 +1659,20 @@ class wpucontactforms {
             }
             $data[] = $item;
         }
-        $this->export_array_to_csv($data, $file_name);
+        $file_name = 'export-' . $file_name . '-' . date_i18n('Ymd-His');
+
+        $format = 'csv';
+        if (isset($_POST['wpucontactforms_export_format'])) {
+            $format = $_POST['wpucontactforms_export_format'];
+        }
+        switch ($format) {
+        case 'json':
+            $this->export_array_to_json($data, $file_name);
+            break;
+        default:
+            $this->export_array_to_csv($data, $file_name);
+        }
+
     }
 
     /* ----------------------------------------------------------
@@ -1681,6 +1702,21 @@ class wpucontactforms {
         return $data;
     }
 
+    /* Array to JSON
+    -------------------------- */
+
+    public function export_array_to_json($data, $name) {
+        if (!isset($data[0])) {
+            return;
+        }
+        /* Correct headers */
+        header('Content-type: application/json');
+        header('Content-Disposition: attachment; filename=' . $name . '.json');
+        header('Pragma: no-cache');
+
+        echo json_encode($data);
+    }
+
     /* Array to CSV
     -------------------------- */
 
@@ -1693,7 +1729,7 @@ class wpucontactforms {
 
         /* Correct headers */
         header('Content-Type: application/csv');
-        header('Content-Disposition: attachment; filename=export-' . $name . '-' . date_i18n('Ymd-His') . '.csv');
+        header('Content-Disposition: attachment; filename=' . $name . '.csv');
         header('Pragma: no-cache');
 
         $all_keys = array_keys($data[0]);

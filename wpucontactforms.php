@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.5.4
+Version: 3.5.5
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -14,7 +14,7 @@ License URI: https://opensource.org/licenses/MIT
 
 class wpucontactforms {
 
-    private $plugin_version = '3.5.4';
+    private $plugin_version = '3.5.5';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1165,6 +1165,7 @@ class wpucontactforms {
         do_action('wpucontactforms_beforesubmit_contactform_manual', $this);
 
         $this->options = apply_filters('wpucontactforms_options_before_submit', $this->options, $post_array);
+        $post_array = apply_filters('wpucontactforms_post_array_before_submit', $post_array, $this);
 
         $this->contact_fields = $this->extract_value_from_post($post_array, $this->contact_fields);
 

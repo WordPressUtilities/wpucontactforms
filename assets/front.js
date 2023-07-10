@@ -165,7 +165,7 @@ function set_wpucontactforms_form($wrapper) {
             }
             else {
                 $wrap.attr('data-has-value', '0');
-                $cover.text($cover.attr('data-placeholder'));
+                $cover.html($cover.attr('data-placeholder'));
             }
         });
 

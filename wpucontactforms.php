@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.5.6
+Version: 3.6.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.5.6';
+    private $plugin_version = '3.6.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -33,6 +33,7 @@ class wpucontactforms {
     public $user_options = false;
     public $settings_details;
     public $settings;
+    public $basecron;
     public $default_field;
     public $options;
     public $content_contact;
@@ -117,6 +118,9 @@ class wpucontactforms {
             'plugin_id' => 'wpucontactforms',
             'option_id' => 'wpucontactforms_options',
             'sections' => array(
+                'gdpr' => array(
+                    'name' => __('GDPR', 'wpucontactforms')
+                ),
                 'content' => array(
                     'name' => __('Content Settings', 'wpucontactforms')
                 ),
@@ -126,10 +130,24 @@ class wpucontactforms {
             )
         );
         $this->settings = array(
+            'autodelete_enabled' => array(
+                'label' => __('Enable', 'wpucontactforms'),
+                'label_check' => __('Auto-delete messages after n month', 'wpucontactforms'),
+                'type' => 'checkbox',
+                'section' => 'gdpr'
+            ),
+            'autodelete_duration' => array(
+                'label' => __('Messages expiration', 'wpucontactforms'),
+                'help' => __('Messages will be automatically deleted after this period in months', 'wpucontactforms'),
+                'type' => 'number',
+                'default_value' => 36,
+                'section' => 'gdpr'
+            ),
             'excluded_words' => array(
                 'label' => __('Excluded Words', 'wpucontactforms'),
                 'help' => __('One word or expression per line.', 'wpucontactforms'),
-                'type' => 'textarea'
+                'type' => 'textarea',
+                'section' => 'content'
             ),
             'recaptcha_enabled' => array(
                 'label' => __('Enable', 'wpucontactforms'),
@@ -202,6 +220,18 @@ class wpucontactforms {
             include dirname(__FILE__) . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
             $this->adminpages = new \wpucontactforms\WPUBaseAdminPage();
             $this->adminpages->init($pages_options, $admin_pages);
+
+            /* Cron for deletion */
+            include dirname(__FILE__) . '/inc/WPUBaseCron/WPUBaseCron.php';
+            $this->basecron = new \wpucontactforms\WPUBaseCron(array(
+                'pluginname' => 'WPU Contact forms',
+                'cronhook' => 'wpucontactforms__cron_hook',
+                'croninterval' => 3600
+            ));
+            add_action('wpucontactforms__cron_hook', array(&$this,
+                'wpucontactforms__callback_cron'
+            ), 10);
+
         }
 
         $this->set_user_options();
@@ -227,6 +257,7 @@ class wpucontactforms {
         }
 
         $wpucontactforms_forms[$options['id']]['fields'] = $this->contact_fields;
+
     }
 
     public function set_user_options() {
@@ -1688,6 +1719,33 @@ class wpucontactforms {
     }
 
     /* ----------------------------------------------------------
+      Cron autodelete
+    ---------------------------------------------------------- */
+
+    function wpucontactforms__callback_cron() {
+        if (!is_array($this->user_options)) {
+            $this->user_options = array();
+        }
+        if (isset($this->user_options['autodelete_enabled'], $this->user_options['autodelete_duration']) && $this->user_options['autodelete_enabled'] == '1' && ctype_digit($this->user_options['autodelete_duration'])) {
+            $nb_months = $this->user_options['autodelete_duration'];
+            $args = array(
+                'posts_per_page' => apply_filters('wpucontactforms__autodelete__posts_per_batch', 30),
+                'post_type' => wpucontactforms_savepost__get_post_type(),
+                'orderby' => 'date',
+                'order' => 'ASC',
+                'fields' => 'ids',
+                'date_query' => array(
+                    'before' => date('Y-m-d', strtotime('-' . $nb_months . ' months'))
+                )
+            );
+            $posts = get_posts($args);
+            foreach($posts as $p){
+                wp_trash_post($p);
+            }
+        }
+    }
+
+    /* ----------------------------------------------------------
       Utilities : Export
     ---------------------------------------------------------- */
 
@@ -2148,7 +2206,8 @@ function wpucontactforms_submit_contactform__sendmail($form) {
 -------------------------- */
 
 function wpucontactforms_savepost__pll_get_post_types($post_types, $hide) {
-    $post_types['contact_message'] = 'contact_message';
+    $pt = wpucontactforms_savepost__get_post_type();
+    $post_types[$pt] = $pt;
     return $post_types;
 }
 

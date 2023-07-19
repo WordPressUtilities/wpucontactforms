@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.6.0
+Version: 3.6.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.6.0';
+    private $plugin_version = '3.6.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -807,7 +807,10 @@ class wpucontactforms {
 
         $field_id_name = '';
         if ($field['type'] != 'radio' && $field['type'] != 'checkbox-list') {
-            $field_id_name .= ' id="' . $id_html . '" aria-labelledby="label-' . $id_html . '"';
+            $field_id_name .= ' id="' . $id_html . '"';
+            if ($field['type'] != 'checkbox') {
+                $field_id_name .= ' aria-labelledby="label-' . $id_html . '"';
+            }
         }
 
         if ($input_multiple || $is_multiple) {
@@ -1082,7 +1085,12 @@ class wpucontactforms {
             if (isset($field['error_choose'])) {
                 $error_choose = $field['error_choose'];
             }
-            $error_empty = apply_filters('wpucontactforms__error_empty_txt', __('This field should not be empty', 'wpucontactforms'));
+
+            $error_empty = __('This field should not be empty', 'wpucontactforms');
+            if ($field['type'] == 'checkbox') {
+                $error_empty = __('This box should be checked', 'wpucontactforms');
+            }
+            $error_empty = apply_filters('wpucontactforms__error_empty_txt', $error_empty);
             if (isset($field['error_empty'])) {
                 $error_empty = $field['error_empty'];
             }
@@ -1739,7 +1747,7 @@ class wpucontactforms {
                 )
             );
             $posts = get_posts($args);
-            foreach($posts as $p){
+            foreach ($posts as $p) {
                 wp_trash_post($p);
             }
         }

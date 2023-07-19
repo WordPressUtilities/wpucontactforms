@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2023-07-10 13:55+0200\n"
+"POT-Creation-Date: 2023-07-18 21:51-0400\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -26,12 +26,12 @@ msgid "Settings"
 msgstr "Configuración"
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:164
-#: .././wpucontactforms.php:401 .././wpucontactforms.php:1315
+#: .././wpucontactforms.php:401 .././wpucontactforms.php:1323
 msgid "No"
 msgstr "No"
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:164
-#: .././wpucontactforms.php:402 .././wpucontactforms.php:1315
+#: .././wpucontactforms.php:402 .././wpucontactforms.php:1323
 msgid "Yes"
 msgstr "Sí"
 
@@ -108,7 +108,7 @@ msgid "Private key"
 msgstr "Clave secreta"
 
 #: .././wpucontactforms.php:182 .././wpucontactforms.php:183
-#: .././wpucontactforms.php:1623
+#: .././wpucontactforms.php:1631
 msgid "Export"
 msgstr "Exportar"
 
@@ -136,7 +136,7 @@ msgstr "Nombre"
 msgid "Email"
 msgstr "Email"
 
-#: .././wpucontactforms.php:478 .././wpucontactforms.php:2252
+#: .././wpucontactforms.php:478 .././wpucontactforms.php:2260
 msgid "Message"
 msgstr "Mensaje"
 
@@ -144,157 +144,161 @@ msgstr "Mensaje"
 msgid "If you are human, leave this empty"
 msgstr "Si eres humano, deja este vacío"
 
-#: .././wpucontactforms.php:854
+#: .././wpucontactforms.php:857
 msgid "Select a value"
 msgstr "Seleccione un tema"
 
-#: .././wpucontactforms.php:1065
+#: .././wpucontactforms.php:1068
 msgid "This field is invalid"
 msgstr "Este campo no es válido"
 
-#: .././wpucontactforms.php:1067
+#: .././wpucontactforms.php:1070
 msgid "This is not a valid e-mail address"
 msgstr "Esta no es una dirección de correo electrónico válida"
 
-#: .././wpucontactforms.php:1070
+#: .././wpucontactforms.php:1073
 msgid "This is not a valid phone number"
 msgstr "Este no es un número de teléfono válido"
 
-#: .././wpucontactforms.php:1077
+#: .././wpucontactforms.php:1080
 #, php-format
 msgid "Did you mean: %s ?"
 msgstr "¿Querías decir: %s?"
 
-#: .././wpucontactforms.php:1081
+#: .././wpucontactforms.php:1084
 msgid "A value should be selected"
 msgstr "Se debe seleccionar un valor"
 
-#: .././wpucontactforms.php:1085
+#: .././wpucontactforms.php:1089
 msgid "This field should not be empty"
 msgstr "Este campo no debe estar vacío"
 
-#: .././wpucontactforms.php:1089
+#: .././wpucontactforms.php:1091
+msgid "This box should be checked"
+msgstr "Esta casilla debe estar marcada"
+
+#: .././wpucontactforms.php:1097
 #, php-format
 msgid "This file is too heavy (%sMb)"
 msgstr "Este archivo es demasiado pesado (%sMb)"
 
-#: .././wpucontactforms.php:1167 .././wpucontactforms.php:1186
+#: .././wpucontactforms.php:1175 .././wpucontactforms.php:1194
 msgid "The captcha is invalid"
 msgstr "El captcha no es válido"
 
-#: .././wpucontactforms.php:1225 .././wpucontactforms.php:1232
+#: .././wpucontactforms.php:1233 .././wpucontactforms.php:1240
 msgid "Invalid source"
 msgstr "Origen no válido"
 
-#: .././wpucontactforms.php:1245
+#: .././wpucontactforms.php:1253
 msgid "Error:"
 msgstr "Error:"
 
-#: .././wpucontactforms.php:1304
+#: .././wpucontactforms.php:1312
 #, php-format
 msgid "The field \"%s\" is not correct"
 msgstr "El campo \" %s\" no es correcto"
 
-#: .././wpucontactforms.php:1330
+#: .././wpucontactforms.php:1338
 #, php-format
 msgid "The field \"%s\" is required"
 msgstr "El campo \"%s\" es obligatorio"
 
-#: .././wpucontactforms.php:1561
+#: .././wpucontactforms.php:1569
 msgid "Select an order"
 msgstr "Seleccionar un pedido"
 
-#: .././wpucontactforms.php:1564
+#: .././wpucontactforms.php:1572
 #, php-format
 msgid "# %s"
 msgstr "# %s"
 
-#: .././wpucontactforms.php:1568
+#: .././wpucontactforms.php:1576
 msgid "No order available"
 msgstr "No hay pedido disponible"
 
-#: .././wpucontactforms.php:1588
+#: .././wpucontactforms.php:1596
 msgid "Choose a form:"
 msgstr "Elija un formulario:"
 
-#: .././wpucontactforms.php:1590
+#: .././wpucontactforms.php:1598
 msgid "All forms"
 msgstr "Todos los formularios"
 
-#: .././wpucontactforms.php:1601
+#: .././wpucontactforms.php:1609
 msgid "No messages to export yet."
 msgstr "Todavía no hay mensajes para exportar."
 
-#: .././wpucontactforms.php:1606
+#: .././wpucontactforms.php:1614
 msgid "From"
 msgstr "Desde"
 
-#: .././wpucontactforms.php:1611
+#: .././wpucontactforms.php:1619
 msgid "To"
 msgstr "Hasta"
 
-#: .././wpucontactforms.php:1616
+#: .././wpucontactforms.php:1624
 msgid "Format"
 msgstr "Formato"
 
-#: .././wpucontactforms.php:1843
+#: .././wpucontactforms.php:1851
 msgid "Attachments"
 msgstr "Archivos adjuntos"
 
-#: .././wpucontactforms.php:1872
+#: .././wpucontactforms.php:1880
 msgid "No attachments available"
 msgstr "No hay archivos adjuntos disponibles"
 
-#: .././wpucontactforms.php:1940
+#: .././wpucontactforms.php:1948
 msgid "URL:"
 msgstr "URL:"
 
-#: .././wpucontactforms.php:1943
+#: .././wpucontactforms.php:1951
 msgid "Page title:"
 msgstr "Título de la página:"
 
-#: .././wpucontactforms.php:1946
+#: .././wpucontactforms.php:1954
 msgid "IP:"
 msgstr "IP:"
 
-#: .././wpucontactforms.php:1949
+#: .././wpucontactforms.php:1957
 msgid "Hashed IP:"
 msgstr "IP hash:"
 
-#: .././wpucontactforms.php:1999
+#: .././wpucontactforms.php:2007
 msgid "See attached file(s)"
 msgstr "Ver archivo adjunto (s)"
 
-#: .././wpucontactforms.php:2000
+#: .././wpucontactforms.php:2008
 msgid "Or click here"
 msgstr "O haga clic aquí"
 
-#: .././wpucontactforms.php:2050
+#: .././wpucontactforms.php:2058
 #, php-format
 msgid "No more than %s links, please"
 msgstr "No más de %s links, por favor"
 
-#: .././wpucontactforms.php:2090 .././wpucontactforms.php:2309
+#: .././wpucontactforms.php:2098 .././wpucontactforms.php:2317
 msgid "New message"
 msgstr "Nuevo mensaje"
 
-#: .././wpucontactforms.php:2092 .././wpucontactforms.php:2312
+#: .././wpucontactforms.php:2100 .././wpucontactforms.php:2320
 #, php-format
 msgid "New message from %s"
 msgstr "Nuevo mensaje de %s"
 
-#: .././wpucontactforms.php:2161
+#: .././wpucontactforms.php:2169
 msgid "Message from your contact form"
 msgstr "Mensaje de su formulario de contacto"
 
-#: .././wpucontactforms.php:2236
+#: .././wpucontactforms.php:2244
 msgid "Forms"
 msgstr "Formularios"
 
-#: .././wpucontactforms.php:2251
+#: .././wpucontactforms.php:2259
 msgid "Messages"
 msgstr "Mensajes"
 
-#: .././wpucontactforms.php:2398
+#: .././wpucontactforms.php:2406
 msgid "Re-send this email"
 msgstr "Vuelva a enviar este correo electrónico"

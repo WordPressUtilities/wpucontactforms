@@ -4,13 +4,13 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.6.1
+Version: 3.7.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpucontactforms
 Domain Path: /lang
-Requires at least: 6.0
+Requires at least: 6.2
 Requires PHP: 8.0
 License: MIT License
 License URI: https://opensource.org/licenses/MIT
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.6.1';
+    private $plugin_version = '3.7.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -205,24 +205,24 @@ class wpucontactforms {
             add_action('add_meta_boxes', array(&$this, 'register_meta_boxes'));
 
             /* Update */
-            include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
+            require_once dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
             $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
                 'WordPressUtilities',
                 'wpucontactforms',
                 $this->plugin_version);
 
             if (is_admin()) {
-                include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
+                require_once dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
                 new \wpucontactforms\WPUBaseSettings($this->settings_details, $this->settings);
             }
 
             // Init admin page
-            include dirname(__FILE__) . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
+            require_once dirname(__FILE__) . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
             $this->adminpages = new \wpucontactforms\WPUBaseAdminPage();
             $this->adminpages->init($pages_options, $admin_pages);
 
             /* Cron for deletion */
-            include dirname(__FILE__) . '/inc/WPUBaseCron/WPUBaseCron.php';
+            require_once dirname(__FILE__) . '/inc/WPUBaseCron/WPUBaseCron.php';
             $this->basecron = new \wpucontactforms\WPUBaseCron(array(
                 'pluginname' => 'WPU Contact forms',
                 'cronhook' => 'wpucontactforms__cron_hook',
@@ -1996,9 +1996,11 @@ function wpucontactform__set_html_field_content($field, $wrap_html = true) {
     if ($field['type'] == 'file' && is_array($field['value'])) {
         $field_content_parts = array();
         foreach ($field['value'] as $field_value) {
-            $field_value_uns = unserialize($field_value);
-            if ($field_value_uns && is_array($field_value_uns) && count($field_value_uns) == 1) {
-                $field_value = implode($field_value_uns);
+            if (!is_numeric($field_value)) {
+                $field_value_uns = unserialize($field_value);
+                if ($field_value_uns && is_array($field_value_uns) && count($field_value_uns) == 1) {
+                    $field_value = implode($field_value_uns);
+                }
             }
             if ($wrap_html) {
                 if (wp_attachment_is_image($field_value) && $wpucontactforms__upload_protection_disabled) {

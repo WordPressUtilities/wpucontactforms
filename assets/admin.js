@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var $from = jQuery("#wpucontactforms_export_from"),
         $to = jQuery("#wpucontactforms_export_to"),
-        _dateFormat = 'yy-mm-dd';;
+        _dateFormat = 'yy-mm-dd';
 
     $from.datepicker({
             dateFormat: _dateFormat,

@@ -1,5 +1,6 @@
 /*jslint browser:true*/
-/* globals jQuery,ajaxurl,ga,grecaptcha,wpucontactforms_obj */
+/* globals ga,grecaptcha,wpucontactforms_obj */
+/* exported wpucontactforms_recaptcha_callback_expired,wpucontactforms_recaptcha_callback,wpucontactforms_callback_recaptcha_turnstile,wpucontactforms_callback_recaptcha_hcaptcha */
 
 jQuery(document).ready(function() {
     'use strict';
@@ -65,7 +66,7 @@ function wpucontactforms_callback_recaptcha_turnstile() {
 
 function wpucontactforms_refresh_recaptcha_turnstile() {
     'use strict';
-    Array.prototype.forEach.call(document.querySelectorAll('.box-recaptcha-turnstile[data-sitekey]'), function(el, i) {
+    Array.prototype.forEach.call(document.querySelectorAll('.box-recaptcha-turnstile[data-sitekey]'), function(el) {
         if (el.classList.contains('cf-turnstile') || el.classList.contains('has-turnstile-enabled')) {
             return;
         }
@@ -95,7 +96,7 @@ function wpucontactforms_callback_recaptcha_hcaptcha() {
 
 function wpucontactforms_refresh_recaptcha_hcaptcha() {
     'use strict';
-    Array.prototype.forEach.call(document.querySelectorAll('.box-recaptcha-hcaptcha[data-sitekey]'), function(el, i) {
+    Array.prototype.forEach.call(document.querySelectorAll('.box-recaptcha-hcaptcha[data-sitekey]'), function(el) {
         if (el.classList.contains('has-hcaptcha-enabled')) {
             return;
         }
@@ -746,7 +747,7 @@ function set_wpucontactforms_form($wrapper) {
 
     /* Field validation */
     if (wpucontactforms_obj.enable_custom_validation == '1') {
-        $wrapper.on('change blur', '[name]', function() {
+        $wrapper.on('change blur', '[data-boxtype] [name]', function() {
             check_field_error(jQuery(this).closest('[data-boxtype]'));
         });
     }

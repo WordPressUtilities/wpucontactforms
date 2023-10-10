@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.8.0
+Version: 3.8.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.8.0';
+    private $plugin_version = '3.8.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -877,7 +877,7 @@ class wpucontactforms {
 
         // Extra attributes
         if (isset($field['attributes_extra']) && !empty($field['attributes_extra'])) {
-            $field_id_name .= $field['attributes_extra'];
+            $field_id_name .= ' ' . trim($field['attributes_extra']);
         }
 
         // Number

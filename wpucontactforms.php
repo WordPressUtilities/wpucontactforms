@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.8.1
+Version: 3.9.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.8.1';
+    private $plugin_version = '3.9.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -749,11 +749,21 @@ class wpucontactforms {
         }
         $page_title = htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8');
 
+        $raw_form_data = array(
+            'post_id' => get_the_ID()
+        );
+        if (function_exists('get_row_index')) {
+            $raw_form_data['acf_row_id'] = get_row_index();
+        }
+        $form_data = json_encode($raw_form_data);
+
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
         $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '', $form_id);
         $hidden_fields = apply_filters('wpucontactforms_hidden_fields', array(
             'form_id' => $form_id,
+            'wpucontactforms_form_data' => $form_data,
+            'wpucontactforms_form_data_hash' => md5($form_data . DB_PASSWORD),
             'page_url' => base64_encode($page_url),
             'page_title' => base64_encode($page_title),
             'control_stripslashes' => '&quot;',
@@ -2455,6 +2465,29 @@ function wpucontactforms_get_select_data_from_opt($opt_value = '') {
         }
     }
     return $data;
+}
+
+/* Get form data
+-------------------------- */
+
+function wpucontactforms_get_form_data($post) {
+    $data_flexible_id = apply_filters('wpucontactforms_get_form_data__flexible_id', 'content-blocks');
+    if (!isset($post['wpucontactforms_form_data'], $post['wpucontactforms_form_data_hash'])) {
+        return false;
+    }
+    if ($post['wpucontactforms_form_data_hash'] != md5($post['wpucontactforms_form_data'] . DB_PASSWORD)) {
+        return false;
+    }
+    $data = json_decode($post['wpucontactforms_form_data'], true);
+    if (!is_array($data) || !isset($data['post_id'], $data['acf_row_id'])) {
+        return false;
+    }
+    $data_raw = get_fields($data['post_id']);
+    $row_id = intval($data['acf_row_id'], 10) - 1;
+    if (!$data_raw || !is_array($data_raw) || !isset($data_raw[$data_flexible_id], $data_raw[$data_flexible_id][$row_id])) {
+        return false;
+    }
+    return $data_raw[$data_flexible_id][$row_id];
 }
 
 /* WP-CLI action

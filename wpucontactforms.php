@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.9.0
+Version: 3.10.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.9.0';
+    private $plugin_version = '3.10.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -565,6 +565,11 @@ class wpucontactforms {
             $args = array();
         }
 
+        /* There is no previous posted data, so we try to retrieve it from the global page info */
+        if (!isset($args['custom__form_data'])) {
+            $args['custom__form_data'] = wpucontactforms_get_safe_form_data($this->page_content_get_form_data());
+        }
+
         $form_autofill = false;
         $content_form = '';
         $content_fields = array();
@@ -749,13 +754,7 @@ class wpucontactforms {
         }
         $page_title = htmlspecialchars($page_title, ENT_QUOTES, 'UTF-8');
 
-        $raw_form_data = array(
-            'post_id' => get_the_ID()
-        );
-        if (function_exists('get_row_index')) {
-            $raw_form_data['acf_row_id'] = get_row_index();
-        }
-        $form_data = json_encode($raw_form_data);
+        $form_data = json_encode($this->page_content_get_form_data());
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
@@ -789,6 +788,16 @@ class wpucontactforms {
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 
         return $content_form;
+    }
+
+    public function page_content_get_form_data() {
+        $raw_form_data = array(
+            'post_id' => get_the_ID()
+        );
+        if (function_exists('get_row_index')) {
+            $raw_form_data['acf_row_id'] = get_row_index();
+        }
+        return $raw_form_data;
     }
 
     public function field_content($field) {
@@ -1541,6 +1550,8 @@ class wpucontactforms {
                 }
             }
         }
+        /* Load form data from the posted values */
+        $args['custom__form_data'] = wpucontactforms_get_form_data($_POST);
         $this->post_contact();
         $this->page_content(true, $this->options['id'], $args);
         die;
@@ -2471,19 +2482,27 @@ function wpucontactforms_get_select_data_from_opt($opt_value = '') {
 -------------------------- */
 
 function wpucontactforms_get_form_data($post) {
-    $data_flexible_id = apply_filters('wpucontactforms_get_form_data__flexible_id', 'content-blocks');
     if (!isset($post['wpucontactforms_form_data'], $post['wpucontactforms_form_data_hash'])) {
         return false;
+    }
+    /* Test if json fails because of a misplaced stripslashes */
+    if (!json_decode($post['wpucontactforms_form_data'])) {
+        $post['wpucontactforms_form_data'] = json_encode(json_decode(stripslashes($post['wpucontactforms_form_data'])));
     }
     if ($post['wpucontactforms_form_data_hash'] != md5($post['wpucontactforms_form_data'] . DB_PASSWORD)) {
         return false;
     }
     $data = json_decode($post['wpucontactforms_form_data'], true);
-    if (!is_array($data) || !isset($data['post_id'], $data['acf_row_id'])) {
+    return wpucontactforms_get_safe_form_data($data);
+}
+
+function wpucontactforms_get_safe_form_data($post_array_checked) {
+    if (!is_array($post_array_checked) || !isset($post_array_checked['post_id'], $post_array_checked['acf_row_id'])) {
         return false;
     }
-    $data_raw = get_fields($data['post_id']);
-    $row_id = intval($data['acf_row_id'], 10) - 1;
+    $data_flexible_id = apply_filters('wpucontactforms_get_form_data__flexible_id', 'content-blocks');
+    $data_raw = get_fields($post_array_checked['post_id']);
+    $row_id = intval($post_array_checked['acf_row_id'], 10) - 1;
     if (!$data_raw || !is_array($data_raw) || !isset($data_raw[$data_flexible_id], $data_raw[$data_flexible_id][$row_id])) {
         return false;
     }

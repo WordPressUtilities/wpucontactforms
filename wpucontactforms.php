@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.10.0
+Version: 3.10.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.10.0';
+    private $plugin_version = '3.10.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1016,7 +1016,7 @@ class wpucontactforms {
             $content .= '<input type="' . $field['type'] . '" ' . $field_id_name . ' ' . $field_val . ' />';
             break;
         case 'datepicker':
-            $datepicker_args = isset($field['datepicker_args']) ? $field['datepicker_args'] : $datepicker_args;
+            $datepicker_args = isset($field['datepicker_args']) ? $field['datepicker_args'] : array();
             if (is_array($datepicker_args)) {
                 $datepicker_args = json_encode($datepicker_args);
             }

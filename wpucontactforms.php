@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.10.1
+Version: 3.10.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.10.1';
+    private $plugin_version = '3.10.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1667,7 +1667,11 @@ class wpucontactforms {
         $data = array();
 
         $args = array(
+            'cache_results' => false,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
             'posts_per_page' => -1,
+            'fields' => 'ids',
             'post_type' => wpucontactforms_savepost__get_post_type()
         );
 
@@ -1705,19 +1709,25 @@ class wpucontactforms {
         }
 
         /* EXPORT */
+        global $wpdb;
+        @ini_set('max_execution_time', 0);
         $posts = get_posts($args);
-        foreach ($posts as $p) {
+        foreach ($posts as $p_id) {
+            $p = $wpdb->get_row($wpdb->prepare("SELECT post_title,post_date FROM $wpdb->posts WHERE ID=%d", $p_id));
             $item = array(
                 'name' => $p->post_title,
                 'date' => $p->post_date
             );
-            $meta = get_post_meta($p->ID, '', true);
+            $q = $wpdb->prepare("SELECT meta_key,meta_value FROM $wpdb->postmeta WHERE post_id = %d", $p_id) . " AND meta_key NOT LIKE '\_%'";
+            $meta = $wpdb->get_results($q, ARRAY_A);
             foreach ($meta as $meta_k => $meta_item) {
+                $meta_k = $meta_item['meta_key'];
                 /* Remove private metas */
                 if ($meta_k[0] == '_') {
                     continue;
                 }
-                $meta_value = implode($meta_item);
+                $meta_value = $meta_item['meta_value'];
+                $meta_item = array($meta_item['meta_value']);
                 if (is_array($wpucontactforms_forms)) {
                     foreach ($wpucontactforms_forms as $form_id => $form_fields) {
                         if (isset($form_fields['fields'][$meta_k])) {

@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.10.2
+Version: 3.11.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.10.2';
+    private $plugin_version = '3.11.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1653,12 +1653,16 @@ class wpucontactforms {
     }
 
     function page_action__export() {
+        $this->trigger_export($_POST);
+    }
+
+    function trigger_export($posted_values) {
 
         $file_name = 'all-forms';
 
         $term = '';
-        if (isset($_POST['term']) && term_exists($_POST['term'], wpucontactforms_savepost__get_taxonomy())) {
-            $term = $_POST['term'];
+        if (isset($posted_values['term']) && term_exists($posted_values['term'], wpucontactforms_savepost__get_taxonomy())) {
+            $term = $posted_values['term'];
             $file_name = $term;
         }
 
@@ -1691,7 +1695,7 @@ class wpucontactforms {
             'wpucontactforms_export_to' => 'before'
         );
         foreach ($date_fields as $post_id => $date_type) {
-            if (!isset($_POST[$post_id]) || !$this->is_date_valid($_POST[$post_id])) {
+            if (!isset($posted_values[$post_id]) || !$this->is_date_valid($posted_values[$post_id])) {
                 continue;
             }
             if (!isset($args['date_query'])) {
@@ -1699,8 +1703,8 @@ class wpucontactforms {
                     'inclusive' => true
                 );
             }
-            $date_parts = explode('-', $_POST[$post_id]);
-            $file_name .= '-' . $date_type . str_replace('-', '', $_POST[$post_id]);
+            $date_parts = explode('-', $posted_values[$post_id]);
+            $file_name .= '-' . $date_type . str_replace('-', '', $posted_values[$post_id]);
             $args['date_query'][$date_type] = array(
                 'year' => intval($date_parts[0], 10),
                 'month' => intval($date_parts[1], 10),
@@ -1744,8 +1748,8 @@ class wpucontactforms {
         $file_name = 'export-' . $file_name . '-' . date_i18n('Ymd-His');
 
         $format = 'csv';
-        if (isset($_POST['wpucontactforms_export_format'])) {
-            $format = $_POST['wpucontactforms_export_format'];
+        if (isset($posted_values['wpucontactforms_export_format'])) {
+            $format = $posted_values['wpucontactforms_export_format'];
         }
         switch ($format) {
         case 'json':
@@ -2391,6 +2395,7 @@ function wpucontactforms_submit_contactform__savepost($form) {
     if ($form->form_submitted_hashed_ip) {
         update_post_meta($post_id, 'form_submitted_hashed_ip', $form->form_submitted_hashed_ip);
     }
+    update_post_meta($post_id, 'contact_locale', get_locale());
 
     // Add term
     $term = wp_insert_term(
@@ -2523,3 +2528,4 @@ function wpucontactforms_get_safe_form_data($post_array_checked) {
 -------------------------- */
 
 require_once dirname(__FILE__) . '/inc/wp-cli-migrate.php';
+require_once dirname(__FILE__) . '/inc/wp-cli-export.php';

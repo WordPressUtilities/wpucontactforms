@@ -4,7 +4,7 @@
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.11.0
+Version: 3.11.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +23,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.11.0';
+    private $plugin_version = '3.11.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -388,6 +388,7 @@ class wpucontactforms {
             'html_before_input' => '',
             'input_inside_label' => true,
             'placeholder' => '',
+            'meta_value_saved' => 'displayed',
             'preload_value' => 0,
             'min' => -99999,
             'max' => 99999,
@@ -2348,6 +2349,10 @@ function wpucontactforms_submit_contactform__savepost($form) {
         $post_metas[$id] = $field['value'];
         if (apply_filters('wpucontactforms__save_post_meta_html', false) && !in_array($field['type'], array('file'))) {
             $post_metas[$id] = wpucontactform__set_html_field_content($field, false);
+        }
+
+        if (isset($field['posted_value']) && $field['meta_value_saved'] == 'posted') {
+            $post_metas[$id] = $field['posted_value'];
         }
     }
 

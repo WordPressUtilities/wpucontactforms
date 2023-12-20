@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.17.6
+Version: 0.18.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -75,13 +75,7 @@ class WPUBaseSettings {
     }
 
     public function get_settings() {
-        $opt = get_option($this->settings_details['option_id']);
-        if (!is_array($opt)) {
-            /* Set default values */
-            $opt = $this->get_setting_values();
-            update_option($this->settings_details['option_id'], $opt);
-        }
-        return $opt;
+        return $this->get_setting_values();
     }
 
     public function get_setting($id, $lang = false) {
@@ -223,6 +217,7 @@ class WPUBaseSettings {
                 'id' => $id,
                 'lang_id' => $lang_id,
                 'label_for' => $id,
+                'translated_from' => isset($this->settings[$id]['translated_from']) ? $this->settings[$id]['translated_from'] : false,
                 'required' => $this->settings[$id]['required'],
                 'post_type' => $this->settings[$id]['post_type'],
                 'datas' => $this->settings[$id]['datas'],
@@ -328,6 +323,9 @@ class WPUBaseSettings {
         }
         $id .= $attr;
         $value = isset($options[$args['id']]) ? $options[$args['id']] : $args['default_value'];
+        if(!isset($options[$args['id']]) && isset($args['translated_from']) && $args['translated_from'] && isset($options[$args['translated_from']]) && $options[$args['translated_from']]){
+            $value = $options[$args['translated_from']];
+        }
 
         switch ($args['type']) {
         case 'checkbox':

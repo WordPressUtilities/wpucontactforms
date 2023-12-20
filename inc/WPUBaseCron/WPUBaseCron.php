@@ -64,7 +64,6 @@ class WPUBaseCron {
         $croninterval = intval(get_option($this->cronoption), 10);
         $schedule = wp_next_scheduled($this->cronhook);
 
-            do_action($this->cronhook);
         // If no schedule cron or new interval or incorrect interval
         if (!$schedule || $croninterval != $this->croninterval) {
             $this->install();

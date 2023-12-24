@@ -1,6 +1,6 @@
 <?php
 
-/* WPUContactForms v 3.1.0 */
+/* WPUContactForms v 3.12.1 */
 
 /* ----------------------------------------------------------
   Check file
@@ -49,6 +49,11 @@ wp();
 ---------------------------------------------------------- */
 
 if (!is_user_logged_in()) {
+    status_header(404);
+    return;
+}
+
+if(!current_user_can('upload_files')){
     status_header(404);
     return;
 }

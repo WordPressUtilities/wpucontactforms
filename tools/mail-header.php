@@ -1,4 +1,6 @@
-<!DOCTYPE HTML>
+<?php
+defined('ABSPATH') || die;
+?><!DOCTYPE HTML>
 <html lang="fr-FR">
 <head>
 <style type="text/css">

@@ -1,4 +1,5 @@
 <?php
+defined('ABSPATH') || die;
 
 if (defined('WP_CLI') && WP_CLI) {
     define('WPUCONTACTFORMS_EXPORT_STR', 'Export messages from WPU Contact forms.');

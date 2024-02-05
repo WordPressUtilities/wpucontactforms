@@ -1,10 +1,11 @@
 <?php
+defined('ABSPATH') || die;
 
 /*
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.12.2
+Version: 3.13.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -23,7 +24,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.12.2';
+    private $plugin_version = '3.13.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -205,24 +206,24 @@ class wpucontactforms {
             add_action('add_meta_boxes', array(&$this, 'register_meta_boxes'));
 
             /* Update */
-            require_once dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
+            require_once __DIR__ . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
             $this->settings_update = new \wpucontactforms\WPUBaseUpdate(
                 'WordPressUtilities',
                 'wpucontactforms',
                 $this->plugin_version);
 
             if (is_admin()) {
-                require_once dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
+                require_once __DIR__ . '/inc/WPUBaseSettings/WPUBaseSettings.php';
                 new \wpucontactforms\WPUBaseSettings($this->settings_details, $this->settings);
             }
 
             // Init admin page
-            require_once dirname(__FILE__) . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
+            require_once __DIR__ . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
             $this->adminpages = new \wpucontactforms\WPUBaseAdminPage();
             $this->adminpages->init($pages_options, $admin_pages);
 
             /* Cron for deletion */
-            require_once dirname(__FILE__) . '/inc/WPUBaseCron/WPUBaseCron.php';
+            require_once __DIR__ . '/inc/WPUBaseCron/WPUBaseCron.php';
             $this->basecron = new \wpucontactforms\WPUBaseCron(array(
                 'pluginname' => 'WPU Contact forms',
                 'cronhook' => 'wpucontactforms__cron_hook',
@@ -1370,7 +1371,7 @@ class wpucontactforms {
         $default_folder_name = 'wpucontactforms';
         $folder_name = apply_filters('wpucontactforms__uploads_dir', $default_folder_name);
 
-        $plugin_dir = dirname(__FILE__) . '/tools';
+        $plugin_dir = __DIR__ . '/tools';
 
         $root_dir = $dirs['basedir'] . '/' . $folder_name;
 
@@ -2184,10 +2185,10 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
         $headers[] = 'Content-Type: text/html';
 
         ob_start();
-        include dirname(__FILE__) . '/tools/mail-header.php';
+        include __DIR__ . '/tools/mail-header.php';
         $mail_content_header = ob_get_clean();
         ob_start();
-        include dirname(__FILE__) . '/tools/mail-footer.php';
+        include __DIR__ . '/tools/mail-footer.php';
         $mail_content_footer = ob_get_clean();
 
         wp_mail($target_email, $sendmail_subject, $mail_content_header . $mail_content . $mail_content_footer, $headers, $more['attachments']);
@@ -2532,5 +2533,5 @@ function wpucontactforms_get_safe_form_data($post_array_checked) {
 /* WP-CLI action
 -------------------------- */
 
-require_once dirname(__FILE__) . '/inc/wp-cli-migrate.php';
-require_once dirname(__FILE__) . '/inc/wp-cli-export.php';
+require_once __DIR__ . '/inc/wp-cli-migrate.php';
+require_once __DIR__ . '/inc/wp-cli-export.php';

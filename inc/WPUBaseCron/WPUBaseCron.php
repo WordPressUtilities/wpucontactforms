@@ -4,12 +4,14 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Cron
 Description: A class to handle crons
-Version: 0.2.9
+Version: 0.2.10
 Author: Darklg
 Author URI: https://darklg.me/
 License: MIT License
 License URI: https://opensource.org/licenses/MIT
 */
+
+defined('ABSPATH') || die;
 
 class WPUBaseCron {
     public $ns = '';

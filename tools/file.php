@@ -1,4 +1,5 @@
 <?php
+defined('ABSPATH') || die;
 
 /* WPUContactForms v 3.12.1 */
 

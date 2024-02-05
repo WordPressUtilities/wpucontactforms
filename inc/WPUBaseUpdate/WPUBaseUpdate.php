@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Update
 Description: A class to handle plugin update from github
-Version: 0.4.4
+Version: 0.4.5
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -12,6 +12,8 @@ License: MIT License
 License URI: https://opensource.org/licenses/MIT
 Thanks: https://gist.github.com/danielbachhuber/7684646
 */
+
+defined('ABSPATH') || die;
 
 class WPUBaseUpdate {
 

@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.13.0
+Version: 3.14.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -24,7 +24,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.13.0';
+    private $plugin_version = '3.14.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -105,6 +105,9 @@ class wpucontactforms {
         add_action('wp_ajax_nopriv_wpucontactforms_autofill', array(&$this,
             'ajax_action_autofill'
         ));
+        add_action('wpucontactforms_submit_contactform', array(&$this,
+            'wpucontactforms_submit_contactform__webhook'
+        ));
 
         add_filter('ajax_query_attachments_args', array(&$this,
             'ajax_query_attachments_args'
@@ -121,6 +124,9 @@ class wpucontactforms {
             'sections' => array(
                 'gdpr' => array(
                     'name' => __('GDPR', 'wpucontactforms')
+                ),
+                'webhook' => array(
+                    'name' => __('Webhook', 'wpucontactforms')
                 ),
                 'content' => array(
                     'name' => __('Content Settings', 'wpucontactforms')
@@ -143,6 +149,11 @@ class wpucontactforms {
                 'type' => 'number',
                 'default_value' => 36,
                 'section' => 'gdpr'
+            ),
+            'webhook_url' => array(
+                'label' => __('Webhook URL', 'wpucontactforms'),
+                'type' => 'url',
+                'section' => 'webhook'
             ),
             'excluded_words' => array(
                 'label' => __('Excluded Words', 'wpucontactforms'),
@@ -1971,6 +1982,27 @@ class wpucontactforms {
             return inet_ntop(substr($ip, 0, strlen($ip) / 2) . str_repeat(chr(0), strlen($ip) / 2));
         }
         return '0.0.0.0';
+    }
+
+    function wpucontactforms_submit_contactform__webhook() {
+        if (!isset($this->user_options['webhook_url']) || !filter_var($this->user_options['webhook_url'], FILTER_VALIDATE_URL)) {
+            return;
+        }
+        $message = '';
+        foreach ($this->contact_fields as $id => $field) {
+            if ($field['type'] == 'html' || $field['type'] == 'file') {
+                continue;
+            }
+            $message .= html_entity_decode(wpucontactform__set_html_field_content($field)) . "\n";
+        }
+        $message .= wpucontactform__set_html_extra_content($this);
+        $message = str_replace('<br />', "\n", $message);
+        $message = strip_tags($message);
+        wp_remote_post($this->user_options['webhook_url'], array(
+            'body' => json_encode(array(
+                'text' => $message
+            ))
+        ));
     }
 }
 

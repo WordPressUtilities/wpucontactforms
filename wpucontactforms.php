@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.14.0
+Version: 3.14.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -24,7 +24,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.14.0';
+    private $plugin_version = '3.14.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1993,16 +1993,27 @@ class wpucontactforms {
             if ($field['type'] == 'html' || $field['type'] == 'file') {
                 continue;
             }
-            $message .= html_entity_decode(wpucontactform__set_html_field_content($field)) . "\n";
+            $message .= wpucontactform__set_html_field_content($field) . "\n";
         }
+
+        /* Get initial message */
         $message .= wpucontactform__set_html_extra_content($this);
+
+        /* Basic readability */
+        $message = html_entity_decode($message);
         $message = str_replace('<br />', "\n", $message);
+        $message = str_replace(array('<strong>', '</strong>'), '*', $message);
+        $message = str_replace(array('<em>', '</em>'), '_', $message);
         $message = strip_tags($message);
-        wp_remote_post($this->user_options['webhook_url'], array(
+
+        $payload = apply_filters('wpucontactforms_submit_contactform__webhook__payload', array(
             'body' => json_encode(array(
                 'text' => $message
             ))
-        ));
+        ), $this);
+
+        /* Send message */
+        wp_remote_post($this->user_options['webhook_url'], $payload);
     }
 }
 
@@ -2217,10 +2228,10 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
         $headers[] = 'Content-Type: text/html';
 
         ob_start();
-        include __DIR__ . '/tools/mail-header.php';
+        require_once __DIR__ . '/tools/mail-header.php';
         $mail_content_header = ob_get_clean();
         ob_start();
-        include __DIR__ . '/tools/mail-footer.php';
+        require_once __DIR__ . '/tools/mail-footer.php';
         $mail_content_footer = ob_get_clean();
 
         wp_mail($target_email, $sendmail_subject, $mail_content_header . $mail_content . $mail_content_footer, $headers, $more['attachments']);

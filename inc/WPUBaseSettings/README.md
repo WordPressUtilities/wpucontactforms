@@ -36,6 +36,7 @@ if (is_admin()) {
 ## Insert in your admin page content ( if needed )
 
 ```php
+settings_errors();
 echo '<form action="' . admin_url('options.php') . '" method="post">';
 settings_fields($this->settings_details['option_id']);
 do_settings_sections($this->options['plugin_id']);

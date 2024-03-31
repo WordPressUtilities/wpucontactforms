@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Admin page
 Description: A class to handle pages in WordPress
-Version: 1.5.2
+Version: 1.6.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -21,6 +21,11 @@ class WPUBaseAdminPage {
     private $options;
     private $prefix;
 
+    private $default_options = array(
+        'level' => 'manage_options',
+        'network_page' => false
+    );
+
     public function __construct() {}
 
     /* ----------------------------------------------------------
@@ -35,7 +40,14 @@ class WPUBaseAdminPage {
         $this->pages = $pages;
         $this->prefix = $this->options['id'] . '-';
         $this->pages = $this->set_pages($this->pages);
-        add_action('admin_menu', array(&$this,
+
+        /* Set default options */
+        if (!is_array($this->options)) {
+            $this->options = array();
+        }
+        $this->options = array_merge($this->default_options, $this->options);
+
+        add_action($this->options['network_page'] ? 'network_admin_menu' : 'admin_menu', array(&$this,
             'set_admin_menu'
         ));
         add_action('admin_bar_menu', array(&$this,

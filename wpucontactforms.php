@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.14.1
+Version: 3.15.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -24,7 +24,7 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
 
-    private $plugin_version = '3.14.1';
+    private $plugin_version = '3.15.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1644,6 +1644,23 @@ class wpucontactforms {
             return;
         }
 
+        $locales = $this->page_action__export__get_locales();
+        if ($locales && count($locales) > 1) {
+            echo '<p>';
+            echo '<label for="wpucontactforms_export_lang">' . __('Choose a language', 'wpucontactforms') . '</label><br />';
+            echo '<select id="wpucontactforms_export_lang" name="lang">';
+            echo '<option>' . __('All languages', 'wpucontactforms') . '</option>';
+            foreach ($locales as $locale) {
+                echo '<option value="' . esc_attr($locale->lang_name) . '">' . esc_html($locale->lang_name);
+                if ($locale->lang_count) {
+                    echo ' (' . $locale->lang_count . ')';
+                }
+                echo '</option>';
+            }
+            echo '</select>';
+            echo '</p>';
+        }
+
         echo '<p>';
         echo '<label for="wpucontactforms_export_from">' . __('From', 'wpucontactforms') . '</label><br />';
         echo '<input type="text" name="wpucontactforms_export_from" id="wpucontactforms_export_from" />';
@@ -1665,6 +1682,16 @@ class wpucontactforms {
         submit_button(__('Export', 'wpucontactforms'));
     }
 
+    function page_action__export__get_locales() {
+        global $wpdb;
+        $q = $wpdb->prepare("SELECT pm.meta_value as lang_name, COUNT(pm.meta_value) AS lang_count FROM $wpdb->posts AS p RIGHT JOIN $wpdb->postmeta as pm ON p.ID = pm.post_id WHERE p.post_type=%s AND pm.meta_key = 'contact_locale' GROUP BY pm.meta_value", wpucontactforms_savepost__get_post_type());
+        $locales = $wpdb->get_results($q);
+        if (!is_array($locales)) {
+            $locales = array();
+        }
+        return $locales;
+    }
+
     function page_action__export() {
         $this->trigger_export($_POST);
     }
@@ -1677,6 +1704,20 @@ class wpucontactforms {
         if (isset($posted_values['term']) && term_exists($posted_values['term'], wpucontactforms_savepost__get_taxonomy())) {
             $term = $posted_values['term'];
             $file_name = $term;
+        }
+
+        $lang = '';
+        if (isset($posted_values['lang']) && $posted_values['lang']) {
+            $locales = $this->page_action__export__get_locales();
+            $has_locale = false;
+            foreach ($locales as $locale) {
+                if ($locale->lang_name == $posted_values['lang']) {
+                    $lang = $posted_values['lang'];
+                    $file_name .= '-' . $lang;
+                    break;
+                }
+            }
+
         }
 
         global $wpucontactforms_forms;
@@ -1702,6 +1743,16 @@ class wpucontactforms {
                 )
             );
         }
+
+        /* Lang */
+        if ($lang) {
+            $args['meta_query'] = array(array(
+                'key' => 'contact_locale',
+                'value' => $lang,
+                'compare' => '='
+            ));
+        }
+
         /* DATE */
         $date_fields = array(
             'wpucontactforms_export_from' => 'after',
@@ -1750,7 +1801,7 @@ class wpucontactforms {
                         if (isset($form_fields['fields'][$meta_k])) {
                             $field_item = $form_fields['fields'][$meta_k];
                             $field_item['value'] = $meta_item;
-                            $meta_value = wpucontactform__set_html_field_content($field_item, false);
+                            $meta_value = html_entity_decode(wpucontactform__set_html_field_content($field_item, false));
                         }
                     }
                 }

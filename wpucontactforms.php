@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.15.0
+Version: 3.15.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -13,6 +13,7 @@ Text Domain: wpucontactforms
 Domain Path: /lang
 Requires at least: 6.2
 Requires PHP: 8.0
+Network: Optional
 License: MIT License
 License URI: https://opensource.org/licenses/MIT
 */
@@ -23,8 +24,9 @@ class wpucontactforms {
     public $form_submitted_page_title;
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
+    public $wpubasemessages;
 
-    private $plugin_version = '3.15.0';
+    private $plugin_version = '3.15.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -223,9 +225,17 @@ class wpucontactforms {
                 'wpucontactforms',
                 $this->plugin_version);
 
+
+            /* Settings */
             if (is_admin()) {
                 require_once __DIR__ . '/inc/WPUBaseSettings/WPUBaseSettings.php';
                 new \wpucontactforms\WPUBaseSettings($this->settings_details, $this->settings);
+            }
+
+            /* Messages */
+            if(is_admin()){
+                require_once __DIR__ . '/inc/WPUBaseMessages/WPUBaseMessages.php';
+                $this->wpubasemessages = new \wpucontactforms\WPUBaseMessages(__NAMESPACE__);
             }
 
             // Init admin page
@@ -1822,6 +1832,8 @@ class wpucontactforms {
         default:
             $this->export_array_to_csv($data, $file_name);
         }
+
+        $this->wpubasemessages->set_message('wpucontactforms_export_no_msg', __('No messages match this request.', 'wpucontactforms'), 'error');
 
     }
 

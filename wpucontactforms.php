@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.15.1
+Version: 3.16.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -25,8 +25,9 @@ class wpucontactforms {
     public $form_submitted_ip;
     public $form_submitted_hashed_ip;
     public $wpubasemessages;
+    public $basetoolbox;
 
-    private $plugin_version = '3.15.1';
+    private $plugin_version = '3.16.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -225,7 +226,6 @@ class wpucontactforms {
                 'wpucontactforms',
                 $this->plugin_version);
 
-
             /* Settings */
             if (is_admin()) {
                 require_once __DIR__ . '/inc/WPUBaseSettings/WPUBaseSettings.php';
@@ -233,7 +233,7 @@ class wpucontactforms {
             }
 
             /* Messages */
-            if(is_admin()){
+            if (is_admin()) {
                 require_once __DIR__ . '/inc/WPUBaseMessages/WPUBaseMessages.php';
                 $this->wpubasemessages = new \wpucontactforms\WPUBaseMessages(__NAMESPACE__);
             }
@@ -242,6 +242,12 @@ class wpucontactforms {
             require_once __DIR__ . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
             $this->adminpages = new \wpucontactforms\WPUBaseAdminPage();
             $this->adminpages->init($pages_options, $admin_pages);
+
+            # TOOLBOX
+            require_once __DIR__ . '/inc/WPUBaseToolbox/WPUBaseToolbox.php';
+            $this->basetoolbox = new \wpucontactforms\WPUBaseToolbox(array(
+                'need_form_js' => false
+            ));
 
             /* Cron for deletion */
             require_once __DIR__ . '/inc/WPUBaseCron/WPUBaseCron.php';
@@ -1285,8 +1291,8 @@ class wpucontactforms {
         $this->form_submitted_page_title = $page_title;
 
         // Extract anonymized user IP
-        $this->form_submitted_ip = $this->get_user_ip();
-        $this->form_submitted_hashed_ip = md5(site_url() . $this->get_user_ip());
+        $this->form_submitted_ip = $this->basetoolbox->get_user_ip();
+        $this->form_submitted_hashed_ip = md5(site_url() . $this->basetoolbox->get_user_ip());
 
         // Add custom error messages.
         $this->msg_errors = apply_filters('wpucontactforms_submit_contactform_msg_errors', $this->msg_errors, $this);
@@ -1630,25 +1636,32 @@ class wpucontactforms {
 
     /* Export */
     function page_content__export() {
+        $form_id = 'wpucontactforms_export';
+        $form_args = $this->basetoolbox->get_clean_form_args($form_id);
         $terms = get_terms(array(
             'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
             'hide_empty' => true
         ));
 
         if (!empty($terms) && !is_wp_error($terms)) {
-            echo '<p>';
-            echo '<label for="wpucontactforms_export_term">' . __('Choose a form:', 'wpucontactforms') . '</label><br />';
-            echo '<select id="wpucontactforms_export_term" name="term">';
-            echo '<option>' . __('All forms', 'wpucontactforms') . '</option>';
+            $terms_array = array(
+                '0' => __('All forms', 'wpucontactforms')
+            );
             foreach ($terms as $term) {
-                echo '<option value="' . esc_attr($term->slug) . '">' . esc_html($term->name);
+                $t_value = $term->name;
                 if ($term->count) {
-                    echo ' (' . $term->count . ')';
+                    $t_value .= ' (' . $term->count . ')';
                 }
-                echo '</option>';
+                $terms_array[$term->slug] = $t_value;
             }
-            echo '</select>';
-            echo '</p>';
+            $field_name = 'term';
+            $field = $this->basetoolbox->get_clean_field($field_name, array(
+                'label' => __('Choose a form:', 'wpucontactforms') . '<br />',
+                'type' => 'select',
+                'data' => $terms_array
+            ), $form_id, $form_args);
+            echo $this->basetoolbox->get_field_html($field_name, $field, $form_id, $form_args);
+
         } else {
             echo __('No messages to export yet.', 'wpucontactforms');
             return;
@@ -1656,19 +1669,23 @@ class wpucontactforms {
 
         $locales = $this->page_action__export__get_locales();
         if ($locales && count($locales) > 1) {
-            echo '<p>';
-            echo '<label for="wpucontactforms_export_lang">' . __('Choose a language', 'wpucontactforms') . '</label><br />';
-            echo '<select id="wpucontactforms_export_lang" name="lang">';
-            echo '<option>' . __('All languages', 'wpucontactforms') . '</option>';
+            $locales_array = array(
+                '0' => __('All languages', 'wpucontactforms')
+            );
             foreach ($locales as $locale) {
-                echo '<option value="' . esc_attr($locale->lang_name) . '">' . esc_html($locale->lang_name);
+                $t_value = $locale->lang_name;
                 if ($locale->lang_count) {
-                    echo ' (' . $locale->lang_count . ')';
+                    $t_value .= ' (' . $locale->lang_count . ')';
                 }
-                echo '</option>';
+                $locales_array[$locale->lang_name] = $t_value;
             }
-            echo '</select>';
-            echo '</p>';
+            $field_name = 'lang';
+            $field = $this->basetoolbox->get_clean_field($field_name, array(
+                'label' => __('All languages', 'wpucontactforms') . '<br />',
+                'type' => 'select',
+                'data' => $locales_array
+            ), $form_id, $form_args);
+            echo $this->basetoolbox->get_field_html($field_name, $field, $form_id, $form_args);
         }
 
         echo '<p>';
@@ -1681,13 +1698,16 @@ class wpucontactforms {
         echo '<input type="text" name="wpucontactforms_export_to" id="wpucontactforms_export_to" />';
         echo '</p>';
 
-        echo '<p>';
-        echo '<label for="wpucontactforms_export_format">' . __('Format', 'wpucontactforms') . '</label><br />';
-        echo '<select id="wpucontactforms_export_format" name="wpucontactforms_export_format">';
-        echo '<option value="csv">CSV</option>';
-        echo '<option value="json">JSON</option>';
-        echo '</select>';
-        echo '</p>';
+        $field_name = 'format';
+        $field = $this->basetoolbox->get_clean_field($field_name, array(
+            'label' => __('Format', 'wpucontactforms') . '<br />',
+            'type' => 'select',
+            'data' => array(
+                'csv' => 'CSV',
+                'json' => 'JSON',
+            )
+        ), $form_id, $form_args);
+        echo $this->basetoolbox->get_field_html($field_name, $field, $form_id, $form_args);
 
         submit_button(__('Export', 'wpucontactforms'));
     }
@@ -1827,10 +1847,10 @@ class wpucontactforms {
         }
         switch ($format) {
         case 'json':
-            $this->export_array_to_json($data, $file_name);
+            $this->basetoolbox->export_array_to_json($data, $file_name);
             break;
         default:
-            $this->export_array_to_csv($data, $file_name);
+            $this->basetoolbox->export_array_to_csv($data, $file_name);
         }
 
         $this->wpubasemessages->set_message('wpucontactforms_export_no_msg', __('No messages match this request.', 'wpucontactforms'), 'error');
@@ -1862,75 +1882,6 @@ class wpucontactforms {
                 wp_trash_post($p);
             }
         }
-    }
-
-    /* ----------------------------------------------------------
-      Utilities : Export
-    ---------------------------------------------------------- */
-
-    function export_array_clean($data) {
-
-        /* Extract all available keys */
-        $all_keys = array();
-        foreach ($data as $item) {
-            $all_keys = array_merge($all_keys, array_keys($item));
-        }
-        $all_keys = array_unique($all_keys);
-
-        foreach ($data as $item_key => $item) {
-            /* Ensure all rows have the same keys */
-            foreach ($all_keys as $k) {
-                if (!isset($item[$k])) {
-                    $data[$item_key][$k] = '';
-                }
-            }
-            /* Ensure same sorting of all keys */
-            ksort($data[$item_key]);
-        }
-
-        return $data;
-    }
-
-    /* Array to JSON
-    -------------------------- */
-
-    public function export_array_to_json($data, $name) {
-        if (!isset($data[0])) {
-            return;
-        }
-        /* Correct headers */
-        header('Content-type: application/json');
-        header('Content-Disposition: attachment; filename=' . $name . '.json');
-        header('Pragma: no-cache');
-
-        echo json_encode($data);
-    }
-
-    /* Array to CSV
-    -------------------------- */
-
-    public function export_array_to_csv($data, $name) {
-        if (!isset($data[0])) {
-            return;
-        }
-
-        $data = $this->export_array_clean($data);
-
-        /* Correct headers */
-        header('Content-Type: application/csv');
-        header('Content-Disposition: attachment; filename=' . $name . '.csv');
-        header('Pragma: no-cache');
-
-        $all_keys = array_keys($data[0]);
-
-        /* Build and send CSV */
-        $output = fopen("php://output", 'w');
-        fputcsv($output, $all_keys);
-        foreach ($data as $item) {
-            fputcsv($output, $item);
-        }
-        fclose($output);
-        die;
     }
 
     /* ----------------------------------------------------------
@@ -2014,37 +1965,6 @@ class wpucontactforms {
             $is_preview_mode = true;
         }
         return $is_preview_mode;
-    }
-
-    /* Thanks to https://stackoverflow.com/a/13646735/975337 */
-    function get_user_ip($anonymized = true) {
-        if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
-            $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-            $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-        }
-        $client = isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : '';
-        $forward = isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : '';
-        $remote = $_SERVER['REMOTE_ADDR'];
-
-        if (filter_var($client, FILTER_VALIDATE_IP)) {
-            $ip = $client;
-        } elseif (filter_var($forward, FILTER_VALIDATE_IP)) {
-            $ip = $forward;
-        } else {
-            $ip = $remote;
-        }
-        if (!$anonymized) {
-            return $ip;
-        }
-        return $this->anonymize_ip($ip);
-    }
-
-    /* Thanks to https://gist.github.com/svrnm/3a124d2af18a6726f66e */
-    function anonymize_ip($ip) {
-        if ($ip = @inet_pton($ip)) {
-            return inet_ntop(substr($ip, 0, strlen($ip) / 2) . str_repeat(chr(0), strlen($ip) / 2));
-        }
-        return '0.0.0.0';
     }
 
     function wpucontactforms_submit_contactform__webhook() {

@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.16.0
+Version: 3.17.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.16.0';
+    private $plugin_version = '3.17.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1681,30 +1681,32 @@ class wpucontactforms {
             }
             $field_name = 'lang';
             $field = $this->basetoolbox->get_clean_field($field_name, array(
-                'label' => __('All languages', 'wpucontactforms') . '<br />',
+                'label' => __('Choose a language:', 'wpucontactforms') . '<br />',
                 'type' => 'select',
                 'data' => $locales_array
             ), $form_id, $form_args);
             echo $this->basetoolbox->get_field_html($field_name, $field, $form_id, $form_args);
         }
 
-        echo '<p>';
-        echo '<label for="wpucontactforms_export_from">' . __('From', 'wpucontactforms') . '</label><br />';
-        echo '<input type="text" name="wpucontactforms_export_from" id="wpucontactforms_export_from" />';
-        echo '</p>';
+        $field_name = 'wpucontactforms_export_from';
+        $field = $this->basetoolbox->get_clean_field($field_name, array(
+            'label' => __('From:', 'wpucontactforms') . '<br />'
+        ), $form_id, $form_args);
+        echo $this->basetoolbox->get_field_html($field_name, $field, $form_id, $form_args);
 
-        echo '<p>';
-        echo '<label for="wpucontactforms_export_to">' . __('To', 'wpucontactforms') . '</label><br />';
-        echo '<input type="text" name="wpucontactforms_export_to" id="wpucontactforms_export_to" />';
-        echo '</p>';
+        $field_name = 'wpucontactforms_export_to';
+        $field = $this->basetoolbox->get_clean_field($field_name, array(
+            'label' => __('To:', 'wpucontactforms') . '<br />'
+        ), $form_id, $form_args);
+        echo $this->basetoolbox->get_field_html($field_name, $field, $form_id, $form_args);
 
         $field_name = 'format';
         $field = $this->basetoolbox->get_clean_field($field_name, array(
-            'label' => __('Format', 'wpucontactforms') . '<br />',
+            'label' => __('Format:', 'wpucontactforms') . '<br />',
             'type' => 'select',
             'data' => array(
-                'csv' => 'CSV',
-                'json' => 'JSON',
+                'csv' => 'CSV (Excel)',
+                'json' => 'JSON'
             )
         ), $form_id, $form_args);
         echo $this->basetoolbox->get_field_html($field_name, $field, $form_id, $form_args);

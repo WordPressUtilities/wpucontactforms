@@ -19,7 +19,7 @@
   Boxes
 ---------------------------------------------------------- */
 
-@media(min-width:769px) {
+@media (min-width:769px) {
     .wpucontactforms__form .twoboxes {
         display: table;
         width: 100%;
@@ -56,4 +56,18 @@
 
 .wpucontactforms__form label em {
     display: none;
+}
+
+/* ----------------------------------------------------------
+  Admin form
+---------------------------------------------------------- */
+
+.wpucontactforms-export-form {
+    width: 200px;
+    max-width: 200%;
+}
+
+.wpucontactforms-export-form select,
+.wpucontactforms-export-form input[type="text"] {
+    width: 100%;
 }

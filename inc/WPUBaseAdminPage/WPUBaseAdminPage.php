@@ -238,11 +238,13 @@ class WPUBaseAdminPage {
     public function set_admin_page_main() {
         $page = $this->get_page();
 
+        $form_classname = $this->prefix . $page . '-form';
+
         echo $this->get_wrapper_start();
 
         // Default Form
         if ($this->pages[$page]['has_form']):
-            echo '<form action="' . admin_url('admin-post.php') . '" method="post" ' . ($this->pages[$page]['has_file'] ? ' enctype="multipart/form-data"' : '') . '><div>';
+            echo '<form class="' . esc_attr($form_classname) . '" action="' . admin_url('admin-post.php') . '" method="post" ' . ($this->pages[$page]['has_file'] ? ' enctype="multipart/form-data"' : '') . '><div>';
             echo '<input type="hidden" name="action" value="' . $this->options['id'] . '">';
             echo '<input type="hidden" name="page_name" value="' . $page . '" />';
             wp_nonce_field('action-main-form-' . $page, 'action-main-form-' . $this->options['id'] . '-' . $page);

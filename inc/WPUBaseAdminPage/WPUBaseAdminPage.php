@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Admin page
 Description: A class to handle pages in WordPress
-Version: 1.6.0
+Version: 1.7.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -284,5 +284,12 @@ class WPUBaseAdminPage {
             $page = str_replace($this->options['id'] . '-', '', $_POST['page_name']);
         }
         return $page;
+    }
+
+    public function get_page_url($page_id){
+        if(!isset($this->pages[$page_id])){
+            return false;
+        }
+        return $this->pages[$page_id]['url'];
     }
 }

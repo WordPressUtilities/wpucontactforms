@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.17.0
+Version: 3.18.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.17.0';
+    private $plugin_version = '3.18.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -243,12 +243,6 @@ class wpucontactforms {
             $this->adminpages = new \wpucontactforms\WPUBaseAdminPage();
             $this->adminpages->init($pages_options, $admin_pages);
 
-            # TOOLBOX
-            require_once __DIR__ . '/inc/WPUBaseToolbox/WPUBaseToolbox.php';
-            $this->basetoolbox = new \wpucontactforms\WPUBaseToolbox(array(
-                'need_form_js' => false
-            ));
-
             /* Cron for deletion */
             require_once __DIR__ . '/inc/WPUBaseCron/WPUBaseCron.php';
             $this->basecron = new \wpucontactforms\WPUBaseCron(array(
@@ -259,8 +253,14 @@ class wpucontactforms {
             add_action('wpucontactforms__cron_hook', array(&$this,
                 'wpucontactforms__callback_cron'
             ), 10);
-
         }
+
+        # TOOLBOX
+        require_once __DIR__ . '/inc/WPUBaseToolbox/WPUBaseToolbox.php';
+        $this->basetoolbox = new \wpucontactforms\WPUBaseToolbox(array(
+            'need_form_js' => false
+        ));
+
 
         $this->set_user_options();
 

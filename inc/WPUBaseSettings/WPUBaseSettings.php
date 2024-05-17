@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.18.1
+Version: 0.19.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -219,6 +219,9 @@ class WPUBaseSettings {
                 'id' => $id,
                 'lang_id' => $lang_id,
                 'label_for' => $id,
+                'readonly' => isset($this->settings[$id]['readonly']) ? $this->settings[$id]['readonly'] : false,
+                'placeholder' => isset($this->settings[$id]['placeholder']) ? $this->settings[$id]['placeholder'] : false,
+                'attributes_html' => isset($this->settings[$id]['attributes_html']) ? $this->settings[$id]['attributes_html'] : false,
                 'translated_from' => isset($this->settings[$id]['translated_from']) ? $this->settings[$id]['translated_from'] : false,
                 'required' => $this->settings[$id]['required'],
                 'post_type' => $this->settings[$id]['post_type'],
@@ -311,12 +314,17 @@ class WPUBaseSettings {
         $name = ' name="' . $name_val . '" ';
         $id = ' id="' . $args['id'] . '" ';
         $attr = '';
+        if (isset($args['readonly']) && $args['readonly']) {
+            $attr .= ' readonly ';
+            $name = '';
+        }
         if (isset($args['lang_id']) && $args['lang_id']) {
             $attr .= ' data-wpulang="' . esc_attr($args['lang_id']) . '" ';
         }
         if (isset($args['required']) && $args['required']) {
             $attr .= ' required="required" ';
         }
+
         if (isset($args['placeholder']) && $args['placeholder']) {
             $attr .= ' placeholder="' . esc_attr($args['placeholder']) . '" ';
         }

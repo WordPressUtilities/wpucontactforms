@@ -1,7 +1,5 @@
 <?php
-defined('ABSPATH') || die;
-
-/* WPUContactForms v 3.12.1 */
+/* WPUContactForms v 3.18.1 */
 
 /* ----------------------------------------------------------
   Check file

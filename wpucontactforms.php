@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.18.1
+Version: 3.19.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.18.1';
+    private $plugin_version = '3.19.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -363,7 +363,7 @@ class wpucontactforms {
         }
     }
 
-    function get_admin_data() {
+    public function get_admin_data() {
         $data = array(
             'oldest_message' => '2000-01-01',
             'today' => date('Y-m-d')
@@ -1248,7 +1248,7 @@ class wpucontactforms {
         $this->post_contact_send_action($_POST);
     }
 
-    function post_contact_send_action($post_array) {
+    public function post_contact_send_action($post_array) {
 
         if (!isset($post_array['form_id']) || $post_array['form_id'] != $this->options['id']) {
             return;
@@ -1635,7 +1635,7 @@ class wpucontactforms {
     }
 
     /* Export */
-    function page_content__export() {
+    public function page_content__export() {
         $form_id = 'wpucontactforms_export';
         $form_args = $this->basetoolbox->get_clean_form_args($form_id);
         $terms = get_terms(array(
@@ -1714,7 +1714,7 @@ class wpucontactforms {
         submit_button(__('Export', 'wpucontactforms'));
     }
 
-    function page_action__export__get_locales() {
+    public function page_action__export__get_locales() {
         global $wpdb;
         $q = $wpdb->prepare("SELECT pm.meta_value as lang_name, COUNT(pm.meta_value) AS lang_count FROM $wpdb->posts AS p RIGHT JOIN $wpdb->postmeta as pm ON p.ID = pm.post_id WHERE p.post_type=%s AND pm.meta_key = 'contact_locale' GROUP BY pm.meta_value", wpucontactforms_savepost__get_post_type());
         $locales = $wpdb->get_results($q);
@@ -1724,11 +1724,11 @@ class wpucontactforms {
         return $locales;
     }
 
-    function page_action__export() {
+    public function page_action__export() {
         $this->trigger_export($_POST);
     }
 
-    function trigger_export($posted_values) {
+    public function trigger_export($posted_values) {
 
         $file_name = 'all-forms';
 
@@ -1863,7 +1863,7 @@ class wpucontactforms {
       Cron autodelete
     ---------------------------------------------------------- */
 
-    function wpucontactforms__callback_cron() {
+    public function wpucontactforms__callback_cron() {
         if (!is_array($this->user_options)) {
             $this->user_options = array();
         }
@@ -1969,7 +1969,7 @@ class wpucontactforms {
         return $is_preview_mode;
     }
 
-    function wpucontactforms_submit_contactform__webhook() {
+    public function wpucontactforms_submit_contactform__webhook() {
         if (!isset($this->user_options['webhook_url']) || !filter_var($this->user_options['webhook_url'], FILTER_VALIDATE_URL)) {
             return;
         }

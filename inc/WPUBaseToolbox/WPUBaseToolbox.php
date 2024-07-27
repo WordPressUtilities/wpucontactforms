@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.14.0
+Version: 0.16.1
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,10 +15,12 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.14.0';
+    private $plugin_version = '0.16.1';
     private $args = array();
+    private $missing_plugins = array();
     private $default_module_args = array(
-        'need_form_js' => true
+        'need_form_js' => true,
+        'plugin_name' => 'WPU Base Toolbox'
     );
 
     public function __construct($args = array()) {
@@ -32,7 +34,7 @@ class WPUBaseToolbox {
         ));
     }
 
-    function form_scripts() {
+    public function form_scripts() {
         if ($this->args['need_form_js']) {
             wp_enqueue_script(__NAMESPACE__ . '-wpubasetoolbox-form-validation', plugins_url('assets/form-validation.js', __FILE__), array(), $this->plugin_version);
         }
@@ -72,7 +74,9 @@ class WPUBaseToolbox {
         $button_submit = '<button class="' . esc_attr($args['button_classname']) . '" type="submit"><span>' . $args['button_label'] . '</span></button>';
 
         /* Start form */
-        $html .= '<form class="' . esc_attr($args['form_classname']) . ' wpubasetoolbox-form" id="' . esc_attr($form_id) . '" ' . ($args['wizard_mode'] ? ' data-wizard="1"' : '') . ' action="" method="post" ' . $extra_post_attributes . '>';
+        if ($args['form_element']) {
+            $html .= '<form class="' . esc_attr($args['form_classname']) . ' wpubasetoolbox-form" id="' . esc_attr($form_id) . '" ' . ($args['wizard_mode'] ? ' data-wizard="1"' : '') . ' action="" method="post" ' . $extra_post_attributes . '>';
+        }
         $html .= $args['html_before_content'];
 
         $html_fieldset = '';
@@ -149,9 +153,11 @@ class WPUBaseToolbox {
         $html .= '</div>';
 
         $html .= $args['html_after_content'];
-        /* End form */
-        $html .= '</form>';
 
+        /* End form */
+        if ($args['form_element']) {
+            $html .= '</form>';
+        }
         return $html;
     }
 
@@ -160,7 +166,7 @@ class WPUBaseToolbox {
 
     public function get_clean_form_args($form_id, $fields = array(), $args = array()) {
         $default_args = array(
-            'button_label' => __('Submit'),
+            'button_label' => __('Submit', __NAMESPACE__),
             'button_classname' => 'cssc-button',
             'fieldsets' => array(
                 'default' => array(
@@ -172,6 +178,7 @@ class WPUBaseToolbox {
             ),
             'form_attributes' => '',
             'form_classname' => 'cssc-form',
+            'form_element' => true,
             'field_group_classname' => 'twoboxes',
             'field_box_classname' => 'box',
             'submit_box_classname' => 'box--submit',
@@ -185,8 +192,8 @@ class WPUBaseToolbox {
             'wizard_steps' => false,
             'wizard_prev_button_class' => 'btn--prev',
             'wizard_next_button_class' => 'btn--next',
-            'wizard_prev_button_label' => __('Previous'),
-            'wizard_next_button_label' => __('Next')
+            'wizard_prev_button_label' => __('Previous', __NAMESPACE__),
+            'wizard_next_button_label' => __('Next', __NAMESPACE__)
         );
         $args = array_merge($default_args, $args);
 
@@ -356,7 +363,7 @@ class WPUBaseToolbox {
     /* Validate form
     -------------------------- */
 
-    function validate_form($source, $form_id, $fields = array(), $args = array()) {
+    public function validate_form($source, $form_id, $fields = array(), $args = array()) {
         if (!is_array($source) || empty($source) || empty($fields)) {
             return false;
         }
@@ -394,7 +401,7 @@ class WPUBaseToolbox {
       HTML Helpers
     ---------------------------------------------------------- */
 
-    function array_to_html_attributes($attributes = array()) {
+    public function array_to_html_attributes($attributes = array()) {
         if (!is_array($attributes)) {
             return '';
         }
@@ -407,7 +414,7 @@ class WPUBaseToolbox {
         return trim($html);
     }
 
-    function array_to_html_table($array, $args = array()) {
+    public function array_to_html_table($array, $args = array()) {
 
         /* Ensure array is ok */
         if (empty($array) || !is_array($array)) {
@@ -462,13 +469,36 @@ class WPUBaseToolbox {
     }
 
     /* ----------------------------------------------------------
+      Helpers
+    ---------------------------------------------------------- */
+
+    /**
+     * Insert a value or key/value pair after a specific key in an array.  If key doesn't exist, value is appended
+     * to the end of the array.
+     * Thanks to  https://gist.github.com/wpscholar/0deadce1bbfa4adb4e4c
+     *
+     * @param array $array
+     * @param string $key
+     * @param array $new
+     *
+     * @return array
+     */
+    public function array_insert_after($array, $key, $new) {
+        $keys = array_keys($array);
+        $index = array_search($key, $keys);
+        $pos = false === $index ? count($array) : $index + 1;
+
+        return array_merge(array_slice($array, 0, $pos), $new, array_slice($array, $pos));
+    }
+
+    /* ----------------------------------------------------------
       Export
     ---------------------------------------------------------- */
 
     /* Ensure all lines have the same keys
     -------------------------- */
 
-    function export_array_clean_for_csv($data) {
+    public function export_array_clean_for_csv($data) {
 
         /* Extract all available keys */
         $all_keys = array();
@@ -494,8 +524,8 @@ class WPUBaseToolbox {
     /* Array to JSON
     -------------------------- */
 
-    public function export_array_to_json($data, $name) {
-        if (!isset($data[0])) {
+    public function export_array_to_json($array, $name) {
+        if (!isset($array[0])) {
             return;
         }
         /* Correct headers */
@@ -503,30 +533,31 @@ class WPUBaseToolbox {
         header('Content-Disposition: attachment; filename=' . $name . '.json');
         header('Pragma: no-cache');
 
-        echo json_encode($data);
+        echo json_encode($array);
+        die;
     }
 
     /* Array to CSV
     -------------------------- */
 
-    public function export_array_to_csv($data, $name) {
-        if (!isset($data[0])) {
+    public function export_array_to_csv($array, $name) {
+        if (!isset($array[0])) {
             return;
         }
 
-        $data = $this->export_array_clean_for_csv($data);
+        $array = $this->export_array_clean_for_csv($array);
 
         /* Correct headers */
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=' . $name . '.csv');
         header('Pragma: no-cache');
 
-        $all_keys = array_keys($data[0]);
+        $all_keys = array_keys($array[0]);
 
         /* Build and send CSV */
         $output = fopen("php://output", 'w');
         fputcsv($output, $all_keys);
-        foreach ($data as $item) {
+        foreach ($array as $item) {
             fputcsv($output, $item);
         }
         fclose($output);
@@ -538,7 +569,7 @@ class WPUBaseToolbox {
     ---------------------------------------------------------- */
 
     /* Thanks to https://stackoverflow.com/a/13646735/975337 */
-    function get_user_ip($anonymized = true) {
+    public function get_user_ip($anonymized = true) {
         if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
             $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
             $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
@@ -561,11 +592,85 @@ class WPUBaseToolbox {
     }
 
     /* Thanks to https://gist.github.com/svrnm/3a124d2af18a6726f66e */
-    function anonymize_ip($ip) {
+    public function anonymize_ip($ip) {
         if ($ip = @inet_pton($ip)) {
             return inet_ntop(substr($ip, 0, strlen($ip) / 2) . str_repeat(chr(0), strlen($ip) / 2));
         }
         return '0.0.0.0';
     }
 
+    /* ----------------------------------------------------------
+      Dependencies
+    ---------------------------------------------------------- */
+
+    public function check_plugins_dependencies($plugins = array()) {
+        if (!is_array($plugins) || !is_admin() || !current_user_can('activate_plugins')) {
+            return;
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+        foreach ($plugins as $plugin) {
+
+            $plugin['path'] = is_array($plugin['path']) ? $plugin['path'] : array($plugin['path']);
+
+            // Check if plugin is active
+            $has_plugin = false;
+
+            foreach ($plugin['path'] as $plugin_path) {
+                if (is_plugin_active($plugin_path) || is_plugin_active_for_network($plugin_path)) {
+                    $has_plugin = true;
+                }
+
+                /* Get active must-use plugins list */
+                $mu_plugins_path = array(
+                    WPMU_PLUGIN_DIR,
+                    WPMU_PLUGIN_DIR . '/wpu'
+                );
+                foreach ($mu_plugins_path as $mu_plugins_dir) {
+                    if (is_dir($mu_plugins_dir) && file_exists($mu_plugins_dir . '/' . $plugin_path)) {
+                        $has_plugin = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!$has_plugin) {
+                $this->missing_plugins[] = $plugin;
+            }
+        }
+
+        if (!empty($this->missing_plugins)) {
+            add_action('admin_notices', array(&$this,
+                'set_error_missing_plugins'
+            ));
+        }
+    }
+
+    public function set_error_missing_plugins() {
+
+        if (!$this->missing_plugins) {
+            return;
+        }
+
+        echo '<div class="error">';
+        if (count($this->missing_plugins) > 1) {
+            echo '<p>' . sprintf(__('The plugin <b>%s</b> depends on the following plugins. Please install and activate them:', __NAMESPACE__), $this->args['plugin_name']) . '</p><ul>';
+            foreach ($this->missing_plugins as $plugin) {
+                echo '<li>- ' . $this->get_missing_plugin_display_name($plugin) . '</li>';
+            }
+            echo '</ul>';
+        } else {
+            echo '<p>' . sprintf(__('The plugin <b>%s</b> depends on the <b>%s</b> plugin. Please install and activate it.', __NAMESPACE__), $this->args['plugin_name'], $this->get_missing_plugin_display_name($this->missing_plugins[0])) . '</p>';
+        }
+        echo '</div>';
+    }
+
+    public function get_missing_plugin_display_name($plugin) {
+        $name = $plugin['name'];
+        if (isset($plugin['url'])) {
+            $name = '<a target="_blank" rel="noopener" href="' . $plugin['url'] . '">' . $name . '</a>';
+        }
+        return $name;
+    }
 }

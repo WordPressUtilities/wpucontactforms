@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Update
 Description: A class to handle plugin update from github
-Version: 0.4.5
+Version: 0.5.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -26,6 +26,7 @@ class WPUBaseUpdate {
     private $plugin_id;
     private $plugin_dir;
     private $details;
+    private $is_tracked = false;
 
     public function __construct($github_username = false, $github_project = false, $current_version = false, $details = array()) {
         $this->init($github_username, $github_project, $current_version, $details);
@@ -47,9 +48,7 @@ class WPUBaseUpdate {
         $this->plugin_dir = (defined('WP_PLUGIN_DIR') ? WP_PLUGIN_DIR : WP_CONTENT_DIR . '/plugins') . '/' . $this->plugin_id;
 
         $gitpath = dirname($this->plugin_dir) . '/.git';
-        if (is_dir($gitpath) || file_exists($gitpath)) {
-            return;
-        }
+        $this->is_tracked = (is_dir($gitpath) || file_exists($gitpath));
 
         if (!is_array($details)) {
             $details = array();
@@ -124,6 +123,13 @@ class WPUBaseUpdate {
                 'package' => $plugin_version->zipball_url,
                 'sections' => array()
             );
+
+            /* Disable download link if plugin is tracked */
+            if ($this->is_tracked) {
+                $plugin_info['trunk'] = '';
+                $plugin_info['download_link'] = '';
+                $plugin_info['package'] = '';
+            }
 
             /* Fetch plugin data */
             $plugin_data = array();

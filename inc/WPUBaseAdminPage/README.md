@@ -38,7 +38,7 @@ $pages_options = array(
 );
 
 // Init admin page
-include dirname( __FILE__ ) . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
+require_once __DIR__ . '/inc/WPUBaseAdminPage/WPUBaseAdminPage.php';
 $this->adminpages = new \wpubaseplugin\WPUBaseAdminPage();
 $this->adminpages->init($pages_options, $admin_pages);
 

@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Admin page
 Description: A class to handle pages in WordPress
-Version: 1.7.0
+Version: 1.8.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -72,6 +72,10 @@ class WPUBaseAdminPage {
                     add_filter($filter[0], $filter[1]);
                 }
             }
+            if (in_array($current_page, $p['aliases'])) {
+                wp_redirect($this->get_page_url($p_id));
+                die;
+            }
         }
     }
 
@@ -100,8 +104,11 @@ class WPUBaseAdminPage {
             if (!isset($page['actions'])) {
                 $page['actions'] = array();
             }
-            if (!isset($page['filters'])) {
+            if (!isset($page['filters']) || !is_array($page['filters'])) {
                 $page['filters'] = array();
+            }
+            if (!isset($page['aliases']) || !is_array($page['aliases'])) {
+                $page['aliases'] = array();
             }
             if (!isset($page['display_banner_menu'])) {
                 $page['display_banner_menu'] = false;
@@ -286,8 +293,8 @@ class WPUBaseAdminPage {
         return $page;
     }
 
-    public function get_page_url($page_id){
-        if(!isset($this->pages[$page_id])){
+    public function get_page_url($page_id) {
+        if (!isset($this->pages[$page_id])) {
             return false;
         }
         return $this->pages[$page_id]['url'];

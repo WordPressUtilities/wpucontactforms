@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.19.0
+Version: 3.19.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.19.0';
+    private $plugin_version = '3.19.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -295,7 +295,7 @@ class wpucontactforms {
         }
 
         /* Excluded Words */
-        if (!isset($this->user_options['excluded_words'])) {
+        if (!isset($this->user_options['excluded_words']) || empty($this->user_options['excluded_words'])) {
             $this->user_options['excluded_words'] = array();
         } else {
             $this->user_options['excluded_words'] = explode("\n", $this->user_options['excluded_words']);

@@ -130,14 +130,34 @@ function set_wpucontactforms_form($wrapper) {
     var recaptcha_item_hcaptcha = document.querySelector('.box-recaptcha-hcaptcha');
     var has_recaptcha_hcaptcha = !!recaptcha_item_hcaptcha;
 
+    /* Allowed URL params */
+    var _allowed_url_params = JSON.parse(atob(wpucontactforms_obj.allowed_url_params));
+
+    /* Domains */
     var _disposable_domains = JSON.parse(atob(wpucontactforms_obj.disposable_domains));
-    if($form.attr('data-disposable-domains')){
+    if ($form.attr('data-disposable-domains')) {
         var extra_disposable_domains = JSON.parse(atob($form.attr('data-disposable-domains')));
-        if(typeof extra_disposable_domains == 'object'){
+        if (typeof extra_disposable_domains == 'object') {
             _disposable_domains = _disposable_domains.concat(extra_disposable_domains);
         }
     }
 
+    /* Add hidden fields if found in the URL */
+    var _url_params = new URLSearchParams(window.location.search),
+        $submitBox = $form.find('.box--submit');
+    _url_params.forEach(function(value, key) {
+        /* Param is not allowed */
+        if (_allowed_url_params.indexOf(key) === -1) {
+            return;
+        }
+        /* Hidden input already exists */
+        if ($form.find('[name="' + encodeURI(key) + '"]').length) {
+            return;
+        }
+        $submitBox.append('<input type="hidden" name="' + encodeURI(key) + '" value="' + encodeURI(value) + '">');
+    });
+
+    /* Fake upload */
     $form.find('.fake-upload-wrapper').each(function(i, el) {
 
         /* Handle dragndrop */
@@ -163,8 +183,7 @@ function set_wpucontactforms_form($wrapper) {
             if (this.value) {
                 $wrap.attr('data-has-value', '1');
                 $cover.text(this.value.replace(/\\/g, '/').split('/').reverse()[0]);
-            }
-            else {
+            } else {
                 $wrap.attr('data-has-value', '0');
                 $cover.html($cover.attr('data-placeholder'));
             }
@@ -345,8 +364,7 @@ function set_wpucontactforms_form($wrapper) {
                 $box.attr('data-has-error', 1);
                 _hasError = true;
                 $error.get(0).textContent += $error.attr('data-error-choose');
-            }
-            else {
+            } else {
                 $box.attr('data-field-ok', 1);
             }
         }
@@ -500,8 +518,7 @@ function set_wpucontactforms_form($wrapper) {
             $field = $wrapper.find('[name="' + i + '"]');
             if (typeof fields[i] != 'string') {
                 transformInputIntoSelect($field, fields[i]);
-            }
-            else {
+            } else {
                 $field.val(fields[i]);
             }
         }
@@ -650,8 +667,7 @@ function set_wpucontactforms_form($wrapper) {
                     if (_isRadio && !_isInListCond && !_isNotInListCond) {
                         if (_isNegativeCond) {
                             _return_condition = !_tmp_item.get(0).checked;
-                        }
-                        else {
+                        } else {
                             _return_condition = _tmp_item.get(0).checked;
                         }
                     }
@@ -686,8 +702,7 @@ function set_wpucontactforms_form($wrapper) {
                 var _showblock = get_condition_status(_condition.display);
                 if (_showblock) {
                     $blockWrapper.attr('data-displayed', 1).show();
-                }
-                else {
+                } else {
                     $blockWrapper.attr('data-displayed', 0).hide();
                 }
                 $blockWrapper.trigger('wpucontactforms_block_change_display');
@@ -715,8 +730,7 @@ function set_wpucontactforms_form($wrapper) {
                 if (_blockType != 'checkbox-list') {
                     if (_required) {
                         $blockField.attr('required', 'required');
-                    }
-                    else {
+                    } else {
                         $blockField.removeAttr('required');
                     }
                 }

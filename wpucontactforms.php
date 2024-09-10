@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.19.1
+Version: 3.20.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.19.1';
+    private $plugin_version = '3.20.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -63,6 +63,15 @@ class wpucontactforms {
         'yopmail.com',
         'yopmail.fr',
         'yopmail.net'
+    );
+    public $allowed_url_params = array(
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_term',
+        'utm_content',
+        'gclid',
+        'fbclid'
     );
 
     public function __construct($options = array()) {
@@ -261,7 +270,6 @@ class wpucontactforms {
             'need_form_js' => false
         ));
 
-
         $this->set_user_options();
 
         $has_recaptcha = $this->options['contact__settings']['recaptcha_enabled'] && $this->options['contact__settings']['recaptcha_sitekey'] && $this->options['contact__settings']['recaptcha_privatekey'];
@@ -358,6 +366,7 @@ class wpucontactforms {
             wp_localize_script('wpucontactforms-front', 'wpucontactforms_obj', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'disposable_domains' => base64_encode(json_encode($this->disposable_domains)),
+                'allowed_url_params' => base64_encode(json_encode($this->allowed_url_params)),
                 'enable_custom_validation' => $this->options['contact__settings']['enable_custom_validation']
             ));
         }
@@ -402,6 +411,7 @@ class wpucontactforms {
     public function set_options($options) {
 
         $this->disposable_domains = apply_filters('wpucontactforms_disposable_domains', $this->disposable_domains);
+        $this->allowed_url_params = apply_filters('wpucontactforms_allowed_url_params', $this->allowed_url_params);
         $this->is_successful = false;
         $this->has_upload = false;
         $this->content_contact = '';
@@ -2430,6 +2440,12 @@ function wpucontactforms_submit_contactform__savepost($form) {
         update_post_meta($post_id, 'form_submitted_hashed_ip', $form->form_submitted_hashed_ip);
     }
     update_post_meta($post_id, 'contact_locale', get_locale());
+
+    foreach($form->allowed_url_params as $param) {
+        if (isset($_POST[$param])) {
+            update_post_meta($post_id, 'form_url_param_' . $param, $_POST[$param]);
+        }
+    }
 
     // Add term
     $term = wp_insert_term(

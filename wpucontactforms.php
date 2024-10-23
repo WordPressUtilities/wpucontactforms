@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.20.0
+Version: 3.20.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.20.0';
+    private $plugin_version = '3.20.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -595,8 +595,10 @@ class wpucontactforms {
     }
 
     public function page_content($hide_wrapper = false, $form_id = false, $args = array()) {
-
-        if (!$form_id || $form_id != $this->options['id']) {
+        if (!$form_id || !is_string($form_id) || $form_id !== $this->options['id']) {
+            if(!is_string($form_id)){
+                error_log('WPU Contact forms : form_id is not a string');
+            }
             return '';
         }
 
@@ -2441,7 +2443,7 @@ function wpucontactforms_submit_contactform__savepost($form) {
     }
     update_post_meta($post_id, 'contact_locale', get_locale());
 
-    foreach($form->allowed_url_params as $param) {
+    foreach ($form->allowed_url_params as $param) {
         if (isset($_POST[$param])) {
             update_post_meta($post_id, 'form_url_param_' . $param, $_POST[$param]);
         }

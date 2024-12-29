@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.16.2
+Version: 0.16.3
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,7 +15,7 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.16.2';
+    private $plugin_version = '0.16.3';
     private $args = array();
     private $missing_plugins = array();
     private $default_module_args = array(
@@ -668,8 +668,15 @@ class WPUBaseToolbox {
 
     public function get_missing_plugin_display_name($plugin) {
         $name = $plugin['name'];
+
+        $target = '_blank';
+        if (isset($plugin['path']) && isset($plugin['path'][0]) && file_exists(WP_PLUGIN_DIR . '/' . $plugin['path'][0])) {
+            $target = '';
+            $plugin['url'] = admin_url('plugins.php?plugin_status=inactive');
+        }
+
         if (isset($plugin['url'])) {
-            $name = '<a target="_blank" rel="noopener" href="' . $plugin['url'] . '">' . $name . '</a>';
+            $name = '<a target="' . esc_attr($target) . '" rel="noopener" href="' . $plugin['url'] . '">' . $name . '</a>';
         }
         return $name;
     }

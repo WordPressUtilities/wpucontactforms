@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Update
 Description: A class to handle plugin update from github
-Version: 0.5.0
+Version: 0.6.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -176,7 +176,7 @@ class WPUBaseUpdate {
             return false;
         }
 
-        if ('github-' . $this->github_project !== $args->slug) {
+        if ('github-' . $this->github_project !== $args->slug && $this->github_project !== $args->slug) {
             return $res;
         }
 
@@ -185,7 +185,20 @@ class WPUBaseUpdate {
             return (object) $plugin_info;
         }
 
-        return false;
+        $plugin_details = array(
+            'name' => $this->github_project,
+            'slug' => $this->github_project
+        );
+
+        $parent_plugin = __DIR__ . '/../../' . $this->github_project . '.php';
+        if (file_exists($parent_plugin)) {
+            $plugin_name = get_plugin_data($parent_plugin);
+            if (isset($plugin_name['Name'])) {
+                $plugin_details['name'] = $plugin_name['Name'];
+            }
+        }
+
+        return (object) $plugin_details;
 
     }
 

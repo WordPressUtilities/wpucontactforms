@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.20.2
+Version: 3.21.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.20.2';
+    private $plugin_version = '3.21.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -596,7 +596,7 @@ class wpucontactforms {
 
     public function page_content($hide_wrapper = false, $form_id = false, $args = array()) {
         if (!$form_id || !is_string($form_id) || $form_id !== $this->options['id']) {
-            if(!is_string($form_id)){
+            if (!is_string($form_id)) {
                 error_log('WPU Contact forms : form_id is not a string');
             }
             return '';
@@ -1342,7 +1342,7 @@ class wpucontactforms {
                     $tmp_value = array_map('htmlentities', $tmp_value);
                     $tmp_value = array_map('trim', $tmp_value);
                 } else {
-                    $tmp_value = trim(htmlentities(strip_tags($post[$id])));
+                    $tmp_value = trim(htmlentities(wp_strip_all_tags($post[$id])));
                 }
                 $contact_fields[$id]['posted_value'] = $tmp_value;
             }
@@ -2001,7 +2001,7 @@ class wpucontactforms {
         $message = str_replace('<br />', "\n", $message);
         $message = str_replace(array('<strong>', '</strong>'), '*', $message);
         $message = str_replace(array('<em>', '</em>'), '_', $message);
-        $message = strip_tags($message);
+        $message = wp_strip_all_tags($message);
 
         $payload = apply_filters('wpucontactforms_submit_contactform__webhook__payload', array(
             'body' => json_encode(array(
@@ -2062,7 +2062,7 @@ function wpucontactform__set_html_field_content($field, $wrap_html = true) {
                 if ($val_item_uns) {
                     $val_item = implode(', ', $val_item_uns);
                 }
-                $field_parts[] = strip_tags($val_item);
+                $field_parts[] = wp_strip_all_tags($val_item);
             }
         }
         $field_content = implode(', ', $field_parts);
@@ -2152,7 +2152,7 @@ function wpucontactforms_get_from_name($form_contact_fields) {
     if (isset($form_contact_fields['contact_name'])) {
         $from_name .= ' ' . $form_contact_fields['contact_name']['value'];
     }
-    return trim(strip_tags(html_entity_decode($from_name)));
+    return trim(wp_strip_all_tags(html_entity_decode($from_name)));
 }
 
 /* ----------------------------------------------------------
@@ -2186,7 +2186,7 @@ function wpucontactforms_submit_sendmail($mail_content = '', $more = array(), $f
         $sendmail_subject = '[' . get_bloginfo('name') . ']' . $sendmail_subject;
     }
 
-    $sendmail_subject = strip_tags(html_entity_decode($sendmail_subject));
+    $sendmail_subject = wp_strip_all_tags(html_entity_decode($sendmail_subject));
     $sendmail_subject = apply_filters('wpucontactforms__sendmail_subject', $sendmail_subject, $form, $from_name);
 
     /* Get email */
@@ -2483,6 +2483,22 @@ function wpucontactforms_submit_contactform__savepost($form) {
     }
 
     do_action('wpucontactforms_submit_contactform__savepost__after_all', $wpucontactforms_last_post_id, $form);
+}
+
+add_action('before_delete_post', 'wpucontactforms_submit_contactform__delete_attachments');
+function wpucontactforms_submit_contactform__delete_attachments($post_id) {
+    if (get_post_type($post_id) != wpucontactforms_savepost__get_post_type()) {
+        return;
+    }
+    $attachments = get_posts(array(
+        'post_type' => 'attachment',
+        'posts_per_page' => -1,
+        'post_parent' => $post_id
+    ));
+
+    foreach ($attachments as $attachment) {
+        wp_delete_attachment($attachment->ID, true);
+    }
 }
 
 /* Re-send mail

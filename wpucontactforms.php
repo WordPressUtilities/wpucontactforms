@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.21.0
+Version: 3.21.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.21.0';
+    private $plugin_version = '3.21.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -418,6 +418,7 @@ class wpucontactforms {
         $this->default_field = array(
             'box_class' => '',
             'classname' => '',
+            'classname_extra' => '',
             'html_box_start' => '',
             'html_box_end' => '',
             'html_after' => '',
@@ -425,6 +426,7 @@ class wpucontactforms {
             'html_before' => '',
             'html_before_input' => '',
             'input_inside_label' => true,
+            'label_classname' => '',
             'placeholder' => '',
             'meta_value_saved' => 'displayed',
             'preload_value' => 0,
@@ -899,8 +901,11 @@ class wpucontactforms {
         if ($field['classname']) {
             $classname = $field['classname'];
         }
+        if ($field['classname_extra']) {
+            $classname .= ' ' . $field['classname_extra'];
+        }
         if ($classname) {
-            $field_id_name .= ' class="' . esc_attr($classname) . '"';
+            $field_id_name .= ' class="' . esc_attr(trim($classname)) . '"';
         }
 
         // Disabled
@@ -954,6 +959,7 @@ class wpucontactforms {
         $before_checkbox = isset($field['html_before_checkbox']) ? $field['html_before_checkbox'] : '';
 
         $label_content = '';
+        $label_classname = '';
         $label_extra = ' ' . ($field['required'] ? $this->options['contact__settings']['label_text_required'] : '');
         if (isset($field['label'])) {
             $label_content = $field['label'] . $label_extra;
@@ -964,7 +970,7 @@ class wpucontactforms {
         $label_content = trim($label_content);
         $label_content_html = '';
         if (!empty($label_content)) {
-            $label_content_html .= '<label ' . ($field['required'] ? 'data-for-required="1"' : '') . ' class="wpucontactform-itemlabel label-' . $id . '" id="label-' . $id_html . '" for="' . $id_html . '">' . $label_content . '</label>';
+            $label_content_html .= '<label ' . ($field['required'] ? 'data-for-required="1"' : '') . ' class="wpucontactform-itemlabel label-' . $id . ($field['label_classname'] ? ' ' . esc_attr($field['label_classname']) : '') . '" id="label-' . $id_html . '" for="' . $id_html . '">' . $label_content . '</label>';
         }
         if ($label_content_html && !$label_after_input) {
             $content .= $label_content_html;

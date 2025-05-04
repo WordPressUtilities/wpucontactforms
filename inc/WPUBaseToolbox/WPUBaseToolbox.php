@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.16.3
+Version: 0.17.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,7 +15,7 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.16.3';
+    private $plugin_version = '0.17.0';
     private $args = array();
     private $missing_plugins = array();
     private $default_module_args = array(
@@ -495,6 +495,14 @@ class WPUBaseToolbox {
       Export
     ---------------------------------------------------------- */
 
+    public function clean_content_for_csv($content) {
+        $content = htmlspecialchars_decode($content);
+        $content = strip_tags($content);
+        $content = stripslashes($content);
+        $content = trim($content);
+        return $content;
+    }
+
     /* Ensure all lines have the same keys
     -------------------------- */
 
@@ -540,10 +548,18 @@ class WPUBaseToolbox {
     /* Array to CSV
     -------------------------- */
 
-    public function export_array_to_csv($array, $name) {
+    public function export_array_to_csv($array, $name, $args = array()) {
         if (!isset($array[0])) {
             return;
         }
+
+        if (!is_array($args)) {
+            $args = array();
+        }
+        $args = array_merge(array(
+            'separator' => ',',
+            'enclosure' => '"'
+        ), $args);
 
         $array = $this->export_array_clean_for_csv($array);
 
@@ -556,9 +572,9 @@ class WPUBaseToolbox {
 
         /* Build and send CSV */
         $output = fopen("php://output", 'w');
-        fputcsv($output, $all_keys);
+        fputcsv($output, $all_keys, $args['separator'], $args['enclosure']);
         foreach ($array as $item) {
-            fputcsv($output, $item);
+            fputcsv($output, $item, $args['separator'], $args['enclosure']);
         }
         fclose($output);
         die;

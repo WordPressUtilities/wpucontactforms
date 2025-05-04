@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.21.1
+Version: 3.21.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.21.1';
+    private $plugin_version = '3.21.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -427,6 +427,7 @@ class wpucontactforms {
             'html_before_input' => '',
             'input_inside_label' => true,
             'label_classname' => '',
+            'label_checkbox_classname' => '',
             'placeholder' => '',
             'meta_value_saved' => 'displayed',
             'preload_value' => 0,
@@ -959,7 +960,6 @@ class wpucontactforms {
         $before_checkbox = isset($field['html_before_checkbox']) ? $field['html_before_checkbox'] : '';
 
         $label_content = '';
-        $label_classname = '';
         $label_extra = ' ' . ($field['required'] ? $this->options['contact__settings']['label_text_required'] : '');
         if (isset($field['label'])) {
             $label_content = $field['label'] . $label_extra;
@@ -1023,7 +1023,7 @@ class wpucontactforms {
             }
             foreach ($field['datas'] as $key => $val) {
                 $label_for = $id_html . '__' . $key;
-                $input_radio_label_before = '<label for="' . $label_for . '" id="label-' . $id . $key . '" class="label-checkbox">';
+                $input_radio_label_before = '<label for="' . $label_for . '" id="label-' . $id . $key . '" class="label-checkbox ' . ($field['label_checkbox_classname'] ? esc_attr($field['label_checkbox_classname']) : '') . '">';
                 if ($field['input_inside_label']) {
                     $content .= $input_radio_label_before;
                 }
@@ -1049,7 +1049,7 @@ class wpucontactforms {
             if (!$field['input_inside_label']) {
                 $content .= $checkbox_content;
             }
-            $content .= '<label id="label-' . $id . '" class="label-checkbox" for="' . $id_html . '">';
+            $content .= '<label id="label-' . $id . '" class="label-checkbox ' . ($field['label_checkbox_classname'] ? esc_attr($field['label_checkbox_classname']) : '') . '" for="' . $id_html . '">';
             if ($field['input_inside_label']) {
                 $content .= $checkbox_content . ' ';
             }

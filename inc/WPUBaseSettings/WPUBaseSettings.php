@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.24.0
+Version: 0.24.1
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -427,6 +427,7 @@ class WPUBaseSettings {
             break;
         case 'url':
         case 'number':
+        case 'password':
         case 'email':
         case 'text':
             echo '<input ' . $name . ' ' . $id . ' type="' . $args['type'] . '" value="' . esc_attr($value) . '" />';

@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.21.3
+Version: 3.21.4
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.21.3';
+    private $plugin_version = '3.21.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -2558,6 +2558,7 @@ function wpucontactforms_submit_contactform__resendmail__action($post_id) {
 function wpucontactforms_get_select_data_from_opt($opt_value = '') {
     $opt_value = explode("\n", $opt_value);
     $opt_value = array_map('trim', $opt_value);
+    $opt_value = array_filter($opt_value);
     $data = array();
     foreach ($opt_value as $i => $opt_data) {
         if ($opt_data) {
@@ -2565,6 +2566,50 @@ function wpucontactforms_get_select_data_from_opt($opt_value = '') {
         }
     }
     return $data;
+}
+
+/* Override params via ACF
+-------------------------- */
+
+function wpucontactforms_filter_field($field, $field_id, $data) {
+    if (!isset($field['wpucontactforms_params'])) {
+        return $field;
+    }
+    foreach ($field['wpucontactforms_params'] as $param) {
+        if ($param == 'hide' && isset($data['field_hide_' . $field_id]) && $data['field_hide_' . $field_id] == 1) {
+            return false;
+        }
+        if ($param == 'required' && isset($data['field_required_' . $field_id])) {
+            $field['required'] = $data['field_required_' . $field_id];
+        }
+        if ($param == 'label' && isset($data['field_label_' . $field_id]) && $data['field_label_' . $field_id]) {
+            $field['label'] = strip_tags($data['field_label_' . $field_id]);
+        }
+        if ($param == 'help' && isset($data['field_help_' . $field_id])) {
+            $field['help'] = nl2br(strip_tags($data['field_help_' . $field_id]));
+        }
+        if ($param == 'layout' && isset($data['field_layout_' . $field_id]) && $data['field_layout_' . $field_id] != 'default') {
+            $field['box_class'] = 'layout--' . $data['field_layout_' . $field_id];
+        }
+        if ($param == 'data' && isset($data['field_data_' . $field_id])) {
+            $field_datas = wpucontactforms_get_select_data_from_opt($data['field_data_' . $field_id]);
+            if ($field_datas) {
+                $field['datas'] = $field_datas;
+            }
+        }
+    }
+    return $field;
+}
+
+function wpucontactforms_filter_fields($fields, $data) {
+    foreach ($fields as $key => $field) {
+        $fields[$key] = wpucontactforms_filter_field($field, $key, $data);
+        if ($fields[$key] === false) {
+            unset($fields[$key]);
+            continue;
+        }
+    }
+    return $fields;
 }
 
 /* Get form data

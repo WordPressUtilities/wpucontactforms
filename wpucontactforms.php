@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.21.2
+Version: 3.21.3
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.21.2';
+    private $plugin_version = '3.21.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -679,7 +679,7 @@ class wpucontactforms {
             }
             /* Intermediate form control */
             else {
-                $content_form .= $this->page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $fieldset_id === $first_group, $fieldset_id);
+                $content_form .= $this->page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $fieldset_id === $first_group, $fieldset_id, $args);
             }
 
             if (isset($this->contact_steps[$fieldset_id]['html_after']) && $this->contact_steps[$fieldset_id]['html_after']) {
@@ -751,7 +751,7 @@ class wpucontactforms {
         return $content_form;
     }
 
-    public function page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $is_first_group, $fieldset_id) {
+    public function page_content__get_submit_box_intermediate($form_id, $is_preview_mode, $is_first_group, $fieldset_id, $args = array()) {
 
         $content_form = '';
 
@@ -802,7 +802,7 @@ class wpucontactforms {
 
         /* Box success && hidden fields */
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_class'] . '">';
-        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '', $form_id);
+        $content_form .= apply_filters('wpucontactforms_fields_submit_inner_before', '', $form_id, $this->options, $args);
         $hidden_fields = apply_filters('wpucontactforms_hidden_fields', array(
             'form_id' => $form_id,
             'wpucontactforms_form_data' => $form_data,

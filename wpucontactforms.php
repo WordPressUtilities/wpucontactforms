@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.21.4
+Version: 3.22.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.21.4';
+    private $plugin_version = '3.22.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1039,7 +1039,15 @@ class wpucontactforms {
         case 'file':
             $input_file = '<input ' . ($input_multiple ? 'multiple' : '') . ' type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' />';
             if (isset($field['fake_upload'])) {
-                $input_file = '<div class="fake-upload-wrapper">' . $input_file . '<div class="fake-upload-cover" data-placeholder="' . esc_attr($placeholder) . '">' . $placeholder . '</div></div>';
+                $has_preview = isset($field['fake_upload__preview']) && $field['fake_upload__preview'];
+                $html_input_file = '<div class="fake-upload-wrapper" '.($has_preview ? 'data-has-preview="1"' : '').'>';
+                if($has_preview) {
+                    $html_input_file .= '<div class="fake-upload-preview"></div>';
+                }
+                $html_input_file .= $input_file;
+                $html_input_file .= '<div class="fake-upload-cover" data-placeholder="' . esc_attr($placeholder) . '">' . $placeholder . '</div>';
+                $html_input_file .= '</div>';
+                $input_file = $html_input_file;
             }
             $content .= $input_file;
             break;
@@ -1073,7 +1081,6 @@ class wpucontactforms {
             $nb_cols = isset($field['textarea_nb_cols']) ? $field['textarea_nb_cols'] : 30;
             $nb_rows = isset($field['textarea_nb_rows']) ? $field['textarea_nb_rows'] : 10;
 
-            $textarea_cols_rows_html = '';
             if ($nb_cols) {
                 $field_id_name .= ' cols="' . $nb_cols . '"';
             }
@@ -1599,6 +1606,7 @@ class wpucontactforms {
         }
         /* Load form data from the posted values */
         $args['custom__form_data'] = wpucontactforms_get_form_data($_POST);
+        $this->options['custom__form_data'] = $args['custom__form_data'];
         $this->post_contact();
         $this->page_content(true, $this->options['id'], $args);
         die;

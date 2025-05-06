@@ -163,6 +163,7 @@ function set_wpucontactforms_form($wrapper) {
         /* Handle dragndrop */
         var _timer,
             $wrap = jQuery(el);
+
         $wrap.on('dragover', function(e) {
             var dt = e.originalEvent.dataTransfer;
             if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
@@ -179,13 +180,28 @@ function set_wpucontactforms_form($wrapper) {
         $wrap.on('change', 'input[type="file"]', function() {
             var $cover = $wrap.find('[data-placeholder]');
             $wrap.attr('data-is-dragging', '0');
-
+            var $preview = $wrap.find('.fake-upload-preview');
             if (this.value) {
                 $wrap.attr('data-has-value', '1');
                 $cover.text(this.value.replace(/\\/g, '/').split('/').reverse()[0]);
+                if ($preview.length) {
+                    var _image = this.files[0];
+                    if (_image && _image.type.indexOf('image') === 0) {
+                        $preview.css({
+                            'background-image': 'url(' + URL.createObjectURL(_image) + ')'
+                        });
+                        $wrap.trigger('wpucontactforms_fake_upload_preview');
+                    }
+                }
             } else {
                 $wrap.attr('data-has-value', '0');
                 $cover.html($cover.attr('data-placeholder'));
+                if ($preview.length) {
+                    $preview.css({
+                        'background-image': ''
+                    });
+                    $wrap.trigger('wpucontactforms_fake_upload_preview');
+                }
             }
         });
 

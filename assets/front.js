@@ -293,7 +293,11 @@ function set_wpucontactforms_form($wrapper) {
         $form.attr('novalidate', 'novalidate');
     }
 
-    var _domains = ['aol.com', 'comcast.net', 'free.fr', 'gmail.com', 'gmx.de', 'googlemail.com', 'hotmail.co.uk', 'hotmail.com', 'hotmail.fr', 'hotmail.it', 'libero.it', 'live.co.uk', 'live.com', 'live.fr', 'mail.ru', 'msn.com', 'orange.fr', 'outlook.com', 'rediffmail.com', 'sbcglobal.net', 'sfr.fr', 'uol.com.br', 'verizon.net', 'wanadoo.fr', 'web.de', 'yahoo.co.in', 'yahoo.co.uk', 'yahoo.com', 'yahoo.com.br', 'yahoo.es', 'yahoo.fr', 'yandex.ru', 'ymail.com'];
+    var _domains = ['comcast.net', 'free.fr', 'gmx.de', 'hotmail.co.uk', 'hotmail.com', 'hotmail.fr', 'hotmail.it', 'libero.it', 'live.co.uk', 'live.com', 'live.fr', 'mail.ru', 'msn.com', 'orange.fr', 'outlook.com', 'rediffmail.com', 'sbcglobal.net', 'sfr.fr', 'uol.com.br', 'verizon.net', 'wanadoo.fr', 'web.de', 'yahoo.co.in', 'yahoo.co.uk', 'yahoo.com', 'yahoo.com.br', 'yahoo.es', 'yahoo.fr', 'yandex.ru', 'ymail.com'];
+    var _domains_only_com = ['aol', 'gmail', 'googlemail', 'icloud', 'protonmail'];
+    _domains_only_com.forEach(function(_domain) {
+        _domains.push(_domain + '.com');
+    });
     var field_suggestions = [];
     _domains.forEach(function(_domain) {
         var _domain_no_dots = _domain.replace(/\./g, '');
@@ -304,6 +308,16 @@ function set_wpucontactforms_form($wrapper) {
                 return val.replace(_domain_no_dots, _domain);
             }
         });
+    });
+
+    /* Add a suggestion for some non .com TLDs */
+    field_suggestions.push({
+        'type': ['email'],
+        'regexp': new RegExp('@(' + _domains_only_com.join('|') + ')\\.(?!com$)[a-z]{2,}$', 'i'),
+        'fix': function(val) {
+            var _reg = new RegExp('@(' + _domains_only_com.join('|') + ')\\.[a-z]{2,}$', 'i');
+            return val.replace(_reg, '@$1.com');
+        }
     });
 
     function check_field_error($box) {

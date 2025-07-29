@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.22.1
+Version: 3.22.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.22.1';
+    private $plugin_version = '3.22.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1478,6 +1478,10 @@ class wpucontactforms {
             return false;
         }
 
+        if(!$file['tmp_name']){
+            return false;
+        }
+
         // Type
         $mime_type = mime_content_type($file['tmp_name']);
         if (!in_array($mime_type, $this->get_accepted_file_types($field))) {
@@ -2591,10 +2595,10 @@ function wpucontactforms_filter_field($field, $field_id, $data) {
             $field['required'] = $data['field_required_' . $field_id];
         }
         if ($param == 'label' && isset($data['field_label_' . $field_id]) && $data['field_label_' . $field_id]) {
-            $field['label'] = strip_tags($data['field_label_' . $field_id]);
+            $field['label'] = wp_strip_all_tags($data['field_label_' . $field_id]);
         }
         if ($param == 'help' && isset($data['field_help_' . $field_id])) {
-            $field['help'] = nl2br(strip_tags($data['field_help_' . $field_id]));
+            $field['help'] = nl2br(wp_strip_all_tags($data['field_help_' . $field_id]));
         }
         if ($param == 'layout' && isset($data['field_layout_' . $field_id]) && $data['field_layout_' . $field_id] != 'default') {
             $field['box_class'] = 'layout--' . $data['field_layout_' . $field_id];

@@ -614,7 +614,12 @@ function set_wpucontactforms_form($wrapper) {
                     }
                 }
                 if (_tmp_item.attr('type') == 'radio') {
-                    _tmp_item = $wrapper.find('[name="' + _id + '"][value="' + _value + '"]');
+                    if (typeof _value == 'object') {
+                        _tmp_item = $wrapper.find('[name="' + _id + '"]');
+                    }
+                    else {
+                        _tmp_item = $wrapper.find('[name="' + _id + '"][value="' + _value + '"]');
+                    }
                 }
                 if (!_tmp_item.length) {
                     return false;

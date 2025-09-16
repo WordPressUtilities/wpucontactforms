@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.24.1
+Version: 0.24.4
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -57,7 +57,7 @@ class WPUBaseSettings {
             add_action('admin_menu', array(&$this,
                 'admin_menu'
             ));
-            $this->admin_url = admin_url($this->settings_details['parent_page_url'] . '?page=' . $this->settings_details['plugin_id']);
+            $this->admin_url = add_query_arg('page', $this->settings_details['plugin_id'], admin_url($this->settings_details['parent_page_url']));
             if (isset($settings_details['plugin_basename'])) {
                 add_filter("plugin_action_links_" . $settings_details['plugin_basename'], array(&$this, 'plugin_add_settings_link'));
             }
@@ -122,6 +122,9 @@ class WPUBaseSettings {
         }
         if (!isset($settings_details['plugin_name'])) {
             $settings_details['plugin_name'] = $settings_details['plugin_id'];
+        }
+        if (!isset($settings_details['menu_name'])) {
+            $settings_details['menu_name'] = $settings_details['plugin_name'];
         }
         if (!isset($settings_details['show_in_rest'])) {
             $settings_details['show_in_rest'] = false;
@@ -213,7 +216,7 @@ class WPUBaseSettings {
                 }
             }
             $section['before_section'] = '<div class="wpubasesettings-form-table-section">' . $section['before_section'];
-            $section['after_section'] =  $section['after_section'] . '</div>';
+            $section['after_section'] = $section['after_section'] . '</div>';
             add_settings_section(
                 $id,
                 $section['name'],
@@ -576,6 +579,7 @@ EOT;
     public function admin_footer() {
         $option_id = $this->settings_details['option_id'];
         $languages = json_encode($this->get_languages());
+        $current_language = $this->get_current_language();
         $label_txt = __('Language');
         echo <<<EOT
 <script>
@@ -610,7 +614,10 @@ jQform.find('[data-wpulang]').each(function(i,el){
     jQel.closest('tr').attr('data-wpulangtr', jQel.attr('data-wpulang'));
 });
 var jQTr = jQform.find('[data-wpulangtr]'),
-    _firstLang = Object.keys(_langs)[0];
+    _current_lang = '{$current_language}';
+if(!_current_lang) {
+    _current_lang = Object.keys(_langs)[0];
+}
 if(!jQTr.length){
     return;
 }
@@ -618,7 +625,7 @@ if(!jQTr.length){
 /* Build switch */
 var select_html='';
 for(var _l in _langs){
-    select_html+='<option value="'+_l+'">'+_langs[_l]+'</option>';
+    select_html+='<option '+(_l == _current_lang ? 'selected="selected"' : '')+' value="'+_l+'">'+_langs[_l]+'</option>';
 }
 var jQSelect = jQuery('<label><strong>{$label_txt}</strong> : <select>'+select_html+'</select></label>');
 jQSelect.prependTo(jQform);
@@ -628,7 +635,7 @@ function show_lang(_lang_id){
     jQTr.hide();
     jQTr.filter('[data-wpulangtr="'+_lang_id+'"]').show();
 }
-show_lang(_firstLang);
+show_lang(_current_lang);
 jQSelect.on('change', 'select',function(){
     show_lang(jQuery(this).val());
 });
@@ -672,7 +679,7 @@ EOT;
     /* Base settings */
 
     public function admin_menu() {
-        $this->hook_page = add_submenu_page($this->settings_details['parent_page'], $this->settings_details['plugin_name'] . ' - ' . __('Settings'), $this->settings_details['plugin_name'], $this->settings_details['user_cap'], $this->settings_details['plugin_id'], array(&$this,
+        $this->hook_page = add_submenu_page($this->settings_details['parent_page'], $this->settings_details['plugin_name'] . ' - ' . __('Settings'), $this->settings_details['menu_name'], $this->settings_details['user_cap'], $this->settings_details['plugin_id'], array(&$this,
             'admin_settings'
         ), 110);
         add_action('load-' . $this->hook_page, array(&$this, 'load_assets'));
@@ -743,14 +750,14 @@ EOT;
         }
 
         // Obtaining from Polylang
-        global $polylang;
-        if (function_exists('pll_the_languages') && is_object($polylang)) {
-            $poly_langs = $polylang->model->get_languages_list();
-            $languages = array();
-            foreach ($poly_langs as $lang) {
-                $languages[$lang->slug] = $lang->slug;
-            }
-            return $languages;
+        if (function_exists('pll_languages_list')) {
+            $keys = pll_languages_list(array(
+                'fields' => 'slug'
+            ));
+            $names = pll_languages_list(array(
+                'fields' => 'name'
+            ));
+            return array_combine($keys, $names);
         }
 
         // Obtaining from WPML

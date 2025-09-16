@@ -659,6 +659,7 @@ function set_wpucontactforms_form($wrapper) {
                     _tmp_val = _tmp_item.val();
 
                     var _isCheckbox = _tmp_item.attr('type') == 'checkbox';
+                    var _isSelect = _tmp_item.get(0).tagName.toLowerCase() == 'select';
                     var _isRadio = (_tmp_item.attr('type') == 'radio' || _tmp_item.attr('data-checkbox-list') == '1');
 
                     /* Textual value */
@@ -705,7 +706,7 @@ function set_wpucontactforms_form($wrapper) {
                     if (_isInListCond) {
                         _return_condition = false;
                         _tmp_item.each(function(a, el) {
-                            if (conditions_array[_id].indexOf(el.value) > -1 && el.checked) {
+                            if (conditions_array[_id].indexOf(el.value) > -1 && (el.checked || _isSelect)) {
                                 _return_condition = true;
                             }
                         });
@@ -714,7 +715,7 @@ function set_wpucontactforms_form($wrapper) {
                     if (_isNotInListCond) {
                         _return_condition = true;
                         _tmp_item.each(function(a, el) {
-                            if (conditions_array[_id].indexOf(el.value) > -1 && el.checked) {
+                            if (conditions_array[_id].indexOf(el.value) > -1 && (el.checked || _isSelect)) {
                                 _return_condition = false;
                             }
                         });

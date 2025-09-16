@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.17.0
+Version: 0.18.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,7 +15,7 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.17.0';
+    private $plugin_version = '0.18.0';
     private $args = array();
     private $missing_plugins = array();
     private $default_module_args = array(
@@ -696,4 +696,17 @@ class WPUBaseToolbox {
         }
         return $name;
     }
+    /* ----------------------------------------------------------
+      Status
+    ---------------------------------------------------------- */
+
+    public function send_404() {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header(404);
+        header('Content-Type: text/html; charset=' . get_bloginfo('charset'));
+        get_template_part('404');
+        die;
+    }
+
 }

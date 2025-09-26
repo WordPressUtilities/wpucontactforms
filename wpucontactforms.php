@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.22.4
+Version: 3.22.5
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.22.4';
+    private $plugin_version = '3.22.5';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -223,7 +223,7 @@ class wpucontactforms {
 
         if ($this->first_init) {
             /* Add submenus */
-            add_action('admin_menu', array(&$this, 'create_admin_form_submenus'));
+            add_action('admin_menu', array(&$this, 'create_admin_form_submenus_forms'));
 
             /* Add meta boxes */
             add_action('add_meta_boxes', array(&$this, 'register_meta_boxes'));
@@ -390,8 +390,13 @@ class wpucontactforms {
         return $data;
     }
 
-    public function create_admin_form_submenus() {
+    public function create_admin_form_submenus_forms() {
         global $submenu;
+
+        if (!apply_filters('wpucontactforms_create_admin_form_submenus_forms', true)) {
+            return;
+        }
+
         $forms = get_terms(array(
             'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
             'hide_empty' => true
@@ -1040,8 +1045,8 @@ class wpucontactforms {
             $input_file = '<input ' . ($input_multiple ? 'multiple' : '') . ' type="file" accept="' . implode(',', $this->get_accepted_file_types($field)) . '" ' . $field_id_name . ' />';
             if (isset($field['fake_upload'])) {
                 $has_preview = isset($field['fake_upload__preview']) && $field['fake_upload__preview'];
-                $html_input_file = '<div class="fake-upload-wrapper" '.($has_preview ? 'data-has-preview="1"' : '').'>';
-                if($has_preview) {
+                $html_input_file = '<div class="fake-upload-wrapper" ' . ($has_preview ? 'data-has-preview="1"' : '') . '>';
+                if ($has_preview) {
                     $html_input_file .= '<div class="fake-upload-preview"></div>';
                 }
                 $html_input_file .= $input_file;
@@ -1478,7 +1483,7 @@ class wpucontactforms {
             return false;
         }
 
-        if(!$file['tmp_name']){
+        if (!$file['tmp_name']) {
             return false;
         }
 
@@ -2374,6 +2379,13 @@ function wpucontactforms_submit_contactform__savepost__objects() {
             'taxonomies' => array(wpucontactforms_savepost__get_taxonomy())
         )
     );
+
+    /* Remove taxonomy link in sidebar */
+    if (apply_filters('wpucontactforms_savepost__remove_taxonomy_submenu', false)) {
+        add_action('admin_menu', function () {
+            remove_submenu_page('edit.php?post_type=' . wpucontactforms_savepost__get_post_type(), 'edit-tags.php?taxonomy=' . wpucontactforms_savepost__get_taxonomy() . '&amp;post_type=' . wpucontactforms_savepost__get_post_type());
+        });
+    }
 
     // Allow sorting by lang
     add_filter('pll_get_post_types', 'wpucontactforms_savepost__pll_get_post_types', 10, 2);

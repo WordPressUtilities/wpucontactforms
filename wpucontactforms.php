@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.22.5
+Version: 3.22.6
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.22.5';
+    private $plugin_version = '3.22.6';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -2006,6 +2006,9 @@ class wpucontactforms {
 
     public function wpucontactforms_submit_contactform__webhook() {
         if (!isset($this->user_options['webhook_url']) || !filter_var($this->user_options['webhook_url'], FILTER_VALIDATE_URL)) {
+            return;
+        }
+        if (!isset($_POST['form_id']) || $_POST['form_id'] != $this->options['id']) {
             return;
         }
         $message = '';

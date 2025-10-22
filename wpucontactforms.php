@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.22.7
+Version: 3.23.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.22.7';
+    private $plugin_version = '3.23.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -476,6 +476,7 @@ class wpucontactforms {
             'fieldgroup_class' => 'twoboxes',
             'fieldgroup_tagname' => 'div',
             'fieldset_tagname' => 'fieldset',
+            'fieldset_show_count' => false,
             'fieldset_classname' => 'wpucontactforms-fieldset',
             'form_classname' => 'wpucontactforms__form',
             'content_before_wrapper_open' => '',
@@ -667,13 +668,15 @@ class wpucontactforms {
         $first_group = array_key_first($content_fields);
         $last_group = array_key_last($content_fields);
         $fieldset_i = 0;
+        $nb_fieldsets = count($content_fields);
         foreach ($content_fields as $fieldset_id => $fieldset_values) {
             $content_form .= '<' . $fieldset_tagname . ' class="' . $fieldset_classname . '" data-wpucontactforms-group="1" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
             if (isset($this->contact_steps[$fieldset_id]['html_before']) && $this->contact_steps[$fieldset_id]['html_before']) {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_before'];
             }
             if (isset($this->contact_steps[$fieldset_id]['title']) && $this->contact_steps[$fieldset_id]['title']) {
-                $content_form .= '<div class="legend wpucontactforms-fieldset__title">' . $this->contact_steps[$fieldset_id]['title'] . '</div>';
+                $legend_count = ($this->options['contact__settings']['fieldset_show_count'] ? ' <span class="legend-count">' . ($fieldset_i + 1) . '/' . $nb_fieldsets . '</span>' : '');
+                $content_form .= '<div class="legend wpucontactforms-fieldset__title">' . $this->contact_steps[$fieldset_id]['title'] . $legend_count . '</div>';
             }
             $content_form .= $fieldset_values;
 

@@ -468,6 +468,23 @@ function set_wpucontactforms_form($wrapper) {
             _hasError = true;
         });
 
+        /* Custom form validation */
+        if (!_hasError) {
+            var _customFormValid = true;
+            $form.trigger('wpucontactforms_custom_form_validation', {
+                boxes: $form.find(_boxes_selector),
+                is_valid: function() {
+                    _customFormValid = true;
+                },
+                is_invalid: function() {
+                    _customFormValid = false;
+                }
+            });
+            if (!_customFormValid) {
+                _hasError = true;
+            }
+        }
+
         return _hasError;
     }
 
@@ -616,8 +633,7 @@ function set_wpucontactforms_form($wrapper) {
                 if (_tmp_item.attr('type') == 'radio') {
                     if (typeof _value == 'object') {
                         _tmp_item = $wrapper.find('[name="' + _id + '"]');
-                    }
-                    else {
+                    } else {
                         _tmp_item = $wrapper.find('[name="' + _id + '"][value="' + _value + '"]');
                     }
                 }

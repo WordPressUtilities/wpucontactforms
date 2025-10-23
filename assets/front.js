@@ -444,6 +444,23 @@ function set_wpucontactforms_form($wrapper) {
             }
         }
 
+        if (!_hasError) {
+            var _customFieldValid = true;
+            $field.trigger('wpucontactforms_custom_field_validation', {
+                is_valid: function() {
+                    _customFieldValid = true;
+                },
+                is_invalid: function() {
+                    console.log('az');
+                    _customFieldValid = false;
+                }
+            });
+            if (!_customFieldValid) {
+                $box.attr('data-has-error', 1);
+                _hasError = true;
+            }
+        }
+
         return _hasError;
     }
 

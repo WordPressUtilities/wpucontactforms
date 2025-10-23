@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.23.0
+Version: 3.24.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.23.0';
+    private $plugin_version = '3.24.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -428,6 +428,8 @@ class wpucontactforms {
             'html_box_end' => '',
             'html_after' => '',
             'html_after_input' => '',
+            'html_before_label' => '',
+            'html_after_label' => '',
             'html_before' => '',
             'html_before_input' => '',
             'input_inside_label' => true,
@@ -976,7 +978,9 @@ class wpucontactforms {
         $label_content = trim($label_content);
         $label_content_html = '';
         if (!empty($label_content)) {
+            $label_content_html .= $field['html_before_label'];
             $label_content_html .= '<label ' . ($field['required'] ? 'data-for-required="1"' : '') . ' class="wpucontactform-itemlabel label-' . $id . ($field['label_classname'] ? ' ' . esc_attr($field['label_classname']) : '') . '" id="label-' . $id_html . '" for="' . $id_html . '">' . $label_content . '</label>';
+            $label_content_html .= $field['html_after_label'];
         }
         if ($label_content_html && !$label_after_input) {
             $content .= $label_content_html;

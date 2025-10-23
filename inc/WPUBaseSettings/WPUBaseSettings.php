@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.24.4
+Version: 0.24.5
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -396,12 +396,13 @@ class WPUBaseSettings {
             break;
         case 'post':
         case 'page':
+            $dropdown_post_type = isset($args['post_type']) ? $args['post_type'] : $args['type'];
             $page_dropdown_args = array(
                 'echo' => false,
                 'name' => $name_val,
                 'id' => $args['id'],
                 'selected' => $value,
-                'post_type' => isset($args['post_type']) ? $args['post_type'] : $args['type']
+                'post_type' => $dropdown_post_type
             );
 
             if (isset($args['lang_id']) && $args['lang_id'] && function_exists('pll_get_post')) {
@@ -409,6 +410,9 @@ class WPUBaseSettings {
             }
             $code_dropdown = wp_dropdown_pages($page_dropdown_args);
             echo str_replace('<select ', '<select ' . $attr, $code_dropdown);
+            if (empty($code_dropdown)) {
+                echo '<p ' . $attr . '>-</p>';
+            }
             break;
         case 'select':
             echo '<select ' . $name . ' ' . $id . '>';

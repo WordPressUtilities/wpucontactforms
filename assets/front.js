@@ -875,6 +875,18 @@ function set_wpucontactforms_form($wrapper) {
         }
         var $currentGroup = $wrapper.find('[data-wpucontactforms-group="1"][data-visible="1"]');
         var $newGroup = $currentGroup.next('[data-wpucontactforms-group="1"]');
+
+        /* Trigger custom fieldset validation */
+        var _customFieldsetValid = true;
+        $currentGroup.trigger('wpucontactforms_custom_fieldset_validation', {
+            is_invalid: function() {
+                _customFieldsetValid = false;
+            }
+        });
+        if (!_customFieldsetValid) {
+            return false;
+        }
+
         switch_fieldset($currentGroup, $newGroup);
     });
 

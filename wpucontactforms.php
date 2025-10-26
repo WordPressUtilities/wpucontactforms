@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.24.0
+Version: 3.24.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.24.0';
+    private $plugin_version = '3.24.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -672,7 +672,7 @@ class wpucontactforms {
         $fieldset_i = 0;
         $nb_fieldsets = count($content_fields);
         foreach ($content_fields as $fieldset_id => $fieldset_values) {
-            $content_form .= '<' . $fieldset_tagname . ' class="' . $fieldset_classname . '" data-wpucontactforms-group="1" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
+            $content_form .= '<' . $fieldset_tagname . ' class="' . $fieldset_classname . '" data-wpucontactforms-group="1" data-wpucontactforms-group-name="' . esc_attr($fieldset_id) . '" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
             if (isset($this->contact_steps[$fieldset_id]['html_before']) && $this->contact_steps[$fieldset_id]['html_before']) {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_before'];
             }

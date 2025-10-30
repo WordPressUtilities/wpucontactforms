@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.24.1
+Version: 3.24.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.24.1';
+    private $plugin_version = '3.24.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -642,9 +642,16 @@ class wpucontactforms {
                 $form_autofill = true;
             }
         }
+        /* Init contact steps */
         foreach ($this->contact_steps as $step_id => $step) {
             if (!isset($step['title'])) {
                 $this->contact_steps[$step_id]['title'] = '';
+            }
+            if (!isset($step['submit_intermediate_prev_label'])) {
+                $this->contact_steps[$step_id]['submit_intermediate_prev_label'] = $this->options['contact__settings']['submit_intermediate_prev_label'];
+            }
+            if (!isset($step['submit_intermediate_label'])) {
+                $this->contact_steps[$step_id]['submit_intermediate_label'] = $this->options['contact__settings']['submit_intermediate_label'];
             }
         }
 
@@ -672,6 +679,7 @@ class wpucontactforms {
         $fieldset_i = 0;
         $nb_fieldsets = count($content_fields);
         foreach ($content_fields as $fieldset_id => $fieldset_values) {
+            $args['current_fieldset_step'] = $this->contact_steps[$fieldset_id];
             $content_form .= '<' . $fieldset_tagname . ' class="' . $fieldset_classname . '" data-wpucontactforms-group="1" data-wpucontactforms-group-name="' . esc_attr($fieldset_id) . '" data-wpucontactforms-group-id="' . $fieldset_i . '" data-visible="' . ($fieldset_id === $first_group ? '1' : '0') . '">';
             if (isset($this->contact_steps[$fieldset_id]['html_before']) && $this->contact_steps[$fieldset_id]['html_before']) {
                 $content_form .= $this->contact_steps[$fieldset_id]['html_before'];
@@ -769,9 +777,9 @@ class wpucontactforms {
         $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['group_submit_intermediate_class'] . '">';
         $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_before', '', $form_id, $fieldset_id);
         if (!$is_first_group) {
-            $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_prev_class'] . '" data-type="previous" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_prev_label'] . '</span></button>';
+            $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_prev_class'] . '" data-type="previous" type="button"><span>' . $args['current_fieldset_step']['submit_intermediate_prev_label'] . '</span></button>';
         }
-        $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_class'] . '" data-type="next" type="button"><span>' . $this->options['contact__settings']['submit_intermediate_label'] . '</span></button>';
+        $content_form .= '<button class="' . $this->options['contact__settings']['submit_intermediate_class'] . '" data-type="next" type="button"><span>' . $args['current_fieldset_step']['submit_intermediate_label'] . '</span></button>';
         $content_form .= apply_filters('wpucontactforms_fields_submit_intermediate_inner_after', '', $form_id, $fieldset_id);
         $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
 

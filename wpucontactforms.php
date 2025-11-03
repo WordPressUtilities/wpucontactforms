@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.24.2
+Version: 3.25.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.24.2';
+    private $plugin_version = '3.25.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -145,6 +145,9 @@ class wpucontactforms {
                 ),
                 'recaptcha' => array(
                     'name' => __('Captcha', 'wpucontactforms')
+                ),
+                'settings' => array(
+                    'name' => __('Settings')
                 )
             )
         );
@@ -197,6 +200,12 @@ class wpucontactforms {
             'recaptcha_privatekey' => array(
                 'label' => __('Private key', 'wpucontactforms'),
                 'section' => 'recaptcha'
+            ),
+            'log_spams' => array(
+                'label' => __('Log spams', 'wpucontactforms'),
+                'label_check' => __('Spams will be logged to the debug log file', 'wpucontactforms'),
+                'type' => 'checkbox',
+                'section' => 'settings'
             )
         );
 
@@ -1243,6 +1252,9 @@ class wpucontactforms {
 
         // Checking bots
         if (!isset($_POST[$this->humantest_classname]) || !empty($_POST[$this->humantest_classname])) {
+            if (isset($this->user_options['log_spams']) && $this->user_options['log_spams'] == '1') {
+                error_log('WPUContactForms: humantest failed from IP ' . $this->basetoolbox->get_user_ip() . ' - ' . print_r($_POST, true));
+            }
             return;
         }
 
@@ -1264,6 +1276,9 @@ class wpucontactforms {
 
             if (!isset($_POST[$response_field])) {
                 $this->msg_errors[] = __('The captcha is invalid', 'wpucontactforms');
+                if (isset($this->user_options['log_spams']) && $this->user_options['log_spams'] == '1') {
+                    error_log('WPUContactForms: recaptcha empty from IP ' . $this->basetoolbox->get_user_ip() . ' - ' . print_r($_POST, true));
+                }
             } else {
                 $recaptcha_args = apply_filters('wpucontactforms__recaptcha_args', array(
                     'method' => 'POST',
@@ -1283,6 +1298,9 @@ class wpucontactforms {
                 $body_response_json = json_decode($body_response);
                 if (!is_object($body_response_json) || !isset($body_response_json->success) || !$body_response_json->success) {
                     $this->msg_errors[] = __('The captcha is invalid', 'wpucontactforms');
+                    if (isset($this->user_options['log_spams']) && $this->user_options['log_spams'] == '1') {
+                        error_log('WPUContactForms: recaptcha failed from IP ' . $this->basetoolbox->get_user_ip() . ' - ' . print_r($_POST, true));
+                    }
                     return;
                 }
             }

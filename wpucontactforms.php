@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.25.0
+Version: 3.26.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.25.0';
+    private $plugin_version = '3.26.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -522,6 +522,8 @@ class wpucontactforms {
             'submit_intermediate_prev_label' => __('Previous', 'wpucontactforms'),
             'submit_intermediate_label' => __('Continue', 'wpucontactforms'),
             'submit_type' => 'button',
+            'resubmit_delay_days' => 0,
+            'resubmit_delay_field' => 'contact_email',
             'contact_steps' => array(),
             'contact_fields' => array(
                 'contact_name' => array(
@@ -1326,6 +1328,7 @@ class wpucontactforms {
 
         $this->contact_fields = $this->extract_value_from_post($post_array, $this->contact_fields);
 
+        // Validate message field
         if (isset($this->contact_fields['contact_message'])) {
             $contact_message = apply_filters('wpucontactforms_message', $this->contact_fields['contact_message']['value']);
             if (is_array($contact_message)) {
@@ -1354,6 +1357,38 @@ class wpucontactforms {
         // Extract anonymized user IP
         $this->form_submitted_ip = $this->basetoolbox->get_user_ip();
         $this->form_submitted_hashed_ip = md5(site_url() . $this->basetoolbox->get_user_ip());
+
+        // Check if resubmit delay is enabled
+        $resubmit_delay_days = $this->options['contact__settings']['resubmit_delay_days'];
+        $resubmit_delay_field = $this->options['contact__settings']['resubmit_delay_field'];
+        if ($resubmit_delay_days > 0 && isset($post_array[$resubmit_delay_field])) {
+            $submit_messages = get_posts(array(
+                'post_type' => wpucontactforms_savepost__get_post_type(),
+                'tax_query' => array(
+                    array(
+                        'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
+                        'field' => 'slug',
+                        'terms' => array($this->options['id'])
+                    )
+                ),
+                'date_query' => array(
+                    array(
+                        'after' => date('Y-m-d H:i:s', strtotime('-' . intval($resubmit_delay_days) . ' days'))
+                    )
+                ),
+                'meta_query' => array(
+                    'key' => $resubmit_delay_field,
+                    'compare' => '=',
+                    'value' => $post_array[$resubmit_delay_field]
+                ),
+                'posts_per_page' => 1
+            ));
+
+            if ($submit_messages && count($submit_messages) > 0) {
+                $error_txt = __('You already submitted this form recently. Please wait before submitting it again.', 'wpucontactforms');
+                $this->msg_errors[] = apply_filters('wpucontactforms__resubmit_delay_error_txt', $error_txt, $submit_messages[0]);
+            }
+        }
 
         // Add custom error messages.
         $this->msg_errors = apply_filters('wpucontactforms_submit_contactform_msg_errors', $this->msg_errors, $this);

@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.24.5
+Version: 0.24.7
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -204,6 +204,9 @@ class WPUBaseSettings {
             if (!isset($section['before_section'])) {
                 $section['before_section'] = '';
             }
+            if (!isset($section['is_open'])) {
+                $section['is_open'] = true;
+            }
             if (!isset($section['after_section'])) {
                 $section['after_section'] = '';
             }
@@ -215,7 +218,7 @@ class WPUBaseSettings {
                     add_action('admin_footer', array(&$this, 'admin_footer_checkall'));
                 }
             }
-            $section['before_section'] = '<div class="wpubasesettings-form-table-section">' . $section['before_section'];
+            $section['before_section'] = '<div data-section-id="' . ($this->settings_details['option_id'] . '_' . $id) . '" class="wpubasesettings-form-table-section ' . ($section['is_open'] ? '' : 'is-closed') . '">' . $section['before_section'];
             $section['after_section'] = $section['after_section'] . '</div>';
             add_settings_section(
                 $id,
@@ -605,10 +608,24 @@ var jQform = jQinput.closest('form');
 /* Add toggles on titles */
 jQform.find('h2').each(function(i,el){
     var jQel = jQuery(el),
-        jQWrap = jQel.closest('.wpubasesettings-form-table-section');
-    jQWrap.addClass('is-open');
+        jQWrap = jQel.closest('.wpubasesettings-form-table-section'),
+        _local_storage_key = 'wpubasesettings_section_' + jQWrap.data('section-id') + '_is_open';
+    if(jQWrap.hasClass('is-closed')){
+        jQWrap.removeClass('is-closed');
+    }
+    else {
+        jQWrap.addClass('is-open');
+    }
+    var stored_state = window.localStorage.getItem(_local_storage_key);
+    if(stored_state === '1'){
+        jQWrap.removeClass('is-open');
+    }
+    if(stored_state === '0'){
+        jQWrap.addClass('is-open');
+    }
     jQel.on('click',function(){
         jQWrap.toggleClass('is-open');
+        window.localStorage.setItem(_local_storage_key, jQWrap.hasClass('is-open') ? '0' : '1');
     });
 });
 

@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.26.0
+Version: 3.27.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.26.0';
+    private $plugin_version = '3.27.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -623,7 +623,6 @@ class wpucontactforms {
             }
             return '';
         }
-
         if (!is_array($args)) {
             $args = array();
         }
@@ -876,8 +875,13 @@ class wpucontactforms {
     public function field_content($field) {
         $is_preview_mode = $this->is_preview_form();
 
-        if (!$is_preview_mode && isset($field['type'], $field['html']) && $field['type'] == 'html') {
-            return $field['html'];
+        if (!$is_preview_mode && isset($field['type'])) {
+            if ($field['type'] == 'html' && isset($field['html'])) {
+                return $field['html'];
+            }
+            if ($field['type'] == 'hook_filter' && isset($field['hook_filter'])) {
+                return apply_filters($field['hook_filter'], '', $field, $this->options);
+            }
         }
 
         $content = '';

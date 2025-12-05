@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.27.0
+Version: 3.28.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.27.0';
+    private $plugin_version = '3.28.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -206,6 +206,18 @@ class wpucontactforms {
                 'label_check' => __('Spams will be logged to the debug log file', 'wpucontactforms'),
                 'type' => 'checkbox',
                 'section' => 'settings'
+            ),
+            'disable_emails' => array(
+                'label' => __('Disable emails', 'wpucontactforms'),
+                'label_check' => __('No email will be sent on form submission', 'wpucontactforms'),
+                'type' => 'checkbox',
+                'section' => 'settings'
+            ),
+            'disable_saving_messages' => array(
+                'label' => __('Disable saving messages', 'wpucontactforms'),
+                'label_check' => __('Messages will not be saved in the database', 'wpucontactforms'),
+                'type' => 'checkbox',
+                'section' => 'settings'
             )
         );
 
@@ -302,6 +314,20 @@ class wpucontactforms {
         }
 
         $wpucontactforms_forms[$options['id']]['fields'] = $this->contact_fields;
+
+        add_filter('wpucontactforms_submit_contactform__savepost__disable', function ($disable, $form) {
+            if (isset($this->user_options['disable_emails']) && $this->user_options['disable_emails'] == '1') {
+                return true;
+            }
+            return $disable;
+        }, 50, 2);
+
+        add_filter('wpucontactforms_submit_contactform__sendmail__disable', function ($disable, $form) {
+            if (isset($this->user_options['disable_saving_messages']) && $this->user_options['disable_saving_messages'] == '1') {
+                return true;
+            }
+            return $disable;
+        }, 50, 2);
 
     }
 

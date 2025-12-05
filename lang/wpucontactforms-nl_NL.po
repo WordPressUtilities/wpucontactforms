@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Contact forms\n"
-"POT-Creation-Date: 2025-12-02 21:39+0100\n"
+"POT-Creation-Date: 2025-12-05 22:40+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -20,53 +20,53 @@ msgid "Help"
 msgstr "Help"
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:135
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:686
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:693
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:703
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:710
 #: .././wpucontactforms.php:150
 msgid "Settings"
 msgstr "Instellingen"
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:165
-#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:244 .././wpucontactforms.php:459
-#: .././wpucontactforms.php:1467
+#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:244 .././wpucontactforms.php:485
+#: .././wpucontactforms.php:1497
 msgid "No"
 msgstr "Nee"
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:165
-#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:245 .././wpucontactforms.php:460
-#: .././wpucontactforms.php:1467
+#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:245 .././wpucontactforms.php:486
+#: .././wpucontactforms.php:1497
 msgid "Yes"
 msgstr "Ja"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:211
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:214
 msgid "Check all"
 msgstr "Alles aanvinken"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:212
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:215
 msgid "Uncheck all"
 msgstr "Alles uitvinken"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:326
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:329
 msgid "Settings saved."
 msgstr "Instellingen opgeslagen."
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:386
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:389
 msgid "Upload New Media"
 msgstr "Nieuwe media uploaden"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:587
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:590
 msgid "Language"
 msgstr "Taal"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:708
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:725
 msgid "Save"
 msgstr "Opslaan"
 
-#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:169 .././wpucontactforms.php:519
+#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:169 .././wpucontactforms.php:545
 msgid "Submit"
 msgstr "Verzenden"
 
-#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:195 .././wpucontactforms.php:522
+#: .././inc/WPUBaseToolbox/WPUBaseToolbox.php:195 .././wpucontactforms.php:548
 msgid "Previous"
 msgstr "Vorige"
 
@@ -174,210 +174,226 @@ msgstr "Spam registreren"
 msgid "Spams will be logged to the debug log file"
 msgstr "Spams worden gelogd in het debug-logbestand"
 
-#: .././wpucontactforms.php:215 .././wpucontactforms.php:216
-#: .././wpucontactforms.php:1815
+#: .././wpucontactforms.php:211
+msgid "Disable emails"
+msgstr "Schakel e-mails uit"
+
+#: .././wpucontactforms.php:212
+msgid "No email will be sent on form submission"
+msgstr "Er wordt geen e-mail gestuurd bij het indienen van het formulier"
+
+#: .././wpucontactforms.php:217
+msgid "Disable saving messages"
+msgstr "Schakel opslagberichten uit"
+
+#: .././wpucontactforms.php:218
+msgid "Messages will not be saved in the database"
+msgstr "Berichten worden niet opgeslagen in de database"
+
+#: .././wpucontactforms.php:227 .././wpucontactforms.php:228
+#: .././wpucontactforms.php:1845
 msgid "Export"
 msgstr "Exportieren"
 
-#: .././wpucontactforms.php:464
+#: .././wpucontactforms.php:490
 msgid "Thank you for your message!"
 msgstr "Bedankt voor uw bericht!"
 
-#: .././wpucontactforms.php:523
+#: .././wpucontactforms.php:549
 msgid "Continue"
 msgstr "Doorgaan"
 
-#: .././wpucontactforms.php:530
+#: .././wpucontactforms.php:556
 msgid "Name"
 msgstr "Naam"
 
-#: .././wpucontactforms.php:534
+#: .././wpucontactforms.php:560
 msgid "Email"
 msgstr "E-mail"
 
-#: .././wpucontactforms.php:539 .././wpucontactforms.php:2431
+#: .././wpucontactforms.php:565 .././wpucontactforms.php:2461
 msgid "Message"
 msgstr "Bericht"
 
-#: .././wpucontactforms.php:755
+#: .././wpucontactforms.php:780
 msgid "If you are human, leave this empty"
 msgstr "Als je een mens bent, laat dit dan leeg"
 
-#: .././wpucontactforms.php:950
+#: .././wpucontactforms.php:980
 msgid "Select a value"
 msgstr "Selecteer een waarde"
 
-#: .././wpucontactforms.php:1170
+#: .././wpucontactforms.php:1200
 msgid "This field is invalid"
 msgstr "Dit veld is ongeldig"
 
-#: .././wpucontactforms.php:1172
+#: .././wpucontactforms.php:1202
 msgid "This is not a valid e-mail address"
 msgstr "Dit is geen geldig e-mailadres"
 
-#: .././wpucontactforms.php:1175
+#: .././wpucontactforms.php:1205
 msgid "This is not a valid phone number"
 msgstr "Dit is geen geldig telefoonnummer"
 
-#: .././wpucontactforms.php:1182
+#: .././wpucontactforms.php:1212
 #, php-format
 msgid "Did you mean: %s ?"
 msgstr "Bedoelde u: %s ?"
 
-#: .././wpucontactforms.php:1186
+#: .././wpucontactforms.php:1216
 msgid "A value should be selected"
 msgstr "Er moet een waarde worden geselecteerd"
 
-#: .././wpucontactforms.php:1191
+#: .././wpucontactforms.php:1221
 msgid "This field should not be empty"
 msgstr "Dit veld mag niet leeg zijn"
 
-#: .././wpucontactforms.php:1193
+#: .././wpucontactforms.php:1223
 msgid "This box should be checked"
 msgstr "Dit vakje moet worden aangevinkt"
 
-#: .././wpucontactforms.php:1199
+#: .././wpucontactforms.php:1229
 #, php-format
 msgid "This file is too heavy (%sMb)"
 msgstr "Dit bestand is te zwaar (%sMb)"
 
-#: .././wpucontactforms.php:1280 .././wpucontactforms.php:1302
+#: .././wpucontactforms.php:1310 .././wpucontactforms.php:1332
 msgid "The captcha is invalid"
 msgstr "De captcha is ongeldig"
 
-#: .././wpucontactforms.php:1345 .././wpucontactforms.php:1352
+#: .././wpucontactforms.php:1375 .././wpucontactforms.php:1382
 msgid "Invalid source"
 msgstr "Ongeldige bron"
 
-#: .././wpucontactforms.php:1388
+#: .././wpucontactforms.php:1418
 msgid ""
 "You already submitted this form recently. Please wait before submitting it "
 "again."
 msgstr ""
-"Je hebt dit formulier onlangs al ingediend. Wacht alsjeblieft voordat je "
-"het opnieuw indient."
+"Je hebt dit formulier onlangs al ingediend. Wacht alsjeblieft voordat je het "
+"opnieuw indient."
 
-#: .././wpucontactforms.php:1397
+#: .././wpucontactforms.php:1427
 msgid "Error:"
 msgstr "Fout:"
 
-#: .././wpucontactforms.php:1456
+#: .././wpucontactforms.php:1486
 #, php-format
 msgid "The field \"%s\" is not correct"
 msgstr "Het veld \"%s\" is niet correct"
 
-#: .././wpucontactforms.php:1482
+#: .././wpucontactforms.php:1512
 #, php-format
 msgid "The field \"%s\" is required"
 msgstr "Het veld '%s' is vereist"
 
-#: .././wpucontactforms.php:1720
+#: .././wpucontactforms.php:1750
 msgid "Select an order"
 msgstr "Selecteer een bestelling"
 
-#: .././wpucontactforms.php:1723
+#: .././wpucontactforms.php:1753
 #, php-format
 msgid "# %s"
 msgstr "# %s"
 
-#: .././wpucontactforms.php:1727
+#: .././wpucontactforms.php:1757
 msgid "No order available"
 msgstr "Geen bestelling beschikbaar"
 
-#: .././wpucontactforms.php:1749
+#: .././wpucontactforms.php:1779
 msgid "All forms"
 msgstr "Alle vormen"
 
-#: .././wpucontactforms.php:1760
+#: .././wpucontactforms.php:1790
 msgid "Choose a form:"
 msgstr "Kies een formulier:"
 
-#: .././wpucontactforms.php:1767
+#: .././wpucontactforms.php:1797
 msgid "No messages to export yet."
 msgstr "Nog geen berichten om te exporteren."
 
-#: .././wpucontactforms.php:1774
+#: .././wpucontactforms.php:1804
 msgid "All languages"
 msgstr "Alle talen"
 
-#: .././wpucontactforms.php:1785
+#: .././wpucontactforms.php:1815
 msgid "Choose a language:"
 msgstr "Kies een taal:"
 
-#: .././wpucontactforms.php:1794
+#: .././wpucontactforms.php:1824
 msgid "From:"
 msgstr "Van:"
 
-#: .././wpucontactforms.php:1800
+#: .././wpucontactforms.php:1830
 msgid "To:"
 msgstr "Aan:"
 
-#: .././wpucontactforms.php:1806
+#: .././wpucontactforms.php:1836
 msgid "Format:"
 msgstr "Formaat:"
 
-#: .././wpucontactforms.php:1959
+#: .././wpucontactforms.php:1989
 msgid "No messages match this request."
 msgstr "Er komen geen berichten overeen met dit verzoek."
 
-#: .././wpucontactforms.php:2016
+#: .././wpucontactforms.php:2046
 msgid "Attachments"
 msgstr "Bijlagen"
 
-#: .././wpucontactforms.php:2045
+#: .././wpucontactforms.php:2075
 msgid "No attachments available"
 msgstr "Geen bijlagen beschikbaar"
 
-#: .././wpucontactforms.php:2117
+#: .././wpucontactforms.php:2147
 msgid "URL:"
 msgstr "URL:"
 
-#: .././wpucontactforms.php:2120
+#: .././wpucontactforms.php:2150
 msgid "Page title:"
 msgstr "Titel van de pagina:"
 
-#: .././wpucontactforms.php:2123
+#: .././wpucontactforms.php:2153
 msgid "IP:"
 msgstr "IP:"
 
-#: .././wpucontactforms.php:2126
+#: .././wpucontactforms.php:2156
 msgid "Hashed IP:"
 msgstr "Gehashte IP:"
 
-#: .././wpucontactforms.php:2178
+#: .././wpucontactforms.php:2208
 msgid "See attached file(s)"
 msgstr "Zie bijgevoegde bestand(en)"
 
-#: .././wpucontactforms.php:2179
+#: .././wpucontactforms.php:2209
 msgid "Or click here"
 msgstr "Of klik hier"
 
-#: .././wpucontactforms.php:2229
+#: .././wpucontactforms.php:2259
 #, php-format
 msgid "No more than %s links, please"
 msgstr "Niet meer dan %s links, alstublieft"
 
-#: .././wpucontactforms.php:2269 .././wpucontactforms.php:2499
+#: .././wpucontactforms.php:2299 .././wpucontactforms.php:2529
 msgid "New message"
 msgstr "Nieuw bericht"
 
-#: .././wpucontactforms.php:2271 .././wpucontactforms.php:2502
+#: .././wpucontactforms.php:2301 .././wpucontactforms.php:2532
 #, php-format
 msgid "New message from %s"
 msgstr "Nieuw bericht van %s"
 
-#: .././wpucontactforms.php:2340
+#: .././wpucontactforms.php:2370
 msgid "Message from your contact form"
 msgstr "Bericht van uw contactformulier"
 
-#: .././wpucontactforms.php:2415
+#: .././wpucontactforms.php:2445
 msgid "Forms"
 msgstr "Formulieren"
 
-#: .././wpucontactforms.php:2430
+#: .././wpucontactforms.php:2460
 msgid "Messages"
 msgstr "Berichten"
 
-#: .././wpucontactforms.php:2611
+#: .././wpucontactforms.php:2641
 msgid "Re-send this email"
 msgstr "Stuur deze e-mail opnieuw"

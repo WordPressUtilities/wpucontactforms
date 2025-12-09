@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.28.0
+Version: 3.29.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.28.0';
+    private $plugin_version = '3.29.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -49,6 +49,7 @@ class wpucontactforms {
     public $contact_fields = array();
     public $contact_steps = array();
     public $phone_pattern = '^(?:0|\(?\+33\)?\s?|0033\s?)[1-79](?:[\.\-\s]?\d\d){4}$';
+    public $backend_disposable_domains = array();
     public $disposable_domains = array(
         'cool.fr.nf',
         'courriel.fr.nf',
@@ -451,6 +452,7 @@ class wpucontactforms {
     public function set_options($options) {
 
         $this->disposable_domains = apply_filters('wpucontactforms_disposable_domains', $this->disposable_domains);
+        $this->backend_disposable_domains = apply_filters('wpucontactforms_backend_disposable_domains', array_filter(array_map('trim', explode("\n", file_get_contents(__DIR__ . '/tools/disposable-domains.txt')))));
         $this->allowed_url_params = apply_filters('wpucontactforms_allowed_url_params', $this->allowed_url_params);
         $this->is_successful = false;
         $this->has_upload = false;
@@ -1645,6 +1647,11 @@ class wpucontactforms {
             if ($this->options['contact__settings']['disallow_temp_email']) {
                 foreach ($this->disposable_domains as $domain) {
                     if (strpos($tmp_value, '@' . $domain) !== false) {
+                        return false;
+                    }
+                }
+                foreach ($this->backend_disposable_domains as $domain) {
+                    if (strpos($tmp_value, $domain) !== false) {
                         return false;
                     }
                 }

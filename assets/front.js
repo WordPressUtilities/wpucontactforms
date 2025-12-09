@@ -849,6 +849,9 @@ function set_wpucontactforms_form($wrapper) {
         $currentGroup.trigger('wpucontactforms_fieldset_hiding');
         $newGroup.attr('data-visible', '1');
         $newGroup.trigger('wpucontactforms_fieldset_showing');
+        jQuery('html, body').animate({
+            scrollTop: $wrapper.offset().top - 150
+        }, 300);
     }
 
     /* Handle steps */
@@ -893,7 +896,7 @@ function set_wpucontactforms_form($wrapper) {
     /* Special actions before AJAX send */
     $wrapper.on('wpucontactforms_before_ajax', function() {
         jQuery('html, body').animate({
-            scrollTop: $wrapper.offset().top
+            scrollTop: $wrapper.offset().top - 150
         }, 300);
     });
 

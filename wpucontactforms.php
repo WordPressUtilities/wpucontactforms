@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.29.0
+Version: 3.29.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.29.0';
+    private $plugin_version = '3.29.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -329,6 +329,11 @@ class wpucontactforms {
             }
             return $disable;
         }, 50, 2);
+
+        /* WP CLI */
+        add_action('wpucontactforms_export_wp_cli', array(&$this,
+            'trigger_export'
+        ), 10, 2);
 
     }
 
@@ -651,6 +656,7 @@ class wpucontactforms {
             }
             return '';
         }
+
         if (!is_array($args)) {
             $args = array();
         }
@@ -1985,6 +1991,9 @@ class wpucontactforms {
         if (isset($posted_values['wpucontactforms_export_format'])) {
             $format = $posted_values['wpucontactforms_export_format'];
         }
+
+        $data = apply_filters('wpucontactforms_export_data', $data, $posted_values, $args);
+
         switch ($format) {
         case 'json':
             $this->basetoolbox->export_array_to_json($data, $file_name);
@@ -1993,7 +2002,13 @@ class wpucontactforms {
             $this->basetoolbox->export_array_to_csv($data, $file_name);
         }
 
-        $this->wpubasemessages->set_message('wpucontactforms_export_no_msg', __('No messages match this request.', 'wpucontactforms'), 'error');
+        $error_msg = __('No messages match this request.', 'wpucontactforms');
+        if ($this->wpubasemessages) {
+            $this->wpubasemessages->set_message('wpucontactforms_export_no_msg', $error_msg, 'error');
+        }
+        if (defined('WP_CLI')) {
+            WP_CLI::error($error_msg);
+        }
 
     }
 

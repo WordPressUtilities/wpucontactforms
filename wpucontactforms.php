@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.29.1
+Version: 3.29.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.29.1';
+    private $plugin_version = '3.29.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1876,16 +1876,22 @@ class wpucontactforms {
 
         $file_name = 'all-forms';
 
-        $term = '';
-        if (isset($posted_values['term']) && term_exists($posted_values['term'], wpucontactforms_savepost__get_taxonomy())) {
-            $term = $posted_values['term'];
-            $file_name = $term;
+        $term = array();
+        if (isset($posted_values['term'])) {
+            if (!is_array($posted_values['term'])) {
+                $posted_values['term'] = explode(',', $posted_values['term']);
+            }
+            foreach ($posted_values['term'] as $tmp_term) {
+                if (term_exists($tmp_term, wpucontactforms_savepost__get_taxonomy())) {
+                    $term[] = $tmp_term;
+                }
+            }
+            $file_name .= '-' . implode('-', $term);
         }
 
         $lang = '';
         if (isset($posted_values['lang']) && $posted_values['lang']) {
             $locales = $this->page_action__export__get_locales();
-            $has_locale = false;
             foreach ($locales as $locale) {
                 if ($locale->lang_name == $posted_values['lang']) {
                     $lang = $posted_values['lang'];
@@ -1982,6 +1988,14 @@ class wpucontactforms {
                     }
                 }
                 $item[$meta_k] = $meta_value;
+            }
+            if (count($term) != 1) {
+                $message_form = get_the_terms($p_id, wpucontactforms_savepost__get_taxonomy());
+                $form_id = '';
+                if ($message_form && isset($message_form[0])) {
+                    $form_id = $message_form[0]->slug;
+                }
+                $item['contact_form'] = $form_id;
             }
             $data[] = $item;
         }

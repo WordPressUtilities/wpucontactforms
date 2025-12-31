@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.18.0
+Version: 0.19.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,7 +15,7 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.18.0';
+    private $plugin_version = '0.19.0';
     private $args = array();
     private $missing_plugins = array();
     private $default_module_args = array(
@@ -553,6 +553,23 @@ class WPUBaseToolbox {
             return;
         }
 
+        /* Correct headers */
+        header('Content-Type: application/csv');
+        header('Content-Disposition: attachment; filename=' . $name . '.csv');
+        header('Pragma: no-cache');
+
+        echo $this->export_array_to_csv_string($array, $args);
+        die;
+    }
+
+    /* Array to CSV string
+    -------------------------- */
+
+    public function export_array_to_csv_string($array, $args = array()) {
+        if (!isset($array[0])) {
+            return '';
+        }
+
         if (!is_array($args)) {
             $args = array();
         }
@@ -563,21 +580,18 @@ class WPUBaseToolbox {
 
         $array = $this->export_array_clean_for_csv($array);
 
-        /* Correct headers */
-        header('Content-Type: application/csv');
-        header('Content-Disposition: attachment; filename=' . $name . '.csv');
-        header('Pragma: no-cache');
-
         $all_keys = array_keys($array[0]);
 
         /* Build and send CSV */
+        ob_start();
         $output = fopen("php://output", 'w');
         fputcsv($output, $all_keys, $args['separator'], $args['enclosure']);
         foreach ($array as $item) {
             fputcsv($output, $item, $args['separator'], $args['enclosure']);
         }
         fclose($output);
-        die;
+        return ob_get_clean();
+
     }
 
     /* ----------------------------------------------------------

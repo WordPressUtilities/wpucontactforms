@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.29.2
+Version: 3.29.3
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.29.2';
+    private $plugin_version = '3.29.3';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1881,11 +1881,7 @@ class wpucontactforms {
             if (!is_array($posted_values['term'])) {
                 $posted_values['term'] = explode(',', $posted_values['term']);
             }
-            foreach ($posted_values['term'] as $tmp_term) {
-                if (term_exists($tmp_term, wpucontactforms_savepost__get_taxonomy())) {
-                    $term[] = $tmp_term;
-                }
-            }
+            $term = $posted_values['term'];
             $file_name .= '-' . implode('-', $term);
         }
 
@@ -2011,6 +2007,10 @@ class wpucontactforms {
         switch ($format) {
         case 'json':
             $this->basetoolbox->export_array_to_json($data, $file_name);
+            break;
+        case 'csv_string':
+            echo $this->basetoolbox->export_array_to_csv_string($data, $file_name);
+            return;
             break;
         default:
             $this->basetoolbox->export_array_to_csv($data, $file_name);

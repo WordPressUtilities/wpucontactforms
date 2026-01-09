@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.29.3
+Version: 3.29.4
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.29.3';
+    private $plugin_version = '3.29.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1402,6 +1402,8 @@ class wpucontactforms {
         if ($resubmit_delay_days > 0 && isset($post_array[$resubmit_delay_field])) {
             $submit_messages = get_posts(array(
                 'post_type' => wpucontactforms_savepost__get_post_type(),
+                'meta_key' => $resubmit_delay_field,
+                'meta_value' => $post_array[$resubmit_delay_field],
                 'tax_query' => array(
                     array(
                         'taxonomy' => wpucontactforms_savepost__get_taxonomy(),
@@ -1413,11 +1415,6 @@ class wpucontactforms {
                     array(
                         'after' => date('Y-m-d H:i:s', strtotime('-' . intval($resubmit_delay_days) . ' days'))
                     )
-                ),
-                'meta_query' => array(
-                    'key' => $resubmit_delay_field,
-                    'compare' => '=',
-                    'value' => $post_array[$resubmit_delay_field]
                 ),
                 'posts_per_page' => 1
             ));

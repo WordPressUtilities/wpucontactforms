@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.29.4
+Version: 3.30.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.29.4';
+    private $plugin_version = '3.30.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -790,23 +790,28 @@ class wpucontactforms {
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
 
+        /* Recaptcha */
+        $recaptcha_attributes = apply_filters('wpucontactforms_fields_recaptcha_attributes', array(
+            'data-sitekey' => $this->options['contact__settings']['recaptcha_sitekey']
+        ));
+        $recaptcha_attributes_html = $this->basetoolbox->array_to_html_attributes($recaptcha_attributes);
         if (!$is_preview_mode && $this->has_recaptcha_v2) {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha">';
             $content_form .= $this->options['contact__settings']['content_before_recaptcha'];
-            $content_form .= '<div class="g-recaptcha" data-callback="wpucontactforms_recaptcha_callback" data-expired-callback="wpucontactforms_recaptcha_callback_expired" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '"></div>';
+            $content_form .= '<div class="g-recaptcha" data-callback="wpucontactforms_recaptcha_callback" data-expired-callback="wpucontactforms_recaptcha_callback_expired"  ' . $recaptcha_attributes_html . '></div>';
             $content_form .= $this->options['contact__settings']['content_after_recaptcha'];
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
         if (!$is_preview_mode && $this->has_recaptcha_v3) {
-            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-v3" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-v3" ' . $recaptcha_attributes_html . ' >';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
         if (!$is_preview_mode && $this->has_recaptcha_turnstile) {
-            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-turnstile" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-turnstile" ' . $recaptcha_attributes_html . ' >';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
         if (!$is_preview_mode && $this->has_recaptcha_hcaptcha) {
-            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-hcaptcha" data-sitekey="' . $this->options['contact__settings']['recaptcha_sitekey'] . '">';
+            $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="' . $this->options['contact__settings']['box_class'] . ' box-recaptcha-hcaptcha" ' . $recaptcha_attributes_html . ' >';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
 

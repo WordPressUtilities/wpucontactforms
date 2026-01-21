@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.30.0
+Version: 3.30.1
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.30.0';
+    private $plugin_version = '3.30.1';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -701,19 +701,33 @@ class wpucontactforms {
 
         $fieldset_tagname = $this->options['contact__settings']['fieldset_tagname'];
         $fieldset_classname = $this->options['contact__settings']['fieldset_classname'];
-        $form_classname = $this->options['contact__settings']['form_classname'];
 
         $is_preview_mode = $this->is_preview_form();
 
         $form_tag = $is_preview_mode ? 'div' : 'form';
 
+        /* Build form attributes */
+        $form_attributes = array(
+            'class' => $this->options['contact__settings']['form_classname'],
+            'action' => '',
+            'aria-atomic' => 'true',
+            'aria-live' => 'assertive',
+            'method' => 'post'
+        );
+        if ($this->has_upload) {
+            $form_attributes['enctype'] = 'multipart/form-data';
+            $form_attributes['data-max-file-size'] = $this->options['contact__settings']['max_file_size'];
+        }
+        if ($this->options['contact__settings']['autocomplete']) {
+            $form_attributes['autocomplete'] = $this->options['contact__settings']['autocomplete'];
+        }
+        $form_attributes['data-disallow-temp-email'] = $this->options['contact__settings']['disallow_temp_email'] ? '1' : '0';
+        $form_attributes['data-disposable-domains'] = base64_encode(json_encode($this->options['contact__settings']['extra_disposable_domains']));
+        $form_attributes['data-autofill'] = $form_autofill ? '1' : '0';
+        $form_attributes = apply_filters('wpucontactforms_form_attributes', $form_attributes, $form_id, $this->options, $args);
+
         /* Open form */
-        $content_form .= '<' . $form_tag . ' class="' . $form_classname . '" action="" aria-atomic="true" aria-live="assertive" method="post" ';
-        $content_form .= ' ' . ($this->has_upload ? 'enctype="multipart/form-data" data-max-file-size="' . $this->options['contact__settings']['max_file_size'] . '"' : '');
-        $content_form .= ' ' . ($this->options['contact__settings']['autocomplete'] ? 'autocomplete="' . esc_attr($this->options['contact__settings']['autocomplete']) . '"' : '');
-        $content_form .= ' data-disallow-temp-email="' . ($this->options['contact__settings']['disallow_temp_email'] ? '1' : '0') . '"';
-        $content_form .= ' data-disposable-domains="' . base64_encode(json_encode($this->options['contact__settings']['extra_disposable_domains'])) . '"';
-        $content_form .= ' data-autofill="' . ($form_autofill ? '1' : '0') . '">';
+        $content_form .= '<' . $form_tag . ' ' . $this->basetoolbox->array_to_html_attributes($form_attributes) . '>';
 
         /* Group start */
         $content_form .= '<' . $this->options['contact__settings']['group_tagname'] . ' class="' . $this->options['contact__settings']['group_class'] . '">';

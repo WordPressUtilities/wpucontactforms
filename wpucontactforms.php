@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.30.1
+Version: 3.30.2
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.30.1';
+    private $plugin_version = '3.30.2';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -331,10 +331,11 @@ class wpucontactforms {
         }, 50, 2);
 
         /* WP CLI */
-        add_action('wpucontactforms_export_wp_cli', array(&$this,
-            'trigger_export'
-        ), 10, 2);
-
+        if ($this->first_init) {
+            add_action('wpucontactforms_export_wp_cli', array(&$this,
+                'trigger_export'
+            ), 10, 2);
+        }
     }
 
     public function set_user_options() {
@@ -1889,7 +1890,6 @@ class wpucontactforms {
     }
 
     public function trigger_export($posted_values) {
-
         $file_name = 'all-forms';
 
         $term = array();
@@ -2231,6 +2231,8 @@ function wpucontactform__set_html_field_content($field, $wrap_html = true) {
         foreach ($field['value'] as $val_item) {
             if (isset($field['datas'][$val_item])) {
                 $field_parts[] = $field['datas'][$val_item];
+            } elseif (in_array($val_item, $field['datas'])) {
+                $field_parts[] = $val_item;
             } else {
                 $val_item_uns = unserialize($val_item);
                 if ($val_item_uns) {

@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.19.0
+Version: 0.20.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,7 +15,7 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.19.0';
+    private $plugin_version = '0.20.0';
     private $args = array();
     private $missing_plugins = array();
     private $default_module_args = array(
@@ -491,6 +491,17 @@ class WPUBaseToolbox {
         return array_merge(array_slice($array, 0, $pos), $new, array_slice($array, $pos));
     }
 
+    function array_columns_to_move_first($array, $columns = array()) {
+        $new_array = array();
+        foreach ($columns as $key) {
+            if (isset($array[$key])) {
+                $new_array[$key] = $array[$key];
+                unset($array[$key]);
+            }
+        }
+        return array_merge($new_array, $array);
+    }
+
     /* ----------------------------------------------------------
       Export
     ---------------------------------------------------------- */
@@ -514,7 +525,6 @@ class WPUBaseToolbox {
             $all_keys = array_merge($all_keys, array_keys($item));
         }
         $all_keys = array_unique($all_keys);
-
         foreach ($data as $item_key => $item) {
             /* Ensure all rows have the same keys */
             foreach ($all_keys as $k) {
@@ -523,9 +533,8 @@ class WPUBaseToolbox {
                 }
             }
             /* Ensure same sorting of all keys */
-            ksort($data[$item_key]);
+            $data[$item_key] = $this->array_columns_to_move_first($data[$item_key], $all_keys);
         }
-
         return $data;
     }
 

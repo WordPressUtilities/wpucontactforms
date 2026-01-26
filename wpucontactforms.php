@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.30.3
+Version: 3.30.4
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.30.3';
+    private $plugin_version = '3.30.4';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -2028,14 +2028,7 @@ class wpucontactforms {
         /* Move some columns to first position */
         if (isset($posted_values['wpucontactforms_columns_to_move_first']) && is_array($posted_values['wpucontactforms_columns_to_move_first'])) {
             $data = array_map(function ($entry) use ($posted_values) {
-                $new_entry = array();
-                foreach ($posted_values['wpucontactforms_columns_to_move_first'] as $key) {
-                    if (isset($entry[$key])) {
-                        $new_entry[$key] = $entry[$key];
-                        unset($entry[$key]);
-                    }
-                }
-                return array_merge($new_entry, $entry);
+                return $this->basetoolbox->array_columns_to_move_first($entry, $posted_values['wpucontactforms_columns_to_move_first']);
             }, $data);
             unset($posted_values['wpucontactforms_columns_to_move_first']);
         }

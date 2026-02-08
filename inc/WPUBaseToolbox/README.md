@@ -60,6 +60,18 @@ $this->basetoolbox->check_plugins_dependencies(array(
 ));
 ```
 
+### Custom user role
+
+```php
+$this->basetoolbox->create_custom_user_role(array(
+    'my_custom_capability' => true
+), array(
+    'role_opt' => 'myplugin_mycustomrole',
+    'role_id' => 'mu_custom_role',
+    'role_name' => 'My Custom Role'
+));
+```
+
 ### Array helpers
 
 #### Get a value from an array

@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.30.4
+Version: 3.30.5
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.30.4';
+    private $plugin_version = '3.30.5';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1805,8 +1805,9 @@ class wpucontactforms {
         ));
 
         if (!empty($terms) && !is_wp_error($terms)) {
+            $msg_count = wp_count_posts(wpucontactforms_savepost__get_post_type());
             $terms_array = array(
-                '0' => __('All forms', 'wpucontactforms')
+                '0' => __('All forms', 'wpucontactforms') . ($msg_count->publish ? ' (' . $msg_count->publish . ')' : '')
             );
             foreach ($terms as $term) {
                 $t_value = $term->name;
@@ -1896,6 +1897,9 @@ class wpucontactforms {
         if (isset($posted_values['term'])) {
             if (!is_array($posted_values['term'])) {
                 $posted_values['term'] = explode(',', $posted_values['term']);
+            }
+            if(count($posted_values['term']) == 1 && $posted_values['term'][0] == '0') {
+                $posted_values['term'] = array();
             }
             $term = $posted_values['term'];
             $file_name .= '-' . implode('-', $term);

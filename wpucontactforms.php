@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.30.5
+Version: 3.30.6
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.30.5';
+    private $plugin_version = '3.30.6';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -2233,6 +2233,9 @@ function wpucontactform__set_html_extra_content($form) {
     if ($form->form_submitted_hashed_ip && apply_filters('wpucontactform__set_html_extra_content__form_submitted_hashed_ip', true)) {
         $html .= '<strong>' . __('Hashed IP:', 'wpucontactforms') . '</strong> ' . esc_html($form->form_submitted_hashed_ip) . '<br />';
     }
+
+    $html = apply_filters('wpucontactform__set_html_extra_content', $html, $form);
+
     return $html;
 }
 

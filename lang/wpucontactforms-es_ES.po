@@ -12,7 +12,7 @@ msgstr ""
 "X-Generator: Poedit 3.8\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
-"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-KeywordsList: __;_e;_x:1,2c;_n:1,2;esc_attr__;esc_html__;esc_attr_e;esc_html_e\n"
 "X-Poedit-SearchPath-0: ../.\n"
 
 #: .././inc/WPUBaseAdminPage/WPUBaseAdminPage.php:202

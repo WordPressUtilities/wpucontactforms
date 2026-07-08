@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.22.0
+Version: 0.26.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,11 +15,13 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.22.0';
+    private $plugin_version = '0.26.0';
     private $args = array();
     private $missing_plugins = array();
+    private $invalid_plugins_versions = array();
     private $default_module_args = array(
         'need_form_js' => true,
+        'need_table_js' => false,
         'plugin_name' => 'WPU Base Toolbox'
     );
 
@@ -28,10 +30,18 @@ class WPUBaseToolbox {
             $args = array();
         }
         $this->args = array_merge($this->default_module_args, $args);
-
+        add_action('admin_enqueue_scripts', array(&$this,
+            'table_scripts'
+        ));
         add_action('wp_enqueue_scripts', array(&$this,
             'form_scripts'
         ));
+    }
+
+    public function table_scripts() {
+        if ($this->args['need_table_js']) {
+            wp_enqueue_script(__NAMESPACE__ . '-wpubasetoolbox-table-sort', plugins_url('assets/table-sort.js', __FILE__), array(), $this->plugin_version);
+        }
     }
 
     public function form_scripts() {
@@ -438,14 +448,20 @@ class WPUBaseToolbox {
         /* HEAD */
         $html .= '<thead><tr>';
         foreach ($array[0] as $key => $value) {
+            $attributes = array();
             $label = $key;
             if (isset($args['colnames'][$key])) {
-                $label = $args['colnames'][$key];
+                if (!is_array($args['colnames'][$key])) {
+                    $label = $args['colnames'][$key];
+                } else {
+                    $label = isset($args['colnames'][$key]['label']) ? $args['colnames'][$key]['label'] : $key;
+                    $attributes = isset($args['colnames'][$key]['attributes']) ? $args['colnames'][$key]['attributes'] : array();
+                }
             }
             if ($args['htmlspecialchars_th']) {
                 $label = htmlspecialchars($label);
             }
-            $html .= '<th>' . $label . '</th>';
+            $html .= '<th ' . $this->array_to_html_attributes($attributes) . '>' . $label . '</th>';
         }
         $html .= '</tr></thead>';
 
@@ -596,14 +612,74 @@ class WPUBaseToolbox {
         ob_start();
         $output = fopen("php://output", 'w');
         if ($args['add_keys']) {
-            fputcsv($output, $all_keys, $args['separator'], $args['enclosure']);
+            fputcsv($output, $all_keys, $args['separator'], $args['enclosure'], '');
         }
         foreach ($array as $item) {
-            fputcsv($output, $item, $args['separator'], $args['enclosure']);
+            fputcsv($output, $item, $args['separator'], $args['enclosure'], '');
         }
         fclose($output);
         return ob_get_clean();
 
+    }
+
+    /* CSV string to array
+    -------------------------- */
+
+    public function csv_to_array($file_content) {
+
+        /* Strip UTF-8 BOM if present */
+        if (substr($file_content, 0, 3) === "\xEF\xBB\xBF") {
+            $file_content = substr($file_content, 3);
+        }
+
+        /* Convert from Windows-1252 when content is not valid UTF-8 */
+        if (!mb_check_encoding($file_content, 'UTF-8')) {
+            $file_content = mb_convert_encoding($file_content, 'UTF-8', 'Windows-1252');
+        }
+
+        /* Normalize line endings */
+        $file_content = str_replace(array("\r\n", "\r"), "\n", $file_content);
+
+        /* Detect separator from first line */
+        $first_line_end = strpos($file_content, "\n");
+        $first_line = $first_line_end === false ? $file_content : substr($file_content, 0, $first_line_end);
+        $separator = (strpos($first_line, ';') === false) ? ',' : ';';
+
+        /* Parse whole content while respecting quoted line breaks */
+        $handle = fopen('php://temp', 'r+');
+        if (!$handle) {
+            return false;
+        }
+        fwrite($handle, $file_content);
+        rewind($handle);
+
+        /* Extract column names */
+        $column_names = fgetcsv($handle, 0, $separator, '"', '');
+        if (!is_array($column_names) || !isset($column_names[0])) {
+            fclose($handle);
+            return false;
+        }
+        $raw_line = array_fill_keys($column_names, '');
+        $column_names = array_map('trim', $column_names);
+        $column_names = array_map('strtolower', $column_names);
+
+        /* Build array */
+        $array = array();
+        while (($row = fgetcsv($handle, 0, $separator, '"', '')) !== false) {
+            if ($row === array(null) || $row === array('')) {
+                continue;
+            }
+            $new_line = $raw_line;
+            foreach ($row as $key => $value) {
+                if (isset($column_names[$key])) {
+                    $new_line[$column_names[$key]] = $value;
+                }
+            }
+            $array[] = $new_line;
+        }
+        fclose($handle);
+
+        return $array;
     }
 
     /* ----------------------------------------------------------
@@ -661,7 +737,9 @@ class WPUBaseToolbox {
 
             foreach ($plugin['path'] as $plugin_path) {
                 if (is_plugin_active($plugin_path) || is_plugin_active_for_network($plugin_path)) {
+                    $this->check_plugin_version($plugin, WP_PLUGIN_DIR . '/' . $plugin_path);
                     $has_plugin = true;
+                    break;
                 }
 
                 /* Get active must-use plugins list */
@@ -671,6 +749,7 @@ class WPUBaseToolbox {
                 );
                 foreach ($mu_plugins_path as $mu_plugins_dir) {
                     if (is_dir($mu_plugins_dir) && file_exists($mu_plugins_dir . '/' . $plugin_path)) {
+                        $this->check_plugin_version($plugin, $mu_plugins_dir . '/' . $plugin_path);
                         $has_plugin = true;
                         break;
                     }
@@ -686,6 +765,26 @@ class WPUBaseToolbox {
             add_action('admin_notices', array(&$this,
                 'set_error_missing_plugins'
             ));
+        }
+        if (!empty($this->invalid_plugins_versions)) {
+            add_action('admin_notices', array(&$this,
+                'set_error_invalid_plugins_versions'
+            ));
+        }
+    }
+
+    public function check_plugin_version($plugin, $plugin_path) {
+        if (!isset($plugin['min_version'])) {
+            return;
+        }
+
+        $plugin_data = get_plugin_data($plugin_path);
+        if (version_compare($plugin_data['Version'], $plugin['min_version'], '<')) {
+            $this->invalid_plugins_versions[] = array(
+                'name' => $plugin_data['Name'],
+                'current_version' => $plugin_data['Version'],
+                'required_version' => $plugin['min_version']
+            );
         }
     }
 
@@ -704,6 +803,26 @@ class WPUBaseToolbox {
             echo '</ul>';
         } else {
             echo '<p>' . sprintf(__('The plugin <b>%s</b> depends on the <b>%s</b> plugin. Please install and activate it.', __NAMESPACE__), $this->args['plugin_name'], $this->get_missing_plugin_display_name($this->missing_plugins[0])) . '</p>';
+        }
+        echo '</div>';
+    }
+
+    public function set_error_invalid_plugins_versions() {
+
+        if (!$this->invalid_plugins_versions) {
+            return;
+        }
+
+        echo '<div class="error">';
+        if (count($this->invalid_plugins_versions) > 1) {
+            echo '<p>' . sprintf(__('The plugin <b>%s</b> needs specific plugins versions. Please update them:', __NAMESPACE__), $this->args['plugin_name']) . '</p><ul>';
+            foreach ($this->invalid_plugins_versions as $plugin) {
+                echo '<li>- ' . esc_html($plugin['name']) . ' (current version: ' . esc_html($plugin['current_version']) . ', required version: ' . esc_html($plugin['required_version']) . ')</li>';
+            }
+            echo '</ul>';
+        } else {
+            $plugin = $this->invalid_plugins_versions[0];
+            echo '<p>' . sprintf(__('The plugin <b>%s</b> needs a specific <b>%s</b> plugin version. Please update it to at least version %s (current version: %s).', __NAMESPACE__), $this->args['plugin_name'], esc_html($plugin['name']), esc_html($plugin['required_version']), esc_html($plugin['current_version'])) . '</p>';
         }
         echo '</div>';
     }
@@ -831,7 +950,7 @@ class WPUBaseToolbox {
         }
 
         $role_details = apply_filters($args['role_opt'] . '__roles', $role_details);
-        $role_version = md5($args['role_id'] . $args['role_name'] . json_encode($role_details));
+        $role_version = md5($args['role_id'] . json_encode($role_details));
 
         /* Update role only if it doesn’t exist */
         if (get_option($args['role_opt']) != $role_version) {
@@ -844,4 +963,36 @@ class WPUBaseToolbox {
 
     }
 
+    /* ----------------------------------------------------------
+      Markdown to HTML
+    ---------------------------------------------------------- */
+
+    function markdown_to_html($text) {
+        $text = trim(wp_strip_all_tags($text));
+
+        /* Bold */
+        $text = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $text);
+
+        /* Italic */
+        $text = preg_replace('/\*(.+?)\*/', '<em>$1</em>', $text);
+
+        /* Links */
+        $text = preg_replace('/\[(.+?)\]\((.+?)\)/', '<a href="$2" rel="noopener noreferrer" target="_blank">$1</a>', $text);
+
+        /* Convert dashes to ul/li */
+        $lines = explode("\n", $text);
+        foreach ($lines as $line) {
+            if (preg_match('/^\s*-\s+(.+)/', $line, $matches)) {
+                $new_line = '<ul><li>' . trim($matches[1]) . '</li></ul>';
+                $text = str_replace($line, $new_line, $text);
+            }
+        }
+        $text = preg_replace('/<\/ul>\s*<ul>/', '', $text);
+
+        /* Line breaks */
+        $text = preg_replace('/\n/', '<br />', $text);
+        $text = force_balance_tags($text);
+
+        return $text;
+    }
 }

@@ -24,7 +24,9 @@ $this->settings = array(
     'sources' => array(
         'label' => __('Sources', 'wpuimporttwitter'),
         'help' => __('One #hashtag or one @user per line.', 'wpuimporttwitter'),
-        'type' => 'textarea'
+        'type' => 'textarea',
+        // 'constant' => 'MA_CONSTANTE', // optional, otherwise WPUTARTEAUCITRON_OPTIONS_SOURCES will be used (uppercase of the key)
+
     )
 );
 if (is_admin()) {

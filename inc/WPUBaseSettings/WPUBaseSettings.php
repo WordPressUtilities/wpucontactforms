@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Settings
 Description: A class to handle native settings in WordPress admin
-Version: 0.24.7
+Version: 0.26.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -95,6 +95,35 @@ class WPUBaseSettings {
         $opt = $this->get_settings();
         $opt[$id] = $value;
         update_option($this->settings_details['option_id'], $opt);
+    }
+
+    /* Override : returns the constant name bound to a setting, or false */
+    public function get_setting_constant_name($id) {
+        if (!isset($this->settings[$id])) {
+            return false;
+        }
+        /* Multilingual not supported */
+        if (isset($this->settings[$id]['translated_from']) || isset($this->settings[$id]['lang_id'])) {
+            return false;
+        }
+        if (isset($this->settings[$id]['constant']) && $this->settings[$id]['constant']) {
+            return $this->settings[$id]['constant'];
+        }
+        return strtoupper($this->settings_details['option_id'] . '_' . $id);
+    }
+
+    /* Override : forced value if the constant is defined */
+    public function get_setting_constant_value($id) {
+        $constant_name = $this->get_setting_constant_name($id);
+        if ($constant_name && defined($constant_name)) {
+            return constant($constant_name);
+        }
+        return false;
+    }
+
+    public function is_setting_overridden($id) {
+        $constant_name = $this->get_setting_constant_name($id);
+        return $constant_name && defined($constant_name);
     }
 
     public function set_min_capability() {
@@ -212,7 +241,7 @@ class WPUBaseSettings {
             }
             if (isset($section['wpubasesettings_checkall']) && $section['wpubasesettings_checkall']) {
                 $check_label = __('Check all', __NAMESPACE__);
-                $section['after_section'] .= '<button class="wpubasesettings-check-all" type="button" data-check-label="' . $check_label . '" data-uncheck-label="' . __('Uncheck all', __NAMESPACE__) . '">' . $check_label . '</button>';
+                $section['after_section'] .= '<button class="wpubasesettings-check-all" type="button" data-check-label="' . esc_attr($check_label) . '" data-uncheck-label="' . esc_attr(__('Uncheck all', __NAMESPACE__)) . '">' . esc_html($check_label) . '</button>';
                 if (!$has_check_all) {
                     $has_check_all = true;
                     add_action('admin_footer', array(&$this, 'admin_footer_checkall'));
@@ -264,6 +293,11 @@ class WPUBaseSettings {
     public function options_validate($input) {
         $options = get_option($this->settings_details['option_id']);
         foreach ($this->settings as $id => $setting) {
+
+            // Override : never write to DB if a constant forces the value
+            if ($this->is_setting_overridden($id)) {
+                continue;
+            }
 
             // If regex : use it to validate the field
             if (isset($setting['regex'])) {
@@ -326,7 +360,7 @@ class WPUBaseSettings {
         add_settings_error(
             $this->settings_details['option_id'],
             $this->settings_details['option_id'] . esc_attr('settings_updated'),
-            __('Settings saved.'),
+            __('Settings saved.', __NAMESPACE__),
             'updated'
         );
 
@@ -357,15 +391,24 @@ class WPUBaseSettings {
         if (isset($args['attributes_html']) && $args['attributes_html']) {
             $attr .= ' ' . $args['attributes_html'];
         }
+        /* Override : non-editable field if a constant is defined */
+        $is_overridden = $this->is_setting_overridden($args['id']);
+        if ($is_overridden) {
+            $readonly_types = array('text', 'textarea', 'url', 'email', 'number', 'password');
+            $attr .= in_array($args['type'], $readonly_types) ? ' readonly ' : ' disabled="disabled" ';
+        }
         $id .= $attr;
         $value = isset($options[$args['id']]) ? $options[$args['id']] : $args['default_value'];
         if (!isset($options[$args['id']]) && isset($args['translated_from']) && $args['translated_from'] && isset($options[$args['translated_from']]) && $options[$args['translated_from']]) {
             $value = $options[$args['translated_from']];
         }
+        if ($is_overridden) {
+            $value = $this->get_setting_constant_value($args['id']);
+        }
 
         switch ($args['type']) {
         case 'checkbox':
-            $checked_val = isset($options[$args['id']]) ? $options[$args['id']] : '0';
+            $checked_val = $is_overridden ? $value : (isset($options[$args['id']]) ? $options[$args['id']] : '0');
             echo '<label><input type="checkbox" ' . $name . ' ' . $id . ' ' . checked($checked_val, '1', 0) . ' value="1" /> ' . $args['label_check'] . '</label>';
             break;
         case 'textarea':
@@ -386,14 +429,14 @@ class WPUBaseSettings {
             echo '<a href="#" class="x">&times;</a>';
             echo '<img ' . $img_src . ' alt="" />';
             echo '</div>';
-            echo '<button type="button" class="button">' . __('Upload New Media') . '</button>';
+            echo '<button type="button" class="button">' . __('Upload New Media', __NAMESPACE__) . '</button>';
             echo '</div>';
             break;
         case 'radio':
             foreach ($args['datas'] as $_id => $_data) {
                 echo '<p>';
-                echo '<input id="' . $args['id'] . $_id . '" type="radio" ' . $name . ' value="' . esc_attr($_id) . '" ' . ($value == $_id ? 'checked="checked"' : '') . ' />';
-                echo '<label class="wpubasesettings-radio-label" for="' . $args['id'] . $_id . '">' . $_data . '</label>';
+                echo '<input id="' . esc_attr($args['id'] . $_id) . '" type="radio" ' . $name . ' value="' . esc_attr($_id) . '" ' . ($value == $_id ? 'checked="checked"' : '') . ' />';
+                echo '<label class="wpubasesettings-radio-label" for="' . esc_attr($args['id'] . $_id) . '">' . esc_html($_data) . '</label>';
                 echo '</p>';
             }
             break;
@@ -440,7 +483,13 @@ class WPUBaseSettings {
         case 'password':
         case 'email':
         case 'text':
-            echo '<input ' . $name . ' ' . $id . ' type="' . $args['type'] . '" value="' . esc_attr($value) . '" />';
+            echo '<input ' . $name . ' ' . $id . ' type="' . esc_attr($args['type']) . '" value="' . esc_attr($value) . '" />';
+        }
+        if ($is_overridden) {
+            echo '<div class="wpubasesettings-overridden-notice"><small>' . sprintf(
+                __('This value is set by the constant %s and cannot be edited here.', __NAMESPACE__),
+                '<code>' . esc_html($this->get_setting_constant_name($args['id'])) . '</code>'
+            ) . '</small></div>';
         }
         if (!empty($args['help'])) {
             echo '<div><small>' . $args['help'] . '</small></div>';
@@ -587,7 +636,7 @@ EOT;
         $option_id = $this->settings_details['option_id'];
         $languages = json_encode($this->get_languages());
         $current_language = $this->get_current_language();
-        $label_txt = __('Language');
+        $label_txt = __('Language', __NAMESPACE__);
         echo <<<EOT
 <script>
 (function(){
@@ -700,14 +749,14 @@ EOT;
     /* Base settings */
 
     public function admin_menu() {
-        $this->hook_page = add_submenu_page($this->settings_details['parent_page'], $this->settings_details['plugin_name'] . ' - ' . __('Settings'), $this->settings_details['menu_name'], $this->settings_details['user_cap'], $this->settings_details['plugin_id'], array(&$this,
+        $this->hook_page = add_submenu_page($this->settings_details['parent_page'], $this->settings_details['plugin_name'] . ' - ' . __('Settings', __NAMESPACE__), $this->settings_details['menu_name'], $this->settings_details['user_cap'], $this->settings_details['plugin_id'], array(&$this,
             'admin_settings'
         ), 110);
         add_action('load-' . $this->hook_page, array(&$this, 'load_assets'));
     }
 
     public function plugin_add_settings_link($links) {
-        $settings_link = '<a href="' . $this->admin_url . '">' . __('Settings') . '</a>';
+        $settings_link = '<a href="' . $this->admin_url . '">' . __('Settings', __NAMESPACE__) . '</a>';
         array_push($links, $settings_link);
         return $links;
     }
@@ -722,7 +771,7 @@ EOT;
             echo '<form action="' . admin_url('options.php') . '" method="post">';
             settings_fields($this->settings_details['option_id']);
             do_settings_sections($this->settings_details['plugin_id']);
-            echo submit_button(__('Save'));
+            echo submit_button(__('Save', __NAMESPACE__));
             echo '</form>';
         }
         do_action('wpubasesettings_after_content_' . $this->hook_page);
@@ -754,6 +803,10 @@ EOT;
             }
             if (isset($setting['translated_from'], $setting['lang_id'], $settings[$key]) && $lang == $setting['lang_id'] && $settings[$key] !== false) {
                 $settings[$setting['translated_from']] = $settings[$key];
+            }
+            /* Override : a defined constant always wins over the stored value */
+            if ($this->is_setting_overridden($key)) {
+                $settings[$key] = $this->get_setting_constant_value($key);
             }
         }
         return $settings;
@@ -833,14 +886,14 @@ EOT;
         'option_id' => 'wpuimporttwitter_options',
         'sections' => array(
             'import' => array(
-                'name' => __('Import Settings', 'wpuimporttwitter')
+                'name' => __('Import Settings', __NAMESPACE__)
             )
         )
     );
     $this->settings = array(
         'sources' => array(
-            'label' => __('Sources', 'wpuimporttwitter'),
-            'help' => __('One #hashtag or one @user per line.', 'wpuimporttwitter'),
+            'label' => __('Sources', __NAMESPACE__),
+            'help' => __('One #hashtag or one @user per line.', __NAMESPACE__),
             'type' => 'textarea'
         )
     );
@@ -858,6 +911,6 @@ EOT;
     echo '<form action="' . admin_url('options.php') . '" method="post">';
     settings_fields($this->settings_details['option_id']);
     do_settings_sections($this->options['plugin_id']);
-    echo submit_button(__('Save Changes', 'wpuimporttwitter'));
+    echo submit_button(__('Save Changes', __NAMESPACE__));
     echo '</form>';
 */

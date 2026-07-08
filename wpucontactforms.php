@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.30.6
+Version: 3.30.7
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.30.6';
+    private $plugin_version = '3.30.7';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1924,8 +1924,6 @@ class wpucontactforms {
 
         $args = array(
             'cache_results' => false,
-            'update_post_meta_cache' => false,
-            'update_post_term_cache' => false,
             'posts_per_page' => -1,
             'fields' => 'ids',
             'post_type' => wpucontactforms_savepost__get_post_type()
@@ -2721,7 +2719,7 @@ function wpucontactforms_submit_contactform__resendmail() {
         return;
     }
     $html = '<div class="misc-pub-section">';
-    $html .= '<input type="submit" value="' . __('Re-send this email', 'wpucontactforms') . '" class="button-secondary" id="custom" name="wpucontactforms__resendmail" />';
+    $html .= '<input type="submit" value="' . esc_attr__('Re-send this email', 'wpucontactforms') . '" class="button-secondary" id="custom" name="wpucontactforms__resendmail" />';
     $html .= '</div>';
     echo $html;
 }

@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Messages
 Description: A class to handle messages in WordPress
-Version: 1.3.4
+Version: 1.4.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -70,7 +70,7 @@ class WPUBaseMessages {
             foreach ($messages as $group_id => $group) {
                 if (is_array($group)) {
                     foreach ($group as $message) {
-                        echo '<div class="' . $group_id . ' notice is-dismissible"><p>' . $message . '</p></div>';
+                        echo $this->get_message_html($message, $group_id);
                     }
                 }
             }
@@ -78,5 +78,12 @@ class WPUBaseMessages {
 
         // Empty messages
         delete_transient($this->transient_msg);
+    }
+
+    public function get_message_html($message, $group = '') {
+        if (!in_array($group, $this->notices_categories)) {
+            $group = $this->notices_categories[0];
+        }
+        return '<div class="' . esc_attr($group) . ' notice is-dismissible"><p>' . $message . '</p></div>';
     }
 }

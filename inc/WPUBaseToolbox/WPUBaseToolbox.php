@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Toolbox
 Description: Cool helpers for WordPress Plugins
-Version: 0.26.0
+Version: 0.29.0
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -15,7 +15,7 @@ License URI: https://opensource.org/licenses/MIT
 defined('ABSPATH') || die;
 
 class WPUBaseToolbox {
-    private $plugin_version = '0.26.0';
+    private $plugin_version = '0.29.0';
     private $args = array();
     private $missing_plugins = array();
     private $invalid_plugins_versions = array();
@@ -625,7 +625,15 @@ class WPUBaseToolbox {
     /* CSV string to array
     -------------------------- */
 
-    public function csv_to_array($file_content) {
+    public function csv_to_array($file_content, $args = array()) {
+
+        if (!is_array($args)) {
+            $args = array();
+        }
+
+        $args = array_merge(array(
+            'sanitize_column_names' => true
+        ), $args);
 
         /* Strip UTF-8 BOM if present */
         if (substr($file_content, 0, 3) === "\xEF\xBB\xBF") {
@@ -659,9 +667,16 @@ class WPUBaseToolbox {
             fclose($handle);
             return false;
         }
-        $raw_line = array_fill_keys($column_names, '');
         $column_names = array_map('trim', $column_names);
         $column_names = array_map('strtolower', $column_names);
+        if ($args['sanitize_column_names']) {
+            $new_column_names = array();
+            foreach ($column_names as $column_name) {
+                $new_column_names[] = sanitize_title($column_name);
+            }
+            $column_names = $new_column_names;
+        }
+        $raw_line = array_fill_keys($column_names, '');
 
         /* Build array */
         $array = array();
@@ -967,32 +982,78 @@ class WPUBaseToolbox {
       Markdown to HTML
     ---------------------------------------------------------- */
 
-    function markdown_to_html($text) {
-        $text = trim(wp_strip_all_tags($text));
+    public function markdown_to_html($text) {
+        $text = trim(wp_strip_all_tags((string) $text));
+        if ($text === '') {
+            return '';
+        }
 
-        /* Bold */
-        $text = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $text);
+        /* Protect inline code so later rules don't alter its content */
+        $code_placeholders = array();
+        $text = preg_replace_callback('/`(.+?)`/s', function ($m) use (&$code_placeholders) {
+            $key = '{{CODE_' . count($code_placeholders) . '}}';
+            $code_placeholders[$key] = '<code>' . esc_html($m[1]) . '</code>';
+            return $key;
+        }, $text);
 
-        /* Italic */
-        $text = preg_replace('/\*(.+?)\*/', '<em>$1</em>', $text);
+        /* Headings */
+        for ($i = 6; $i >= 1; $i--) {
+            $text = preg_replace('/^#{' . $i . '}\s+(.+)$/m', '<h' . $i . '>$1</h' . $i . '>', $text);
+        }
+
+        /* Images (must run before links, same syntax with a leading !) */
+        $text = preg_replace_callback('/!\[(.*?)\]\((\S+?)\)/', function ($m) {
+            return '<img src="' . esc_url($m[2]) . '" alt="' . esc_attr($m[1]) . '" />';
+        }, $text);
 
         /* Links */
-        $text = preg_replace('/\[(.+?)\]\((.+?)\)/', '<a href="$2" rel="noopener noreferrer" target="_blank">$1</a>', $text);
+        $text = preg_replace_callback('/\[(.+?)\]\((\S+?)\)/', function ($m) {
+            return '<a href="' . esc_url($m[2]) . '" rel="noopener noreferrer" target="_blank">' . $m[1] . '</a>';
+        }, $text);
 
-        /* Convert dashes to ul/li */
+        /* Bold */
+        $text = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $text);
+
+        /* Italic (asterisk form) */
+        $text = preg_replace('/\*(.+?)\*/s', '<em>$1</em>', $text);
+
+        /* Italic (underscore form), only on word boundaries to avoid snake_case / file names */
+        $text = preg_replace('/(?<!\w)_(.+?)_(?!\w)/s', '<em>$1</em>', $text);
+
+        /* Lists: group consecutive '-' lines into one <ul>, line by line (no global str_replace) */
         $lines = explode("\n", $text);
+        $html_lines = array();
+        $in_list = false;
         foreach ($lines as $line) {
-            if (preg_match('/^\s*-\s+(.+)/', $line, $matches)) {
-                $new_line = '<ul><li>' . trim($matches[1]) . '</li></ul>';
-                $text = str_replace($line, $new_line, $text);
+            if (preg_match('/^\s*-\s+(.+)/', $line, $m)) {
+                if (!$in_list) {
+                    $html_lines[] = '<ul>';
+                    $in_list = true;
+                }
+                $html_lines[] = '<li>' . trim($m[1]) . '</li>';
+                continue;
             }
+            if ($in_list) {
+                $html_lines[] = '</ul>';
+                $in_list = false;
+            }
+            $html_lines[] = $line;
         }
-        $text = preg_replace('/<\/ul>\s*<ul>/', '', $text);
+        if ($in_list) {
+            $html_lines[] = '</ul>';
+        }
+        $text = implode("\n", $html_lines);
 
-        /* Line breaks */
+        /* Line breaks, then clean up breaks glued to block-level tags */
         $text = preg_replace('/\n/', '<br />', $text);
-        $text = force_balance_tags($text);
+        $text = preg_replace('/<br \/>(<\/?(ul|li|h[1-6])[^>]*>)/', '$1', $text);
+        $text = preg_replace('/(<\/(ul|li|h[1-6])>)<br \/>/', '$1', $text);
 
-        return $text;
+        /* Restore protected code spans */
+        if (!empty($code_placeholders)) {
+            $text = strtr($text, $code_placeholders);
+        }
+
+        return force_balance_tags($text);
     }
 }

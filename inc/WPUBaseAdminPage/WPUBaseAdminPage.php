@@ -4,7 +4,7 @@ namespace wpucontactforms;
 /*
 Class Name: WPU Base Admin page
 Description: A class to handle pages in WordPress
-Version: 1.8.0
+Version: 1.8.2
 Class URI: https://github.com/WordPressUtilities/wpubaseplugin
 Author: Darklg
 Author URI: https://darklg.me/
@@ -37,15 +37,14 @@ class WPUBaseAdminPage {
             return;
         }
         $this->options = $options;
-        $this->pages = $pages;
-        $this->prefix = $this->options['id'] . '-';
-        $this->pages = $this->set_pages($this->pages);
-
         /* Set default options */
         if (!is_array($this->options)) {
             $this->options = array();
         }
         $this->options = array_merge($this->default_options, $this->options);
+        $this->pages = $pages;
+        $this->prefix = $this->options['id'] . '-';
+        $this->pages = $this->set_pages($this->pages);
 
         add_action($this->options['network_page'] ? 'network_admin_menu' : 'admin_menu', array(&$this,
             'set_admin_menu'
@@ -82,12 +81,14 @@ class WPUBaseAdminPage {
     public function set_pages($pages) {
         foreach ($pages as $id => $page) {
             $page['id'] = $this->prefix . $id;
-            $page['url'] = admin_url('admin.php?page=' . $page['id']);
+            $page_url = 'admin.php?page=' . $page['id'];
+            $page['url'] = $this->options['network_page'] ? network_admin_url($page_url) : admin_url($page_url);
             if (!isset($page['section'])) {
                 $page['section'] = '';
             } else {
                 $path = (strpos($page['section'], '?') !== false ? '&' : '?') . 'page=' . $page['id'];
-                $page['url'] = admin_url($page['section'] . $path);
+                $page_url = $page['section'] . $path;
+                $page['url'] = $this->options['network_page'] ? network_admin_url($page_url) : admin_url($page_url);
             }
             if (!isset($page['name'])) {
                 $page['name'] = $id;

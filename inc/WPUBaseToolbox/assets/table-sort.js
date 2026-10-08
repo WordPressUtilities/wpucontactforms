@@ -48,8 +48,8 @@ function wpubasetoolbox_table_sort_rows($table, colIndex, dir) {
             return 0;
         }
 
-        var valA = (cellA.getAttribute('data-sort-value') || cellA.textContent).trim();
-        var valB = (cellB.getAttribute('data-sort-value') || cellB.textContent).trim();
+        var valA = wpubasetoolbox_table_sort_get_value(cellA);
+        var valB = wpubasetoolbox_table_sort_get_value(cellB);
 
         var numA = parseFloat(valA.replace(/[^\d.,-]/g, '').replace(',', '.'));
         var numB = parseFloat(valB.replace(/[^\d.,-]/g, '').replace(',', '.'));
@@ -62,4 +62,19 @@ function wpubasetoolbox_table_sort_rows($table, colIndex, dir) {
     Array.prototype.forEach.call($rows, function($row) {
         $tbody.appendChild($row);
     });
+}
+
+/* Sort value of a cell: explicit attribute, then selected option label, then text */
+function wpubasetoolbox_table_sort_get_value($cell) {
+    'use strict';
+    var _attr = $cell.getAttribute('data-sort-value');
+    if (_attr) {
+        return _attr.trim();
+    }
+    var $select = $cell.querySelector('select');
+    if ($select) {
+        var _option = $select.options[$select.selectedIndex];
+        return _option ? _option.text.trim() : '';
+    }
+    return $cell.textContent.trim();
 }

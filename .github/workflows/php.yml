@@ -15,5 +15,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.0'
+        coverage: none
+
     - name: PHP Lint
-      uses: michaelw90/PHP-Lint@2.1.0
+      run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 -P4 php -l

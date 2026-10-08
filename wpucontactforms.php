@@ -5,13 +5,13 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.30.7
+Version: 3.31.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
 Text Domain: wpucontactforms
 Domain Path: /lang
-Requires at least: 6.2
+Requires at least: 6.9
 Requires PHP: 8.0
 Network: Optional
 License: MIT License

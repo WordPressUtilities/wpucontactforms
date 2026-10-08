@@ -85,4 +85,13 @@ if (defined('WP_CLI') && WP_CLI) {
         'shortdesc' => WPUCONTACTFORMS_MIGRATE_STR,
         'synopsis' => array()
     ));
+
+    WP_CLI::add_command('wpucontactforms-upload-protection', function ($args = array()) {
+        $wpucontactforms = new wpucontactforms();
+        $dirs = $wpucontactforms->setup_upload_protection(wp_get_upload_dir());
+        WP_CLI::success('Upload protection set up in ' . $dirs['basedir']);
+    }, array(
+        'shortdesc' => 'Create the protected uploads folder and refresh its .htaccess and index.php files.',
+        'synopsis' => array()
+    ));
 }

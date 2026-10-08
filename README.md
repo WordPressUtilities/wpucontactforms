@@ -1,5 +1,7 @@
 # WPU Contact Forms
 
+[![PHP workflow](https://github.com/WordPressUtilities/wpucontactforms/actions/workflows/php.yml/badge.svg 'PHP workflow')](https://github.com/WordPressUtilities/wpucontactforms/actions)
+
 Contact forms for your WordPress website.
 
 ## Notes :

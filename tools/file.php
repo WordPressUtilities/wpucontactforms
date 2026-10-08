@@ -9,15 +9,15 @@ if (!isset($_GET['file'])) {
     return;
 }
 
-$file_name = $_GET['file'];
+define('WPUCONTACTFORMS_UPLOADS_INDEX_FNAME', $_GET['file']);
 
-$file = dirname(__FILE__) . '/' . $file_name;
-if (!file_exists($file)) {
+define('WPUCONTACTFORMS_UPLOADS_INDEX_FILE', dirname(__FILE__) . '/' . WPUCONTACTFORMS_UPLOADS_INDEX_FNAME);
+if (!file_exists(WPUCONTACTFORMS_UPLOADS_INDEX_FILE)) {
     return;
 }
 
 /* Basic upload model OR avoid / */
-if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[^\.\/]{1}([a-zA-Z0-9_\-\s\.]*)$/', $file_name) && strpos($file_name, "/") !== false) {
+if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[^\.\/]{1}([a-zA-Z0-9_\-\s\.]*)$/', WPUCONTACTFORMS_UPLOADS_INDEX_FNAME) && strpos(WPUCONTACTFORMS_UPLOADS_INDEX_FNAME, "/") !== false) {
     return;
 }
 
@@ -41,8 +41,6 @@ while (!is_file($bootstrap)) {
 }
 require_once $bootstrap;
 
-wp();
-
 /* ----------------------------------------------------------
   Check user rights
 ---------------------------------------------------------- */
@@ -57,7 +55,7 @@ if(!current_user_can('upload_files')){
     return;
 }
 
-if (!apply_filters('wpucontactforms__user_can_access_file', true, $file_name)) {
+if (!apply_filters('wpucontactforms__user_can_access_file', true, WPUCONTACTFORMS_UPLOADS_INDEX_FNAME)) {
     status_header(404);
     return;
 }
@@ -67,8 +65,11 @@ if (!apply_filters('wpucontactforms__user_can_access_file', true, $file_name)) {
 ---------------------------------------------------------- */
 
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mime = finfo_file($finfo, $file);
-finfo_close($finfo);
+$mime = finfo_file($finfo, WPUCONTACTFORMS_UPLOADS_INDEX_FILE);
+while (ob_get_level()) {
+    ob_end_clean();
+}
 header('Content-Type: ' . $mime);
-readfile($file);
+header('Content-Length: ' . filesize(WPUCONTACTFORMS_UPLOADS_INDEX_FILE));
+readfile(WPUCONTACTFORMS_UPLOADS_INDEX_FILE);
 exit;

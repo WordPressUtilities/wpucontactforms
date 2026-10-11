@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.31.1
+Version: 3.32.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,7 +27,7 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.31.1';
+    private $plugin_version = '3.32.0';
     private $humantest_classname = 'hu-man-te-st';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
@@ -1898,7 +1898,7 @@ class wpucontactforms {
             if (!is_array($posted_values['term'])) {
                 $posted_values['term'] = explode(',', $posted_values['term']);
             }
-            if(count($posted_values['term']) == 1 && $posted_values['term'][0] == '0') {
+            if (count($posted_values['term']) == 1 && $posted_values['term'][0] == '0') {
                 $posted_values['term'] = array();
             }
             $term = $posted_values['term'];
@@ -2572,6 +2572,37 @@ function wpucontactforms_submit_contactform__savepost__objects() {
 
     add_filter('manage_taxonomies_for_activity_columns', 'activity_type_columns');
 
+    /* Attachments column */
+    if (apply_filters('wpucontactforms_savepost__show_attachments_column', true)) {
+        add_filter('manage_' . wpucontactforms_savepost__get_post_type() . '_posts_columns', 'wpucontactforms_savepost__columns');
+        add_action('manage_' . wpucontactforms_savepost__get_post_type() . '_posts_custom_column', 'wpucontactforms_savepost__custom_column', 10, 2);
+    }
+
+}
+
+function wpucontactforms_savepost__columns($columns) {
+    $new_columns = array();
+    foreach ($columns as $key => $label) {
+        $new_columns[$key] = $label;
+        if ($key == 'title') {
+            $new_columns['wpucontactforms_attachments'] = __('Attachments', 'wpucontactforms');
+        }
+    }
+    return $new_columns;
+}
+
+function wpucontactforms_savepost__custom_column($column, $post_id) {
+    if ($column != 'wpucontactforms_attachments') {
+        return;
+    }
+    $nb_attachments = count(get_children(array(
+        'post_parent' => $post_id,
+        'post_type' => 'attachment',
+        'fields' => 'ids'
+    )));
+    if ($nb_attachments) {
+        echo '<span class="dashicons dashicons-paperclip" aria-hidden="true"></span> ' . esc_html($nb_attachments);
+    }
 }
 
 function wpucontactforms_submit_contactform__savepost($form) {

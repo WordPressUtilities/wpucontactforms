@@ -331,6 +331,7 @@ function set_wpucontactforms_form($wrapper) {
             $fieldMult = $box.find('[name="' + _id + '[]"]').eq(0),
             _field = $field.get(0),
             _fieldMult = $fieldMult.get(0),
+            _errorEmptyAttr = _type == 'select' ? 'data-error-choose' : 'data-error-empty',
             simple_fields = ['text', 'textarea', 'email', 'url', 'select', 'number', 'tel', 'file', 'checkbox'],
             multiple_fields = ['radio', 'checkbox-list'];
 
@@ -349,7 +350,7 @@ function set_wpucontactforms_form($wrapper) {
             if (_isEmpty && !_isInvalid) {
                 _hasError = true;
                 $box.attr('data-has-error', 1);
-                $error.get(0).textContent += $error.attr('data-error-empty');
+                $error.get(0).textContent += $error.attr(_errorEmptyAttr);
             }
 
             /* Invalid field */
@@ -402,7 +403,7 @@ function set_wpucontactforms_form($wrapper) {
         if (_fieldMult && _required && !_hasError && !_fieldMult.value) {
             _hasError = true;
             $box.attr('data-has-error', 1);
-            $error.get(0).textContent += $error.attr('data-error-empty');
+            $error.get(0).textContent += $error.attr(_errorEmptyAttr);
         }
 
         (function() {

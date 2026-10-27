@@ -236,10 +236,8 @@ function set_wpucontactforms_form($wrapper) {
     if (has_recaptcha_turnstile) {
         /* Init recaptcha */
         if (typeof turnstile !== 'object') {
-            /* Disable form until recaptcha has loaded */
-            $form.find(':input').attr('readonly', 'true');
-            /* Load recaptcha */
-            wpucontactforms_load_recaptcha_turnstile();
+            /* Load recaptcha on first interaction */
+            $form.one('focusin', wpucontactforms_load_recaptcha_turnstile);
         }
         /* Init recaptcha */
         else {
@@ -522,6 +520,10 @@ function set_wpucontactforms_form($wrapper) {
             return false;
         }
         if (has_recaptcha_v2 && !grecaptcha.getResponse()) {
+            $form.trigger('wpucontactforms_invalid_recaptcha');
+            return;
+        }
+        if (has_recaptcha_turnstile && !$form.find('[name="cf-turnstile-response"]').val()) {
             $form.trigger('wpucontactforms_invalid_recaptcha');
             return;
         }

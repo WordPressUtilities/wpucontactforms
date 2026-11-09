@@ -5,7 +5,7 @@ defined('ABSPATH') || die;
 Plugin Name: WPU Contact forms
 Plugin URI: https://github.com/WordPressUtilities/wpucontactforms
 Update URI: https://github.com/WordPressUtilities/wpucontactforms
-Version: 3.32.1
+Version: 3.33.0
 Description: Contact forms
 Author: Darklg
 Author URI: https://darklg.me/
@@ -27,8 +27,9 @@ class wpucontactforms {
     public $wpubasemessages;
     public $basetoolbox;
 
-    private $plugin_version = '3.32.1';
+    private $plugin_version = '3.33.0';
     private $humantest_classname = 'hu-man-te-st';
+    private $html_id_unique = '';
     private $first_init = true;
     public $has_recaptcha_v2 = false;
     public $has_recaptcha_v3 = false;
@@ -513,6 +514,7 @@ class wpucontactforms {
         // Settings
         $contact__settings = apply_filters('wpucontactforms_settings', array(
             'ajax_enabled' => true,
+            'unique_ids' => false,
             'admin_form' => false,
             'attach_to_post' => get_the_ID(),
             'autocomplete' => '',
@@ -662,6 +664,9 @@ class wpucontactforms {
             $args = array();
         }
 
+        /* Avoid duplicate HTML ids if the same form is displayed twice */
+        $this->html_id_unique = $this->options['contact__settings']['unique_ids'] ? uniqid() . '_' : '';
+
         /* There is no previous posted data, so we try to retrieve it from the global page info */
         if (!isset($args['custom__form_data'])) {
             $args['custom__form_data'] = wpucontactforms_get_safe_form_data($this->page_content_get_form_data());
@@ -800,8 +805,8 @@ class wpucontactforms {
         /* Quick honeypot */
         if (!$is_preview_mode) {
             $content_form .= '<' . $this->options['contact__settings']['box_tagname'] . ' class="screen-reader-text">';
-            $content_form .= '<label id="label-' . $this->humantest_classname . '" for="input-' . $this->humantest_classname . '">' . __('If you are human, leave this empty', 'wpucontactforms') . '</label>';
-            $content_form .= '<input aria-labelledby="label-' . $this->humantest_classname . '" id="input-' . $this->humantest_classname . '" tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
+            $content_form .= '<label id="label-' . $this->html_id_unique . $this->humantest_classname . '" for="input-' . $this->html_id_unique . $this->humantest_classname . '">' . __('If you are human, leave this empty', 'wpucontactforms') . '</label>';
+            $content_form .= '<input aria-labelledby="label-' . $this->html_id_unique . $this->humantest_classname . '" id="input-' . $this->html_id_unique . $this->humantest_classname . '" tabindex="-1" name="' . $this->humantest_classname . '" type="text"/>';
             $content_form .= '</' . $this->options['contact__settings']['box_tagname'] . '>';
         }
 
@@ -944,7 +949,7 @@ class wpucontactforms {
         if ($is_preview_mode) {
             $id = 'preview_wpucontactforms__' . $id;
         }
-        $id_html = $this->options['id'] . '_' . $id;
+        $id_html = $this->options['id'] . '_' . $this->html_id_unique . $id;
         $is_multiple = isset($field['multiple']) && $field['multiple'];
         if ($field['type'] == 'checkbox-list') {
             $is_multiple = true;
@@ -1110,7 +1115,7 @@ class wpucontactforms {
             }
             foreach ($field['datas'] as $key => $val) {
                 $label_for = $id_html . '__' . $key;
-                $input_radio_label_before = '<label for="' . $label_for . '" id="label-' . $id . $key . '" class="label-checkbox ' . ($field['label_checkbox_classname'] ? esc_attr($field['label_checkbox_classname']) : '') . '">';
+                $input_radio_label_before = '<label for="' . $label_for . '" id="label-' . $label_for . '" class="label-checkbox ' . ($field['label_checkbox_classname'] ? esc_attr($field['label_checkbox_classname']) : '') . '">';
                 if ($field['input_inside_label']) {
                     $content .= $input_radio_label_before;
                 }
@@ -1144,7 +1149,7 @@ class wpucontactforms {
             if (!$field['input_inside_label']) {
                 $content .= $checkbox_content;
             }
-            $content .= '<label id="label-' . $id . '" class="label-checkbox ' . ($field['label_checkbox_classname'] ? esc_attr($field['label_checkbox_classname']) : '') . '" for="' . $id_html . '">';
+            $content .= '<label id="label-' . $id_html . '__checkbox" class="label-checkbox ' . ($field['label_checkbox_classname'] ? esc_attr($field['label_checkbox_classname']) : '') . '" for="' . $id_html . '">';
             if ($field['input_inside_label']) {
                 $content .= $checkbox_content . ' ';
             }
